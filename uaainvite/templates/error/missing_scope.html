@@ -1,0 +1,10 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+<div>
+	<h2>You do not have permissions to invite users.</h2>
+	<h3>This message is displayed to users when they are missing the scim.invite scope</h3>
+
+	<p><a href="{{url_for('logout')}}">Try again?</a></p>
+</div>
+{% endblock %}

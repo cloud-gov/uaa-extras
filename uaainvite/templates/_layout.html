@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+    <title>{% block title %}UAA Invite{% endblock %}</title>
+    <link href="{{config.UAA_BASE_URL}}/resources/oss/images/square-logo.png" rel="shortcut icon" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="{{config.UAA_BASE_URL}}/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="{{config.UAA_BASE_URL}}/resources/oss/stylesheets/application.css" rel="stylesheet" />
+    <style>.header-image {background-image: url({{config.UAA_BASE_URL}}/resources/oss/images/product-logo.png);}</style>
+</head>
+<body>
+<div class="content">
+    <div class="header">
+        <div></div>
+        <div class="header-image"></div>
+    </div>
+
+    <div class="island{% block type %}{% endblock %}">
+        <div class="island-title">
+            <h1>{% block header %}{% endblock %}</h1>
+        </div>
+    {% block content %}{% endblock %}
+    </div>
+</div>
+    <div class="footer-spacer"></div>
+</div>
+<div class="footer">{% block footer %}{% endblock %}</div>
+</body>
+</html>
+

@@ -1,0 +1,13 @@
+---
+applications:
+- name: invite
+  command: gunicorn -w 4 uaainvite:app
+env:
+  UAA_BASE_URL: https://uaa.bosh-lite.com
+  UAA_CLIENT_ID: foo
+  UAA_CLIENT_SECRET: bar
+  UAA_VERIFY_TLS: False
+  SMTP_HOST: 192.168.50.1
+  SMTP_PORT: 2525
+  SMTP_FROM: no-reply@example.com
+  BRANDING_COMPANY_NAME: Testoku
