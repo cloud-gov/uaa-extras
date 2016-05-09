@@ -73,8 +73,10 @@ def send_email(app, email, subject, body):
     msg = MIMEText(body, 'html')
     msg['Subject'] = subject
     msg['To'] = email
+    msg['From'] = app.config['SMTP_FROM']
 
     s = smtplib.SMTP(app.config['SMTP_HOST'], app.config['SMTP_PORT'])
+    s.set_debuglevel(1)
 
     # if smtp credentials were provided, login
     if app.config['SMTP_USER'] is not None and app.config['SMTP_PASS'] is not None:
