@@ -1,0 +1,10 @@
+{% extends "_layout.html" %}
+
+{% block header %}Invite sent{% endblock %}
+
+{% block content %}
+<div class="island-content">
+    <i class="fa fa-envelope-o"></i>
+	<p><a href="{{url_for('index')}}">Invite another?</a></p>
+</div>
+{% endblock %}
