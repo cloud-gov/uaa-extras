@@ -38,9 +38,3 @@ You can also run it locally in debug mode:
 
 	# set configuration env vars as needed
 	./debug.py
-
-### Contributing 
-
-Ensure any new functionality comes with tests.
-
-Use [tox](http://tox.readthedocs.io/en/latest/) to run the current test suite.
