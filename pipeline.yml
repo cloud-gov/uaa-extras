@@ -1,0 +1,69 @@
+---
+jobs:
+- name: push-cg-uaa-invite
+  plan:
+  - aggregate:
+    - get: cg-uaa-invite-app
+      trigger: true
+  - put: deploy-cg-uaa-invite-app
+    params:
+      manifest: cg-uaa-invite-app/manifest.yml
+      path: cg-uaa-invite-app
+      current_app_name: invite
+      environment_variables:
+        UAA_BASE_URL: {{uaa-base-url}}
+        UAA_CLIENT_ID: {{uaa-client-id}}
+        UAA_CLIENT_SECRET: {{uaa-client-secret}}
+        UAA_VERIFY_TLS: {{uaa-verify-tls}}
+        SMTP_HOST: {{smtp-host}}
+        SMTP_PORT: {{smtp-port}}
+        SMTP_USER: {{smtp-user}}
+        SMTP_PASS: {{smtp-pass}}
+        SMTP_FROM: {{smtp-from}}
+        BRANDING_COMPANY_NAME: {{branding-company-name}}
+    on_failure:
+      put: slack
+      params:
+        text: |
+          :x: FAILED to deploy cg-uaa-invite on {{cf-api-url}}
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+    on_success:
+      put: slack
+      params:
+        text: |
+          :white_check_mark: Successfully deployed cg-uaa-invite on {{cf-api-url}}
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+
+resources:
+- name: cg-uaa-invite-app
+  type: git
+  source:
+    uri: {{cg-uaa-invite-app-git-url}}
+    branch: {{cg-uaa-invite-app-git-branch}}
+
+- name: deploy-cg-uaa-invite-app
+  type: cf
+  source:
+    api: {{cf-api-url}}
+    username: {{cf-deploy-username}}
+    password: {{cf-deploy-password}}
+    organization: {{cf-organization}}
+    space: {{cf-space}}
+    skip_cert_check: true
+
+- name: slack
+  type: slack-notification
+  source:
+    url: {{slack-webhook-url}}
+
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
