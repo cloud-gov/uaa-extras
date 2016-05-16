@@ -103,6 +103,9 @@ def create_app(env=os.environ):
     # do boolean checks on this variable
     app.config['UAA_VERIFY_TLS'] = str_to_bool(app.config['UAA_VERIFY_TLS'])
 
+    # make sure our base url doesn't have a trailing slash as UAA will flip out
+    app.config['UAA_BASE_URL'] = app.config['UAA_BASE_URL'].rstrip('/')
+
     logging.info('Loaded application configuration:')
     for ck in sorted(CONFIG_KEYS.keys()):
         logging.info('{0}: {1}'.format(ck, app.config[ck]))
