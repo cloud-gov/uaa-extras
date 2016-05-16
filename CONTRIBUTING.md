@@ -10,6 +10,10 @@ with this waiver of copyright interest.
 
 ## Testing
 
+This app is currently deployed into a python2 environment in production, however the tests ensure that
+this app is compatible with python2.7 and python3.4 for future compatibility.  Ensure any changes are
+compatible with both python2 and python3.
+
 Ensure that tests are delivered with any changes.
 
 Use [tox](http://tox.readthedocs.io/en/latest/) to run the current test suite.
