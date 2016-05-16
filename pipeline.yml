@@ -14,7 +14,7 @@ jobs:
         UAA_BASE_URL: {{uaa-base-url}}
         UAA_CLIENT_ID: {{uaa-client-id}}
         UAA_CLIENT_SECRET: {{uaa-client-secret}}
-        UAA_VERIFY_TLS: {{uaa-verify-tls}}
+        UAA_VERIFY_TLS: true
         SMTP_HOST: {{smtp-host}}
         SMTP_PORT: {{smtp-port}}
         SMTP_USER: {{smtp-user}}
@@ -55,7 +55,7 @@ resources:
     password: {{cf-deploy-password}}
     organization: {{cf-organization}}
     space: {{cf-space}}
-    skip_cert_check: true
+    skip_cert_check: false
 
 - name: slack
   type: slack-notification
