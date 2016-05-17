@@ -14,7 +14,7 @@ jobs:
         UAA_BASE_URL: {{uaa-base-url}}
         UAA_CLIENT_ID: {{uaa-client-id}}
         UAA_CLIENT_SECRET: {{uaa-client-secret}}
-        UAA_VERIFY_TLS: true
+        UAA_VERIFY_TLS: "true"
         SMTP_HOST: {{smtp-host}}
         SMTP_PORT: {{smtp-port}}
         SMTP_USER: {{smtp-user}}
