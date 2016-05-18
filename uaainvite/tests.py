@@ -273,6 +273,7 @@ class TestAppConfig(unittest.TestCase):
 
             assert rv.status_code == 302
             target = app.config['UAA_BASE_URL'] + '/oauth/authorize?client_id=' + app.config['UAA_CLIENT_ID']
+            target += '&response_type=code'
             assert rv.location == target
 
     @patch('uaainvite.webapp.UAAClient')
