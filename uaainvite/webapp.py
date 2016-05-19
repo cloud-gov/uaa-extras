@@ -233,9 +233,19 @@ def create_app(env=os.environ):
 
             send_email(app, email, subject, body)
             return render_template('invite_sent.html')
+        except UAAError as exc:
+            # if UAA complains that our access token is invalid then force them back through the login
+            # process.
+            # TODO: Fix this properly by implementing the refresh token oauth flow
+            # in the UAAClient when it detects it's token is no longer valid
+            if 'Invalid access token' in str(exc):
+                return redirect(url_for('logout'))
+            else:
+                logging.exception('An error occured communicating with UAA')
         except Exception:
             logging.exception('An error occured during the invite process')
-            return render_template('error/internal.html'), 500
+
+        return render_template('error/internal.html'), 500
 
     @app.route('/logout')
     def logout():
