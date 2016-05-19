@@ -2,9 +2,10 @@
 jobs:
 - name: push-cg-uaa-invite
   plan:
-  - aggregate:
-    - get: cg-uaa-invite-app
-      trigger: true
+  - get: cg-uaa-invite-app
+    trigger: true
+  - task: test
+    file: cg-uaa-invite-app/test.yml
   - put: deploy-cg-uaa-invite-app
     params:
       manifest: cg-uaa-invite-app/manifest.yml
