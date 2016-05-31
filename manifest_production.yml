@@ -1,5 +1,7 @@
 ---
-inherit: manifest.yml
 applications:
 - name: invite
+  command: gunicorn -w 4 uaainvite:app
+  host: invite
   domain: cloud.gov
+  
