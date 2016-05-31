@@ -1,32 +1,34 @@
 ---
 jobs:
-- name: push-cg-uaa-invite
+- name: deploy-staging
   plan:
-  - get: cg-uaa-invite-app
+  - get: cg-uaa-invite-staging-branch
     trigger: true
   - task: test
-    file: cg-uaa-invite-app/test.yml
-  - put: deploy-cg-uaa-invite-app
+    file: cg-uaa-invite-staging-branch/test.yml
+    input_mapping:
+      cg-uaa-invite-app: cg-uaa-invite-staging-branch
+  - put: green.18f.gov
     params:
-      manifest: cg-uaa-invite-app/manifest.yml
-      path: cg-uaa-invite-app
+      manifest: cg-uaa-invite-staging-branch/manifest.yml
+      path: cg-uaa-invite-staging-branch
       current_app_name: invite
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url}}
-        UAA_CLIENT_ID: {{uaa-client-id}}
-        UAA_CLIENT_SECRET: {{uaa-client-secret}}
+        UAA_BASE_URL: {{uaa-base-url-staging}}
+        UAA_CLIENT_ID: {{uaa-client-id-staging}}
+        UAA_CLIENT_SECRET: {{uaa-client-secret-staging}}
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: {{smtp-host}}
         SMTP_PORT: {{smtp-port}}
         SMTP_USER: {{smtp-user}}
         SMTP_PASS: {{smtp-pass}}
         SMTP_FROM: {{smtp-from}}
-        BRANDING_COMPANY_NAME: {{branding-company-name}}
+        BRANDING_COMPANY_NAME: {{branding-company-name-staging}}
     on_failure:
       put: slack
       params:
         text: |
-          :x: FAILED to deploy cg-uaa-invite on {{cf-api-url}}
+          :x: FAILED to deploy cg-uaa-invite to Staging
           <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
@@ -35,25 +37,85 @@ jobs:
       put: slack
       params:
         text: |
-          :white_check_mark: Successfully deployed cg-uaa-invite on {{cf-api-url}}
+          :white_check_mark: Successfully deployed cg-uaa-invite to Staging
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+
+- name: deploy-production
+  plan:
+  - get: cg-uaa-invite-master-branch
+    trigger: true
+  - task: test
+    file: cg-uaa-invite-master-branch/test.yml
+    input_mapping:
+      cg-uaa-invite-app: cg-uaa-invite-master-branch
+
+  - put: cloud.gov
+    params:
+      manifest: cg-uaa-invite-master-branch/manifest_production.yml
+      path: cg-uaa-invite-master-branch
+      current_app_name: invite
+      environment_variables:
+        UAA_BASE_URL: {{uaa-base-url-production}}
+        UAA_CLIENT_ID: {{uaa-client-id-production}}
+        UAA_CLIENT_SECRET: {{uaa-client-secret-production}}
+        UAA_VERIFY_TLS: "true"
+        SMTP_HOST: {{smtp-host}}
+        SMTP_PORT: {{smtp-port}}
+        SMTP_USER: {{smtp-user}}
+        SMTP_PASS: {{smtp-pass}}
+        SMTP_FROM: {{smtp-from}}
+        BRANDING_COMPANY_NAME: {{branding-company-name-production}}
+    on_failure:
+      put: slack
+      params:
+        text: |
+          :x: FAILED to deploy cg-uaa-invite to Production
+          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+        channel: {{slack-channel}}
+        username: {{slack-username}}
+        icon_url: {{slack-icon-url}}
+    on_success:
+      put: slack
+      params:
+        text: |
+          :white_check_mark: Successfully deployed cg-uaa-invite to Production
           <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
         icon_url: {{slack-icon-url}}
 
 resources:
-- name: cg-uaa-invite-app
+- name: cg-uaa-invite-staging-branch
   type: git
   source:
-    uri: {{cg-uaa-invite-app-git-url}}
-    branch: {{cg-uaa-invite-app-git-branch}}
+    uri: {{cg-uaa-invite-git-url}}
+    branch: staging
 
-- name: deploy-cg-uaa-invite-app
+- name: green.18f.gov
   type: cf
   source:
-    api: {{cf-api-url}}
-    username: {{cf-deploy-username}}
-    password: {{cf-deploy-password}}
+    api: {{cf-api-url-staging}}
+    username: {{cf-deploy-username-staging}}
+    password: {{cf-deploy-password-staging}}
+    organization: {{cf-organization}}
+    space: {{cf-space}}
+    skip_cert_check: false
+
+- name: cg-uaa-invite-master-branch
+  type: git
+  source:
+    uri: {{cg-uaa-invite-git-url}}
+    branch: master
+
+- name: cloud.gov
+  type: cf
+  source:
+    api: {{cf-api-url-production}}
+    username: {{cf-deploy-username-production}}
+    password: {{cf-deploy-password-production}}
     organization: {{cf-organization}}
     space: {{cf-space}}
     skip_cert_check: false

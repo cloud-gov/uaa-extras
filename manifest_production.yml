@@ -1,0 +1,5 @@
+---
+inherit: manifest.yml
+applications:
+- name: invite
+  domain: cloud.gov
