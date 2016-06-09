@@ -5,12 +5,12 @@ jobs:
   - get: cg-uaa-invite-staging-branch
     trigger: true
   - task: test
-    file: cg-uaa-invite-staging-branch/test.yml
+    file: cg-uaa-invite-staging-branch/ci/test.yml
     input_mapping:
       cg-uaa-invite-app: cg-uaa-invite-staging-branch
-  - put: green.18f.gov
+  - put: cloud-gov-staging
     params:
-      manifest: cg-uaa-invite-staging-branch/manifest.yml
+      manifest: {{cf-manifest-staging}}
       path: cg-uaa-invite-staging-branch
       current_app_name: invite
       environment_variables:
@@ -29,7 +29,7 @@ jobs:
       params:
         text: |
           :x: FAILED to deploy cg-uaa-invite to Staging
-          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
         icon_url: {{slack-icon-url}}
@@ -38,7 +38,7 @@ jobs:
       params:
         text: |
           :white_check_mark: Successfully deployed cg-uaa-invite to Staging
-          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
         icon_url: {{slack-icon-url}}
@@ -48,13 +48,13 @@ jobs:
   - get: cg-uaa-invite-master-branch
     trigger: true
   - task: test
-    file: cg-uaa-invite-master-branch/test.yml
+    file: cg-uaa-invite-master-branch/ci/test.yml
     input_mapping:
       cg-uaa-invite-app: cg-uaa-invite-master-branch
 
-  - put: cloud.gov
+  - put: cloud-gov-production
     params:
-      manifest: cg-uaa-invite-master-branch/manifest_production.yml
+      manifest: {{cf-manifest-production}}
       path: cg-uaa-invite-master-branch
       current_app_name: invite
       environment_variables:
@@ -73,7 +73,7 @@ jobs:
       params:
         text: |
           :x: FAILED to deploy cg-uaa-invite to Production
-          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
         icon_url: {{slack-icon-url}}
@@ -82,7 +82,7 @@ jobs:
       params:
         text: |
           :white_check_mark: Successfully deployed cg-uaa-invite to Production
-          <https://ci.cloud.gov/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
         channel: {{slack-channel}}
         username: {{slack-username}}
         icon_url: {{slack-icon-url}}
@@ -94,7 +94,7 @@ resources:
     uri: {{cg-uaa-invite-git-url}}
     branch: staging
 
-- name: green.18f.gov
+- name: cloud-gov-staging
   type: cf
   source:
     api: {{cf-api-url-staging}}
@@ -110,7 +110,7 @@ resources:
     uri: {{cg-uaa-invite-git-url}}
     branch: master
 
-- name: cloud.gov
+- name: cloud-gov-production
   type: cf
   source:
     api: {{cf-api-url-production}}
