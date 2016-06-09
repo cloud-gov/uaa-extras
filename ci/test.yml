@@ -10,4 +10,4 @@ inputs:
   - name: cg-uaa-invite-app
 
 run:
-  path: ./cg-uaa-invite-app/test.sh
+  path: ./cg-uaa-invite-app/ci/test.sh
