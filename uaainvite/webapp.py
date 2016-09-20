@@ -7,6 +7,8 @@ import os
 import smtplib
 from uaainvite.clients import UAAClient, UAAError
 
+# TODO Fix: This super broken security thing
+
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 
 # key = connfiguration variable to be loaded from the environment
