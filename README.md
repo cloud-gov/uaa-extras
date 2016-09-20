@@ -1,4 +1,4 @@
-# UAA Invites
+# UAA Invites [![Code Climate](https://codeclimate.com/github/18F/cg-uaa-invite/badges/gpa.svg)](https://codeclimate.com/github/18F/cg-uaa-invite)
 
 This application recreates the invite functionality that previously existed in UAA by using the /invite_users API endpoint.
 
