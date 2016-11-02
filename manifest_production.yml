@@ -3,4 +3,3 @@ applications:
 - name: invite
   no-hostname: true
   domain: invite.cloud.gov
-  command: gunicorn -w 4 uaainvite:app
