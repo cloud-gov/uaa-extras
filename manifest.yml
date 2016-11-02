@@ -1,7 +1,6 @@
 ---
 applications:
 - name: invite
-  command: gunicorn -w 4 uaainvite:app
   host: invite
 # env:
 #   UAA_BASE_URL: https://uaa.bosh-lite.com
