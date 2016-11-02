@@ -2,16 +2,16 @@
 jobs:
 - name: deploy-staging
   plan:
-  - get: cg-uaa-invite-staging-branch
+  - get: cg-uaa-invite-app
     trigger: true
   - task: test
-    file: cg-uaa-invite-staging-branch/ci/test.yml
+    file: cg-uaa-invite-app/ci/test.yml
     input_mapping:
-      cg-uaa-invite-app: cg-uaa-invite-staging-branch
+      cg-uaa-invite-app: cg-uaa-invite-app
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
-      path: cg-uaa-invite-staging-branch
+      path: cg-uaa-invite-app
       current_app_name: invite
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
@@ -45,17 +45,18 @@ jobs:
 
 - name: deploy-production
   plan:
-  - get: cg-uaa-invite-master-branch
+  - get: cg-uaa-invite-app
     trigger: true
+    passed: [deploy-staging]
   - task: test
-    file: cg-uaa-invite-master-branch/ci/test.yml
+    file: cg-uaa-invite-app/ci/test.yml
     input_mapping:
-      cg-uaa-invite-app: cg-uaa-invite-master-branch
+      cg-uaa-invite-app: cg-uaa-invite-app
 
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
-      path: cg-uaa-invite-master-branch
+      path: cg-uaa-invite-app
       current_app_name: invite
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
@@ -88,11 +89,11 @@ jobs:
         icon_url: {{slack-icon-url}}
 
 resources:
-- name: cg-uaa-invite-staging-branch
+- name: cg-uaa-invite-app
   type: git
   source:
     uri: {{cg-uaa-invite-git-url}}
-    branch: staging
+    branch: master
 
 - name: cloud-gov-staging
   type: cf
@@ -103,12 +104,6 @@ resources:
     organization: {{cf-organization}}
     space: {{cf-space}}
     skip_cert_check: false
-
-- name: cg-uaa-invite-master-branch
-  type: git
-  source:
-    uri: {{cg-uaa-invite-git-url}}
-    branch: master
 
 - name: cloud-gov-production
   type: cf
