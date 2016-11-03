@@ -13,3 +13,5 @@ applications:
 #   SMTP_PASS: if-needed
 #   SMTP_FROM: no-reply@example.com
 #   BRANDING_COMPANY_NAME: Testoku
+#   IDP_PROVIDER_ORIGIN: my.idp.com
+#   IDP_PROVIDER_URL: https://idp.bosh-lite.com
