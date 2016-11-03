@@ -190,6 +190,31 @@ class UAAClient(object):
 
         return self._request('/invite_users', 'POST', params={'redirect_uri': redirect_uri}, body={'emails': email})
 
+    def create_users(self, email, someValue):
+        """
+        Used to finally create a user after we have verified that we emailed them.
+            1. First step is to verify that the user is in UAA with `verify_users`
+            2. Once verified, we can go ahead and create them with required params from below.
+
+        Required params
+        userName	String	Required	User name of the user, typically an email address.
+        password	String	Required	User’s password.
+        name	Object	Required	A map with the user’s first name and last name.
+        name.familyName	String	Required	The user’s last name.
+        name.givenName	String	Required	The user’s first name.
+        emails	Array	Required	The user’s email addresses.
+        emails[].value	String	Required	The email address.
+        emails[].primary	Boolean	Required	Set to true if this is the user’s primary email address.
+        active	Boolean	Optional (defaults to true)	If this user is active. False is a soft delete. The user will not be able to log in.
+        verified	Boolean	Optional (defaults to false)	True, if this user has verified her/his email address.
+        origin	String	Optional (defaults to "uaa")	The alias of the identity provider that authenticated this user. 'uaa’ is an internal UAA user.
+        """
+    def verify_users(self, userId):
+        """
+        Used to verify a user coming back from an email link
+        """
+
+
     def oauth_token(self, code, client_id, client_secret):
         """Use an authorization code to retrieve a bearer token from UAA
 
