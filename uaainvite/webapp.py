@@ -249,6 +249,24 @@ def create_app(env=os.environ):
 
         return render_template('error/internal.html'), 500
 
+    @app.route('/first-login', methods=['GET'])
+    def first_login():
+
+        # check our token, and expirary date
+        token = session.get('UAA_TOKEN', None)
+
+        decoded_token = g.uaac.decode_access_token(token)
+
+        user = g.uaac.get_user(decoded_token['user_id'])
+
+        if user['origin'] == 'uaa':
+            user['origin'] = app.config['IDP_PROVIDER_ORIGIN']
+            user['externalId'] = user['username']
+            g.uaac.put_user(user)
+            redirect(app.config['IDP_PROVIDER_URL'])
+        else:
+            redirect(app.config['UAA_BASE_URL'])
+
     @app.route('/logout')
     def logout():
         session.clear()

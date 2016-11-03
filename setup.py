@@ -20,7 +20,8 @@ setup(
         'gunicorn',
         'flask',
         'requests',
-        'email_validator'
+        'email_validator',
+        'pyjwt'
     ],
 
     test_suite='uaainvite.tests',
