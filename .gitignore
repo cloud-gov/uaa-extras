@@ -58,3 +58,4 @@ target/
 
 # secrets!
 uaapp/settings.py
+credentials.yml
