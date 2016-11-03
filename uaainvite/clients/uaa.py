@@ -7,6 +7,7 @@ only supports listing users and IDPs, retrieving a single user, updating a singl
 
 from posixpath import join as urljoin
 import json
+import jwt
 import requests
 from requests.auth import HTTPBasicAuth
 
@@ -189,6 +190,19 @@ class UAAClient(object):
             email = [email]
 
         return self._request('/invite_users', 'POST', params={'redirect_uri': redirect_uri}, body={'emails': email})
+
+    def decode_access_token(self, token):
+        """Decodes an access token
+
+        Args:
+            token(str): An UUA access token
+
+        Returns:
+            dict: An object representing the decoded access token.
+
+        """
+
+        return json.loads(jwt.decode(token))
 
     def oauth_token(self, code, client_id, client_secret):
         """Use an authorization code to retrieve a bearer token from UAA

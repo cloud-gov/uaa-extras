@@ -21,7 +21,9 @@ CONFIG_KEYS = {
     'SMTP_FROM': 'no-reply@example.com',
     'SMTP_USER': None,
     'SMTP_PASS': None,
-    'BRANDING_COMPANY_NAME': 'Cloud Foundry'
+    'BRANDING_COMPANY_NAME': 'Cloud Foundry',
+    'IDP_PROVIDER_ORIGIN': 'https://idp.bosh-lite.com',
+    'IDP_PROVIDER_URL': 'my.idp.com'
 }
 
 
@@ -246,6 +248,28 @@ def create_app(env=os.environ):
             logging.exception('An error occured during the invite process')
 
         return render_template('error/internal.html'), 500
+
+    @app.route('/first-login', methods=['GET'])
+    def first_login():
+
+        # check our token, and expirary date
+        token = session.get('UAA_TOKEN', None)
+
+        try:
+            decoded_token = g.uaac.decode_access_token(token)
+        except:
+            logging.exception('An invalid access token was decoded with jwt')
+            return render_template('error/token_validation.html'), 401
+
+        user = g.uaac.get_user(decoded_token['user_id'])
+
+        if user['origin'] == 'uaa':
+            user['origin'] = app.config['IDP_PROVIDER_ORIGIN']
+            user['externalId'] = user['username']
+            g.uaac.put_user(user)
+            redirect(app.config['IDP_PROVIDER_URL'])
+        else:
+            redirect(app.config['UAA_BASE_URL'])
 
     @app.route('/logout')
     def logout():
