@@ -144,7 +144,7 @@ def create_app(env=os.environ):
             return redirect('{0}/oauth/authorize?client_id={1}&response_type=code&redirect_uri={2}'.format(
                 app.config['UAA_BASE_URL'],
                 app.config['UAA_CLIENT_ID'],
-                os.path.join(request.url, 'oauth', 'login')
+                os.path.join(request.url_root, 'oauth', 'login')
 
             ))
 
