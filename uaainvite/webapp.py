@@ -21,7 +21,9 @@ CONFIG_KEYS = {
     'SMTP_FROM': 'no-reply@example.com',
     'SMTP_USER': None,
     'SMTP_PASS': None,
-    'BRANDING_COMPANY_NAME': 'Cloud Foundry'
+    'BRANDING_COMPANY_NAME': 'Cloud Foundry',
+    'IDP_PROVIDER_ORIGIN': 'https://idp.bosh-lite.com',
+    'IDP_PROVIDER_URL': 'my.idp.com'
 }
 
 

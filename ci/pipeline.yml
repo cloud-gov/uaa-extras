@@ -24,6 +24,8 @@ jobs:
         SMTP_PASS: {{smtp-pass}}
         SMTP_FROM: {{smtp-from}}
         BRANDING_COMPANY_NAME: {{branding-company-name-staging}}
+        IDP_PROVIDER_ORIGIN: {{idp-provider-origin}}
+        IDP_PROVIDER_URL: {{idp-provider-url}}
     on_failure:
       put: slack
       params:
@@ -69,6 +71,8 @@ jobs:
         SMTP_PASS: {{smtp-pass}}
         SMTP_FROM: {{smtp-from}}
         BRANDING_COMPANY_NAME: {{branding-company-name-production}}
+        IDP_PROVIDER_ORIGIN: {{idp-provider-origin}}
+        IDP_PROVIDER_URL: {{idp-provider-url}}
     on_failure:
       put: slack
       params:
