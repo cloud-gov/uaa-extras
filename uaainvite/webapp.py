@@ -218,7 +218,7 @@ def create_app(env=os.environ):
 
         # email is good, lets invite them
         try:
-            invite = g.uaac.invite_users(email, app.config['UAA_BASE_URL'])
+            invite = g.uaac.invite_users(email, request.url + '/first-login')
 
             if len(invite['failed_invites']):
                 raise RuntimeError('UAA failed to invite the user.')
