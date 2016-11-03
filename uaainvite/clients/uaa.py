@@ -202,12 +202,7 @@ class UAAClient(object):
 
         """
 
-        try:
-            decoded_token = jwt.decode(token)
-            return json.loads(decoded_token)
-        except:
-            logging.exception('An invalid access token was decoded with jwt')
-            return render_template('error/token_validation.html'), 401
+        return json.loads(jwt.decode(token))
 
     def oauth_token(self, code, client_id, client_secret):
         """Use an authorization code to retrieve a bearer token from UAA
