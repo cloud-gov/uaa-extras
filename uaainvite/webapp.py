@@ -141,9 +141,11 @@ def create_app(env=os.environ):
             # if not forget the token, it's bad (if we have one)
             session.clear()
 
-            return redirect('{0}/oauth/authorize?client_id={1}&response_type=code'.format(
+            return redirect('{0}/oauth/authorize?client_id={1}&response_type=code&redirect_uri={3}'.format(
                 app.config['UAA_BASE_URL'],
-                app.config['UAA_CLIENT_ID']
+                app.config['UAA_CLIENT_ID'],
+                os.path.join(request.url, 'oauth', 'login')
+
             ))
 
         # if it's a POST request, that's not to oauth_login
