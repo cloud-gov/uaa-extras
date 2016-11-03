@@ -255,7 +255,11 @@ def create_app(env=os.environ):
         # check our token, and expirary date
         token = session.get('UAA_TOKEN', None)
 
-        decoded_token = g.uaac.decode_access_token(token)
+        try:
+            decoded_token = g.uaac.decode_access_token(token)
+        except:
+            logging.exception('An invalid access token was decoded with jwt')
+            return render_template('error/token_validation.html'), 401
 
         user = g.uaac.get_user(decoded_token['user_id'])
 
