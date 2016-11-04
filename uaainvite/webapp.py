@@ -103,6 +103,15 @@ def create_app(env=os.environ):
     if env.get('ENV') == 'production':
         Talisman(app)
 
+    @app.after_request
+    def set_headers(response):
+        response.cache_control.no_cache = True
+        response.cache_control.no_store = True
+        response.cache_control.must_revalidate = True
+        response.cache_control.private = True
+        response.headers['Pragma'] = 'no-cache'
+        return response
+
     # copy these environment variables into app.config
 
     for ck, default in CONFIG_KEYS.items():
