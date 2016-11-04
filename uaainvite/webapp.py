@@ -156,11 +156,9 @@ def create_app(env=os.environ):
             # if not forget the token, it's bad (if we have one)
             session.clear()
 
-            return redirect('{0}/oauth/authorize?client_id={1}&response_type=code&redirect_uri={2}'.format(
+            return redirect('{0}/oauth/authorize?client_id={1}&response_type=code'.format(
                 app.config['UAA_BASE_URL'],
-                app.config['UAA_CLIENT_ID'],
-                os.path.join(request.url_root, 'oauth', 'login')
-
+                app.config['UAA_CLIENT_ID']
             ))
 
         # if it's a POST request, that's not to oauth_login
@@ -180,6 +178,9 @@ def create_app(env=os.environ):
         """Called at the end of the oauth flow.  We'll receive an auth code from UAA and use it to
         retrieve a bearer token that we can use to actually do stuff
         """
+
+        if 'first-login' in request.args:
+            return redirect(url_for('first_login'))
 
         try:
             # remove any old tokens
@@ -235,7 +236,9 @@ def create_app(env=os.environ):
 
         # email is good, lets invite them
         try:
-            invite = g.uaac.invite_users(email, os.path.join(request.url, 'first-login'))
+            redirect_uri = os.path.join(request.url_root, 'oauth', 'login') + '?first-login'
+            logging.info('redirect for invite: {0}'.format(redirect_uri))
+            invite = g.uaac.invite_users(email, redirect_uri)
 
             if len(invite['failed_invites']):
                 raise RuntimeError('UAA failed to invite the user.')
