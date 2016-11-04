@@ -2,7 +2,8 @@
 applications:
 - name: invite
   host: invite
-# env:
+env:
+  ENV: production
 #   UAA_BASE_URL: https://uaa.bosh-lite.com
 #   UAA_CLIENT_ID: foo
 #   UAA_CLIENT_SECRET: bar

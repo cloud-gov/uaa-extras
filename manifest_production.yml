@@ -3,3 +3,5 @@ applications:
 - name: invite
   no-hostname: true
   domain: invite.cloud.gov
+env:
+  ENV: production
