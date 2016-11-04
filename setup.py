@@ -21,7 +21,8 @@ setup(
         'flask',
         'requests',
         'email_validator',
-        'pyjwt'
+        'pyjwt',
+        'talisman'
     ],
 
     test_suite='uaainvite.tests',

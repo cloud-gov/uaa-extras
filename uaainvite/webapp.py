@@ -1,10 +1,13 @@
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 import codecs
-from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 import logging
 import os
 import smtplib
+
+from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from talisman import Talisman
+
 from uaainvite.clients import UAAClient, UAAError
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -96,6 +99,9 @@ def create_app(env=os.environ):
     app = Flask(__name__)
     app.secret_key = '\x08~m\xde\x87\xda\x17\x7f!\x97\xdf_@%\xf1{\xaa\xd8)\xcbU\xfe\x94\xc4'
     app.jinja_env.globals['csrf_token'] = generate_csrf_token
+
+    if env.get('ENV') == 'production':
+        Talisman(app)
 
     # copy these environment variables into app.config
 
