@@ -17,12 +17,12 @@ setup(
     packages=find_packages(),
 
     install_requires=[
-        'gunicorn',
-        'flask',
-        'requests',
-        'email_validator',
-        'pyjwt',
-        'talisman'
+        'gunicorn==19.6.0',
+        'flask==0.11.1',
+        'requests==2.11.1',
+        'email_validator==1.0.1',
+        'pyjwt==1.4.2',
+        'talisman==0.1.0'
     ],
 
     test_suite='uaainvite.tests',
