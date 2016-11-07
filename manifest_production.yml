@@ -3,5 +3,6 @@ applications:
 - name: invite
   no-hostname: true
   domain: invite.cloud.gov
+  buildpack: python_buildpack
 env:
   ENV: production
