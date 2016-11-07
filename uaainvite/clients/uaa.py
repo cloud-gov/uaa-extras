@@ -204,8 +204,8 @@ class UAAClient(object):
         payload = token.split('.')[1]
         missing_padding = len(payload) % 4
         if missing_padding != 0:
-            payload += b'=' * (4 - missing_padding)
-        decoded_token = base64.b64decode(payload)
+            payload += '=' * (4 - missing_padding)
+        decoded_token = str(base64.b64decode(payload), 'utf-8')
         return json.loads(decoded_token)
 
     def oauth_token(self, code, client_id, client_secret):
