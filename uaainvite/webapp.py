@@ -117,7 +117,6 @@ def create_app(env=os.environ):
         }
         Talisman(app, content_security_policy=csp)
 
-
     @app.after_request
     def set_headers(response):
         response.cache_control.no_cache = True
@@ -128,7 +127,6 @@ def create_app(env=os.environ):
         return response
 
     # copy these environment variables into app.config
-
     for ck, default in CONFIG_KEYS.items():
         app.config[ck] = env.get(ck, default)
 
