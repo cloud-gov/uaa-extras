@@ -179,7 +179,8 @@ def create_app(env=os.environ):
         retrieve a bearer token that we can use to actually do stuff
         """
 
-        if 'first-login' in request.args:
+        is_invitation = request.referrer and request.referrer.find('invitations/accept') != 1
+        if is_invitation and 'code' not in request.args:
             return redirect(url_for('first_login'))
 
         try:
@@ -205,6 +206,8 @@ def create_app(env=os.environ):
             # stash the stuff we care about
             session['UAA_TOKEN'] = token['access_token']
             session['UAA_TOKEN_SCOPES'] = token['scope'].split(' ')
+            if is_invitation:
+                return redirect(url_for('first_login'))
             return redirect(url_for('index'))
         except UAAError:
             logging.exception('An invalid authorization_code was received from UAA')
@@ -236,7 +239,7 @@ def create_app(env=os.environ):
 
         # email is good, lets invite them
         try:
-            redirect_uri = os.path.join(request.url_root, 'oauth', 'login') + '?first-login'
+            redirect_uri = os.path.join(request.url_root, 'oauth', 'login')
             logging.info('redirect for invite: {0}'.format(redirect_uri))
             invite = g.uaac.invite_users(email, redirect_uri)
 
@@ -278,18 +281,18 @@ def create_app(env=os.environ):
         try:
             decoded_token = g.uaac.decode_access_token(token)
         except:
-            logging.exception('An invalid access token was decoded with jwt')
+            logging.exception('An invalid access token was decoded')
             return render_template('error/token_validation.html'), 401
 
         user = g.uaac.get_user(decoded_token['user_id'])
-
+        logging.info('USER: {0}'.format(user))
         if user['origin'] == 'uaa':
             user['origin'] = app.config['IDP_PROVIDER_ORIGIN']
-            user['externalId'] = user['username']
+            user['externalId'] = user['userName']
             g.uaac.put_user(user)
-            redirect(app.config['IDP_PROVIDER_URL'])
+            return redirect(app.config['IDP_PROVIDER_URL'])
         else:
-            redirect(app.config['UAA_BASE_URL'])
+            return redirect(app.config['UAA_BASE_URL'])
 
     @app.route('/logout')
     def logout():
