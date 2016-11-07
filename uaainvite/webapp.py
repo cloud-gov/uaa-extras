@@ -101,7 +101,21 @@ def create_app(env=os.environ):
     app.jinja_env.globals['csrf_token'] = generate_csrf_token
 
     if env.get('ENV') == 'production':
-        Talisman(app)
+        csp = {
+            'default-src': '\'self\'',
+            'img-src': '*',
+            'style-src': [
+                '\'self\'',
+                '*.cloud.gov',
+                '*.googleapis.com',
+                '\'unsafe-inline\''
+            ],
+            'font-src': [
+                '\'self\'',
+                'fonts.gstatic.com'
+            ]
+        }
+        Talisman(app, content_security_policy=csp)
 
     @app.after_request
     def set_headers(response):
@@ -113,7 +127,6 @@ def create_app(env=os.environ):
         return response
 
     # copy these environment variables into app.config
-
     for ck, default in CONFIG_KEYS.items():
         app.config[ck] = env.get(ck, default)
 
@@ -156,11 +169,9 @@ def create_app(env=os.environ):
             # if not forget the token, it's bad (if we have one)
             session.clear()
 
-            return redirect('{0}/oauth/authorize?client_id={1}&response_type=code&redirect_uri={2}'.format(
+            return redirect('{0}/oauth/authorize?client_id={1}&response_type=code'.format(
                 app.config['UAA_BASE_URL'],
-                app.config['UAA_CLIENT_ID'],
-                os.path.join(request.url_root, 'oauth', 'login')
-
+                app.config['UAA_CLIENT_ID']
             ))
 
         # if it's a POST request, that's not to oauth_login
@@ -180,6 +191,10 @@ def create_app(env=os.environ):
         """Called at the end of the oauth flow.  We'll receive an auth code from UAA and use it to
         retrieve a bearer token that we can use to actually do stuff
         """
+
+        is_invitation = request.referrer and request.referrer.find('invitations/accept') != 1
+        if is_invitation and 'code' not in request.args:
+            return redirect(url_for('first_login'))
 
         try:
             # remove any old tokens
@@ -204,6 +219,8 @@ def create_app(env=os.environ):
             # stash the stuff we care about
             session['UAA_TOKEN'] = token['access_token']
             session['UAA_TOKEN_SCOPES'] = token['scope'].split(' ')
+            if is_invitation:
+                return redirect(url_for('first_login'))
             return redirect(url_for('index'))
         except UAAError:
             logging.exception('An invalid authorization_code was received from UAA')
@@ -235,7 +252,9 @@ def create_app(env=os.environ):
 
         # email is good, lets invite them
         try:
-            invite = g.uaac.invite_users(email, os.path.join(request.url, 'first-login'))
+            redirect_uri = os.path.join(request.url_root, 'oauth', 'login')
+            logging.info('redirect for invite: {0}'.format(redirect_uri))
+            invite = g.uaac.invite_users(email, redirect_uri)
 
             if len(invite['failed_invites']):
                 raise RuntimeError('UAA failed to invite the user.')
@@ -275,18 +294,18 @@ def create_app(env=os.environ):
         try:
             decoded_token = g.uaac.decode_access_token(token)
         except:
-            logging.exception('An invalid access token was decoded with jwt')
+            logging.exception('An invalid access token was decoded')
             return render_template('error/token_validation.html'), 401
 
         user = g.uaac.get_user(decoded_token['user_id'])
-
+        logging.info('USER: {0}'.format(user))
         if user['origin'] == 'uaa':
             user['origin'] = app.config['IDP_PROVIDER_ORIGIN']
-            user['externalId'] = user['username']
+            user['externalId'] = user['userName']
             g.uaac.put_user(user)
-            redirect(app.config['IDP_PROVIDER_URL'])
+            return redirect(app.config['IDP_PROVIDER_URL'])
         else:
-            redirect(app.config['UAA_BASE_URL'])
+            return redirect(app.config['UAA_BASE_URL'])
 
     @app.route('/logout')
     def logout():

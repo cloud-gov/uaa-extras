@@ -274,7 +274,6 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 302
             target = app.config['UAA_BASE_URL'] + '/oauth/authorize?client_id=' + app.config['UAA_CLIENT_ID']
             target += '&response_type=code'
-            target += '&redirect_uri=http://localhost/oauth/login'
             assert rv.location == target
 
     @patch('uaainvite.webapp.UAAClient')
@@ -570,3 +569,12 @@ class TestUAAClient(unittest.TestCase):
         assert isinstance(kwargs['auth'], HTTPBasicAuth)
         assert kwargs['auth'].username == 'bar'
         assert kwargs['auth'].password == 'baz'
+
+    def test_decode_access_token(self):
+        """decode_access_token() does a base64 decode of the JWT auth token data to get profile information"""
+        uaac = UAAClient('http://example.com', 'foo', False)
+        token = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImxlZ2FjeS10b2tlbi1rZXkiLCJ0eXAiOiJKV1QifQ.eyJqdGkiOiI5OWNiZGM4ZGE2MTg0ZmMyODgxYzUwYWNhYzJjZTJjNiIsInN1YiI6ImFkbWluIiwiYXV0aG9yaXRpZXMiOlsiY2xpZW50cy5yZWFkIiwicGFzc3dvcmQud3JpdGUiLCJjbGllbnRzLnNlY3JldCIsImNsaWVudHMud3JpdGUiLCJ1YWEuYWRtaW4iLCJzY2ltLndyaXRlIiwic2NpbS5yZWFkIl0sInNjb3BlIjpbImNsaWVudHMucmVhZCIsInBhc3N3b3JkLndyaXRlIiwiY2xpZW50cy5zZWNyZXQiLCJjbGllbnRzLndyaXRlIiwidWFhLmFkbWluIiwic2NpbS53cml0ZSIsInNjaW0ucmVhZCJdLCJjbGllbnRfaWQiOiJhZG1pbiIsImNpZCI6ImFkbWluIiwiYXpwIjoiYWRtaW4iLCJncmFudF90eXBlIjoiY2xpZW50X2NyZWRlbnRpYWxzIiwicmV2X3NpZyI6ImQ1NjA4NGZkIiwiaWF0IjoxNDc4Mjc5NTM3LCJleHAiOjE0NzgzMjI3MzcsImlzcyI6Imh0dHBzOi8vdWFhLmNsb3VkLmdvdi9vYXV0aC90b2tlbiIsInppZCI6InVhYSIsImF1ZCI6WyJzY2ltIiwicGFzc3dvcmQiLCJjbGllbnRzIiwidWFhIiwiYWRtaW4iXX0.uJABuxWIc3p-p3zJol1i2BHBfDkKXnpIcCFbOvDg8WGdbrufhFZjk78uRiPk8sw9I0reUbjyLeo0-0Eqg-x49pVaNpNeheDYaz2oc_CMO13MPXlCtVHdEGnq4e6NV21wxTMVmrLhP0QscDRctnITUY7c-ywMsUrXgv7VFj-9GPZjfr-PyG01OxStrAfe06kTXKbEHIHFgfidrDYA_pTnPO1LPz5HllVQUkAdlIIEx6VshBW6_4l2Sm0nof3cVOxqMUUB6xLSJARfudPrCmFeUIdnICl85T00-1kOe2YUMm9xRHS4hnBYbM6IU5JDmzvnz3ANEM2Uzmzv9JzkJjboIQ"  # noqa: E501
+        profile = uaac.decode_access_token(token)
+
+        assert 'scope' in profile
+        assert 'exp' in profile
