@@ -101,7 +101,22 @@ def create_app(env=os.environ):
     app.jinja_env.globals['csrf_token'] = generate_csrf_token
 
     if env.get('ENV') == 'production':
-        Talisman(app)
+        csp = {
+            'default-src': '\'self\'',
+            'img-src': '*',
+            'style-src': [
+                '\'self\'',
+                '*.cloud.gov',
+                '*.googleapis.com',
+                '\'unsafe-inline\''
+            ],
+            'font-src': [
+                '\'self\'',
+                'fonts.gstatic.com'
+            ]
+        }
+        Talisman(app, content_security_policy=csp)
+
 
     @app.after_request
     def set_headers(response):
