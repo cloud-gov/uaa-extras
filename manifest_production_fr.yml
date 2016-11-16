@@ -1,0 +1,7 @@
+---
+applications:
+- name: invite
+  domain: fr.cloud.gov
+  buildpack: python_buildpack
+env:
+  ENV: production
