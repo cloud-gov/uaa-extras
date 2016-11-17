@@ -38,3 +38,13 @@ You can also run it locally in debug mode:
 
 	# set configuration env vars as needed
 	./debug.py
+
+### Configuring UAA Invites to leverage cloud.gov IdP
+
+Because of the redirect that occurs for setting up cloud.gov multi-factor
+authentication, the `IDP_PROVIDER_URL` must match what is coming from the UAA
+login screen under `cloud.gov`.
+
+![cloud.gov login button](./docs/cloud-gov-idp-screenshot.png)
+
+#### A bit on the `/first-login` route
