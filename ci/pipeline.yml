@@ -6,8 +6,6 @@ jobs:
     trigger: true
   - task: test
     file: cg-uaa-invite-app/ci/test.yml
-    input_mapping:
-      cg-uaa-invite-app: cg-uaa-invite-app
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
@@ -26,24 +24,24 @@ jobs:
         BRANDING_COMPANY_NAME: {{branding-company-name-staging}}
         IDP_PROVIDER_ORIGIN: {{idp-provider-origin-staging}}
         IDP_PROVIDER_URL: {{idp-provider-url-staging}}
-    on_failure:
-      put: slack
-      params:
-        text: |
-          :x: FAILED to deploy cg-uaa-invite to Staging
-          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: {{slack-channel}}
-        username: {{slack-username}}
-        icon_url: {{slack-icon-url}}
-    on_success:
-      put: slack
-      params:
-        text: |
-          :white_check_mark: Successfully deployed cg-uaa-invite to Staging
-          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: {{slack-channel}}
-        username: {{slack-username}}
-        icon_url: {{slack-icon-url}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-invite to Staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-invite to Staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
 
 - name: deploy-production
   plan:
@@ -52,9 +50,6 @@ jobs:
     passed: [deploy-staging]
   - task: test
     file: cg-uaa-invite-app/ci/test.yml
-    input_mapping:
-      cg-uaa-invite-app: cg-uaa-invite-app
-
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
@@ -73,24 +68,24 @@ jobs:
         BRANDING_COMPANY_NAME: {{branding-company-name-production}}
         IDP_PROVIDER_ORIGIN: {{idp-provider-origin-production}}
         IDP_PROVIDER_URL: {{idp-provider-url-production}}
-    on_failure:
-      put: slack
-      params:
-        text: |
-          :x: FAILED to deploy cg-uaa-invite to Production
-          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: {{slack-channel}}
-        username: {{slack-username}}
-        icon_url: {{slack-icon-url}}
-    on_success:
-      put: slack
-      params:
-        text: |
-          :white_check_mark: Successfully deployed cg-uaa-invite to Production
-          <$ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: {{slack-channel}}
-        username: {{slack-username}}
-        icon_url: {{slack-icon-url}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-invite to Production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-invite to Production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
 
 resources:
 - name: cg-uaa-invite-app
