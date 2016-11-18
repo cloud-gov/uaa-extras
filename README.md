@@ -1,10 +1,10 @@
-# UAA Invites [![Code Climate](https://codeclimate.com/github/18F/cg-uaa-invite/badges/gpa.svg)](https://codeclimate.com/github/18F/cg-uaa-invite)
+# UAA Extras [![Code Climate](https://codeclimate.com/github/18F/cg-uaa-extras/badges/gpa.svg)](https://codeclimate.com/github/18F/cg-uaa-extras)
 
 This application recreates the invite functionality that previously existed in UAA by using the /invite_users API endpoint.
 
 ### Installing the App
 
-#### Step One: Determine the URL for your instance of UAA Invites
+#### Step One: Determine the URL for your instance of UAA Extras
 
 You'll need to know where the app is going to be hosted, so you can tell UAA about it in the next step.
 
@@ -14,7 +14,7 @@ For example, if you'll be deploying into Cloudfoundry on BOSH-lite your url woul
 
 This application uses oauth to perform actions on your behalf in UAA.  To add a new oauth client in UAA, run the following command:
 
-	uaac client add [your-client-id] --name "UAA Invites" --scope "scim.invite" --authorized_grant_types "authorization_code" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
+	uaac client add [your-client-id] --name "UAA Extras" --scope "scim.invite" --authorized_grant_types "authorization_code" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
 
 Remember the client-id and client-secret, you'll need them in the next step
 

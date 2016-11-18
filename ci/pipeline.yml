@@ -2,14 +2,14 @@
 jobs:
 - name: deploy-staging
   plan:
-  - get: cg-uaa-invite-app
+  - get: cg-uaa-extras-app
     trigger: true
   - task: test
-    file: cg-uaa-invite-app/ci/test.yml
+    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
-      path: cg-uaa-invite-app
+      path: cg-uaa-extras-app
       current_app_name: invite
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
@@ -28,7 +28,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: FAILED to deploy cg-uaa-invite to Staging
+        :x: FAILED to deploy cg-uaa-extras to Staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -37,7 +37,7 @@ jobs:
     put: slack
     params:
       text: |
-        :white_check_mark: Successfully deployed cg-uaa-invite to Staging
+        :white_check_mark: Successfully deployed cg-uaa-extras to Staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -45,15 +45,15 @@ jobs:
 
 - name: deploy-production
   plan:
-  - get: cg-uaa-invite-app
+  - get: cg-uaa-extras-app
     trigger: true
     passed: [deploy-staging]
   - task: test
-    file: cg-uaa-invite-app/ci/test.yml
+    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
-      path: cg-uaa-invite-app
+      path: cg-uaa-extras-app
       current_app_name: invite
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
@@ -72,7 +72,7 @@ jobs:
     put: slack
     params:
       text: |
-        :x: FAILED to deploy cg-uaa-invite to Production
+        :x: FAILED to deploy cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
@@ -81,17 +81,17 @@ jobs:
     put: slack
     params:
       text: |
-        :white_check_mark: Successfully deployed cg-uaa-invite to Production
+        :white_check_mark: Successfully deployed cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: {{slack-channel}}
       username: {{slack-username}}
       icon_url: {{slack-icon-url}}
 
 resources:
-- name: cg-uaa-invite-app
+- name: cg-uaa-extras-app
   type: git
   source:
-    uri: {{cg-uaa-invite-git-url}}
+    uri: {{cg-uaa-extras-git-url}}
     branch: master
 
 - name: cloud-gov-staging

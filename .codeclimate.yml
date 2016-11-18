@@ -14,4 +14,4 @@ ratings:
   - "**.py"
 
 exclude_paths:
--  uaainvite/tests.py
+-  uaaextras/tests.py
