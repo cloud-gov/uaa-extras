@@ -38,3 +38,20 @@ You can also run it locally in debug mode:
 
 	# set configuration env vars as needed
 	./debug.py
+
+### Configuring UAA Invites to leverage cloud.gov IdP
+
+Because of the redirect that occurs for setting up cloud.gov multi-factor
+authentication, the `IDP_PROVIDER_URL` must match what is coming from the UAA
+login screen under `cloud.gov`.
+
+![cloud.gov login button](./docs/cloud-gov-idp-screenshot.png)
+
+#### A bit on the `/first-login` route
+
+The `/first-login` route is used to redirect users with an origin of `cloud.gov`
+to the cloud.gov IdP provider. This route is used to set the user's origin to
+`cloud.gov` and the `externalId` to their `userName`. On a successful update of
+the user, `cg-uaa-invite` will redirect to the `IDP_PROVIDER_URL` to complete
+the user's authentication and TOTP token creation. This is why the URL from the
+screenshot above is necessary for the `IDP_PROVIDER_URL`.
