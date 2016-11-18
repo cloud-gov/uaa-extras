@@ -1,6 +1,7 @@
 ---
 applications:
-- name: invite
+- name: uaaextra
+  host: account
   domain: fr.cloud.gov
   buildpack: python_buildpack
 env:
