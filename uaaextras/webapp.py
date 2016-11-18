@@ -8,7 +8,7 @@ import smtplib
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from talisman import Talisman
 
-from uaainvite.clients import UAAClient, UAAError
+from uaaextras.clients import UAAClient, UAAError
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 

@@ -11,8 +11,8 @@ from flask import appcontext_pushed
 from mock import Mock, patch
 from requests.auth import HTTPBasicAuth
 
-from uaainvite.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS
-from uaainvite.clients import UAAError, UAAClient
+from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS
+from uaaextras.clients import UAAError, UAAClient
 
 app = create_app({'UAA_CLIENT_ID': 'client-id', 'UAA_CLIENT_SECRET': 'client-secret'})
 
@@ -63,7 +63,7 @@ class TestAppConfig(unittest.TestCase):
         for kk in CONFIG_KEYS.keys():
             assert app.config[kk] == fake_env[kk]
 
-    @patch('uaainvite.webapp.smtplib')
+    @patch('uaaextras.webapp.smtplib')
     def test_send_email_no_auth(self, smtplib):
         """Email is sent as expected"""
 
@@ -89,7 +89,7 @@ class TestAppConfig(unittest.TestCase):
         assert 'To: foo@example.com' in args[0][2]
         assert 'Subject: da subject' in args[0][2]
 
-    @patch('uaainvite.webapp.smtplib')
+    @patch('uaaextras.webapp.smtplib')
     def test_send_email_auth(self, smtplib):
         """IF SMTP_USER and SMTP_PASS are provided, smtp.login() is called"""
         app = Mock()
@@ -107,7 +107,7 @@ class TestAppConfig(unittest.TestCase):
 
         smtplib.SMTP().login.assert_called_with('user', 'pass')
 
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.render_template')
     def test_csrf_token(self, render_template):
         """When a post request is made with a missing or invalid csrf token,
         the error/csrf.html template is displayed
@@ -124,8 +124,8 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 400
             render_template.assert_called_with('error/csrf.html')
 
-    @patch('uaainvite.webapp.UAAClient')
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
     def test_uaa_token(self, render_template, uaac):
         """When we cannot validate a UAA token, the error/token_validation.html template is displayed"""
 
@@ -141,8 +141,8 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 401
             render_template.assert_called_with('error/token_validation.html')
 
-    @patch('uaainvite.webapp.UAAClient')
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
     def test_uaa_scope(self, render_template, uaac):
         """When the token is valid, but the scope is incorrect, the error/missing_scope.html template is displayed"""
 
@@ -156,7 +156,7 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 403
             render_template.assert_called_with('error/missing_scope.html')
 
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.render_template')
     def test_get_index(self, render_template):
         """When a GET request is made to /, the index.html template is displayed"""
 
@@ -170,8 +170,8 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('index.html')
 
-    @patch('uaainvite.webapp.flash')
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.render_template')
     def test_invite_bad_email(self, render_template, flash):
         """When an email is blank or invalid, the error is flashed to the user"""
 
@@ -198,8 +198,8 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('index.html')
             flash.assert_called_once()
 
-    @patch('uaainvite.webapp.UAAClient')
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
     def test_invite_error(self, render_template, uaac):
         """When an error occurs during the invite process, the error/internal.html template is displayed"""
 
@@ -217,9 +217,9 @@ class TestAppConfig(unittest.TestCase):
 
             render_template.assert_called_with('error/internal.html')
 
-    @patch('uaainvite.webapp.smtplib')
-    @patch('uaainvite.webapp.UAAClient')
-    @patch('uaainvite.webapp.render_template')
+    @patch('uaaextras.webapp.smtplib')
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
     def test_invite_good(self, render_template, uaac, smtp):
         """When an invite is sucessfully sent, the invite_sent template is displayed"""
 
@@ -236,7 +236,7 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('invite_sent.html')
 
-    @patch('uaainvite.webapp.session')
+    @patch('uaaextras.webapp.session')
     def test_logout_good(self, session):
         """The session is cleared when logging out"""
 
@@ -250,7 +250,7 @@ class TestAppConfig(unittest.TestCase):
                 assert rv.location == 'http://localhost/'
                 session.clear.assert_called_once()
 
-    @patch('uaainvite.webapp.UAAClient')
+    @patch('uaaextras.webapp.UAAClient')
     def test_uaac_is_created_from_session(self, uaac):
         """When a request is made, and a valid session exists g.uaac is created"""
         with app.test_request_context('/'):
@@ -265,7 +265,7 @@ class TestAppConfig(unittest.TestCase):
 
                 assert isinstance(flask.g.uaac, Mock)
 
-    @patch('uaainvite.webapp.UAAClient')
+    @patch('uaaextras.webapp.UAAClient')
     def test_redirect_to_uaac(self, uaac):
         """When a request is made, and no session exists, redirect to UAAC Oauth"""
         with app.test_client() as c:
@@ -276,7 +276,7 @@ class TestAppConfig(unittest.TestCase):
             target += '&response_type=code'
             assert rv.location == target
 
-    @patch('uaainvite.webapp.UAAClient')
+    @patch('uaaextras.webapp.UAAClient')
     def test_oauth_creates_session(self, uaac):
         """/oauth/login validates codes with UAA"""
 
@@ -302,7 +302,7 @@ class TestUAAClient(unittest.TestCase):
         u = UAAError(r)
         assert str(u) == 'oh no'
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_bad(self, requests):
         """UAAError is reaised when it occurs"""
 
@@ -325,7 +325,7 @@ class TestUAAClient(unittest.TestCase):
             verify=True
         )
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_get(self, requests):
         """GET request is made"""
 
@@ -349,7 +349,7 @@ class TestUAAClient(unittest.TestCase):
 
         assert resp['test'] == 'value'
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_get_insecure(self, requests):
         """Insecure GET request is made"""
 
@@ -373,7 +373,7 @@ class TestUAAClient(unittest.TestCase):
 
         assert resp['test'] == 'value'
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_get_headers(self, requests):
         """Additional headers are included if we provide them"""
 
@@ -397,7 +397,7 @@ class TestUAAClient(unittest.TestCase):
 
         assert resp['test'] == 'value'
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_get_params(self, requests):
         """Query string is sent if params are provided"""
 
@@ -421,7 +421,7 @@ class TestUAAClient(unittest.TestCase):
 
         assert resp['test'] == 'value'
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_get_auth(self, requests):
         """Auth value is passed directly to requests"""
 
@@ -445,7 +445,7 @@ class TestUAAClient(unittest.TestCase):
 
         assert resp['test'] == 'value'
 
-    @patch('uaainvite.clients.uaa.requests')
+    @patch('uaaextras.clients.uaa.requests')
     def test_request_post_body(self, requests):
         """Body is included in request if provided"""
 

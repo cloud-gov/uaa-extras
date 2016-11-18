@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='uaainvite',
+    name='uaaextras',
 
     version='0.0.1',
 
-    description='A simple UI for the UAA /invite_users endpoint',
+    description='A simple UI for UAA /invite_users endpoint and password resets',
 
-    url='https://github.com/18F/cg-uaa-invite',
+    url='https://github.com/18F/cg-uaa-extras',
 
     author='Chris Nelson',
     author_email='cnelson@cnelson.org',
@@ -24,7 +24,7 @@ setup(
         'talisman==0.1.0'
     ],
 
-    test_suite='uaainvite.tests',
+    test_suite='uaaextras.tests',
 
     tests_require=[
         'blinker',
