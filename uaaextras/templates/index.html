@@ -14,7 +14,7 @@
 {% endif %}
 {% endwith %}
     <form method="post" action="{{url_for('index')}}">
-        
+
         <input name="email" type="email" placeholder="Enter email" autofocus="autofocus" class="form-control" />
         <input type="submit" value="Send invite" class="island-button" />
         <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
