@@ -1,23 +1,20 @@
 {% extends "_layout.html" %}
-{% block type %}-landscape{% endblock %}
-{% block header %}Send an invite{% endblock %}
+
+{% block header %}Where to?{% endblock %}
 
 {% block content %}
-<div class="island-content">
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
-	<div class="alert alert-error">
-	    <p>{{ message }}</p>
-	</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
-    <form method="post" action="{{url_for('index')}}">
-
-        <input name="email" type="email" placeholder="Enter email" autofocus="autofocus" class="form-control" />
-        <input type="submit" value="Send invite" class="island-button" />
-        <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
-     </form>
-</div>
+<ul class="tiles">
+  <li id="tile-1">
+    <a href="{{url_for('invite')}}" class="tile-1">
+      <div class="fa fa-envelope-o fa-4x fa-fw tile-icon"></div>
+    </a>
+    Invite Users
+  </li>
+  <li id="tile-2">
+    <a href="{{url_for('change_password')}}" class="tile-2">
+      <div class=" fa fa-lock fa-4x fa-fw tile-icon"></div>
+    </a>
+    Change Password
+  </li>
+</ul>
 {% endblock %}
