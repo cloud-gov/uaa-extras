@@ -168,6 +168,7 @@ def create_app(env=os.environ):
         else:
             # if not forget the token, it's bad (if we have one)
             session.clear()
+            session['_endpoint'] = request.endpoint
 
             return redirect('{0}/oauth/authorize?client_id={1}&response_type=code'.format(
                 app.config['UAA_BASE_URL'],
@@ -191,14 +192,12 @@ def create_app(env=os.environ):
         """Called at the end of the oauth flow.  We'll receive an auth code from UAA and use it to
         retrieve a bearer token that we can use to actually do stuff
         """
-
+        logging.info(request.referrer)
         is_invitation = request.referrer and request.referrer.find('invitations/accept') != 1
         if is_invitation and 'code' not in request.args:
             return redirect(url_for('first_login'))
 
         try:
-            # remove any old tokens
-            session.clear()
 
             # connect a client with no token
             uaac = UAAClient(app.config['UAA_BASE_URL'], None, verify_tls=app.config['UAA_VERIFY_TLS'])
@@ -208,7 +207,7 @@ def create_app(env=os.environ):
 
             # if it's valid, but missing the scope we need, bail
             if 'scim.invite' not in token['scope'].split(' '):
-                raise RuntimeError('Valid oauth autehntication but missing the scim.invite scope.  Scopes: {0}'.format(
+                raise RuntimeError('Valid oauth authentication but missing the scim.invite scope.  Scopes: {0}'.format(
                     token['scope']
                 ))
 
@@ -221,7 +220,11 @@ def create_app(env=os.environ):
             session['UAA_TOKEN_SCOPES'] = token['scope'].split(' ')
             if is_invitation:
                 return redirect(url_for('first_login'))
-            return redirect(url_for('index'))
+            endpoint = session.pop('_endpoint', None)
+            if not endpoint:
+                endpoint = 'index'
+            logging.info(endpoint)
+            return redirect(url_for(endpoint))
         except UAAError:
             logging.exception('An invalid authorization_code was received from UAA')
             return render_template('error/token_validation.html'), 401
@@ -231,9 +234,13 @@ def create_app(env=os.environ):
 
     @app.route('/', methods=['GET', 'POST'])
     def index():
+        return render_template('index.html')
+
+    @app.route('/invite', methods=['GET', 'POST'])
+    def invite():
         # start with giving them the form
         if request.method == 'GET':
-            return render_template('index.html')
+            return render_template('invite.html')
 
         # if we've reached here we are POST, and they've asked us to invite
 
@@ -241,14 +248,14 @@ def create_app(env=os.environ):
         email = request.form.get('email', '')
         if not email:
             flash('Email cannot be blank.')
-            return render_template('index.html')
+            return render_template('invite.html')
         try:
             v = validate_email(email)  # validate and get info
             email = v["email"]  # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
-            return render_template('index.html')
+            return render_template('invite.html')
 
         # email is good, lets invite them
         try:
@@ -306,6 +313,49 @@ def create_app(env=os.environ):
             return redirect(app.config['IDP_PROVIDER_URL'])
         else:
             return redirect(app.config['UAA_BASE_URL'])
+
+    @app.route('/change-password', methods=['GET', 'POST'])
+    def change_password():
+        # start with giving them the form
+        if request.method == 'GET':
+            return render_template('change_password.html')
+
+        # if we've reached here we are POST so change the pass
+
+        # validate new password
+        old_password = request.form.get('old_password', '')
+        new_password = request.form.get('new_password', '')
+        repeat_password = request.form.get('repeat_password', '')
+        errors = []
+        if not old_password:
+            errors.append('Your old password cannot be blank.')
+        if not new_password:
+            errors.append('Your new password cannot be blank.')
+        if not repeat_password:
+            errors.append('You must repeat your new password.')
+        if new_password != repeat_password:
+            errors.append('Your new password does not match your repeated password.')
+
+        if len(errors) != 0:
+            for error in errors:
+                flash(error)
+            return render_template('change_password.html')
+
+        # check our token, and expirary date
+        token = session.get('UAA_TOKEN', None)
+
+        try:
+            decoded_token = g.uaac.decode_access_token(token)
+        except:
+            logging.exception('An invalid access token was decoded')
+            return render_template('error/token_validation.html'), 401
+
+        try:
+            g.uaac.change_password(decoded_token['user_id'], old_password, new_password)
+        except:
+            logging.exception('Error changing password')
+
+        return render_template('password_changed.html')
 
     @app.route('/logout')
     def logout():

@@ -12,17 +12,14 @@
 <body>
 <div class="content">
     <div class="header">
-        <div></div>
+        <div><div class="nav"></div></div>
         <div class="header-image"></div>
     </div>
 
     <div class="island{% block type %}{% endblock %}">
-        <div class="island-title">
-            <h1>{% block header %}{% endblock %}</h1>
-        </div>
-    {% block content %}{% endblock %}
+        <h1>{% block header %}{% endblock %}</h1>
+        {% block content %}{% endblock %}
     </div>
-</div>
     <div class="footer-spacer"></div>
 </div>
 <div class="footer">{% block footer %}{% endblock %}</div>
