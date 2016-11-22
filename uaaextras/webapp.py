@@ -248,14 +248,14 @@ def create_app(env=os.environ):
         email = request.form.get('email', '')
         if not email:
             flash('Email cannot be blank.')
-            return render_template('index.html')
+            return render_template('invite.html')
         try:
             v = validate_email(email)  # validate and get info
             email = v["email"]  # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
-            return render_template('index.html')
+            return render_template('invite.html')
 
         # email is good, lets invite them
         try:
