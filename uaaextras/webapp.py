@@ -153,7 +153,7 @@ def create_app(env=os.environ):
 
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
-        if request.endpoint and request.endpoint == 'oauth_login':
+        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'reset_password']:
             return
 
         # check our token, and expirary date
@@ -357,6 +357,19 @@ def create_app(env=os.environ):
             logging.exception('Error changing password')
 
         return render_template('password_changed.html')
+
+    @app.route('/forgot-password', methods=['GET', 'POST'])
+    def forgot_password():
+        # start with giving them the form
+        if request.method == 'GET':
+            return render_template('forgot_password.html')
+
+        # if we've reached here we are POST so we can email user link
+        pass
+
+    @app.route('/reset-password')
+    def reset_password():
+        pass
 
     @app.route('/logout')
     def logout():
