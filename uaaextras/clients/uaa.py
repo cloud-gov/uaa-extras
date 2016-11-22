@@ -235,3 +235,25 @@ class UAAClient(object):
             },
             auth=HTTPBasicAuth(client_id, client_secret)
         )
+
+    def change_password(self, user_id, old_password, new_password):
+        """Changes a users password
+
+        Args:
+            user_id: the user id to act on
+            old_password: the users current password
+            new_password: the users desired password
+        Raises:
+            UAAError: there was an error changing the password
+
+        Returns:
+            dict: an object representing the response with user_id and code
+        """
+        return self._request(
+            urljoin('/Users', user_id, 'password'),
+            'PUT',
+            body={
+                'oldPassword': old_password,
+                'password': new_password
+            }
+        )

@@ -170,6 +170,20 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('index.html')
 
+    @patch('uaaextras.webapp.render_template')
+    def test_get_invite(self, render_template):
+        """When a GET request is made to /invite, the invite.html template is displayed"""
+
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['UAA_TOKEN'] = 'foo'
+
+            rv = c.get('/invite')
+            assert rv.status_code == 200
+            render_template.assert_called_with('invite.html')
+
     @patch('uaaextras.webapp.flash')
     @patch('uaaextras.webapp.render_template')
     def test_invite_bad_email(self, render_template, flash):
@@ -182,9 +196,9 @@ class TestAppConfig(unittest.TestCase):
                 sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
-            rv = c.post('/', data={'email': '', '_csrf_token': 'bar'})
+            rv = c.post('/invite', data={'email': '', '_csrf_token': 'bar'})
             assert rv.status_code == 200
-            render_template.assert_called_with('index.html')
+            render_template.assert_called_with('invite.html')
             flash.assert_called_once()
 
         flash.reset_mock()
@@ -193,9 +207,9 @@ class TestAppConfig(unittest.TestCase):
                 sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
-            rv = c.post('/', data={'email': 'not an email', '_csrf_token': 'bar'})
+            rv = c.post('/invite', data={'email': 'not an email', '_csrf_token': 'bar'})
             assert rv.status_code == 200
-            render_template.assert_called_with('index.html')
+            render_template.assert_called_with('invite.html')
             flash.assert_called_once()
 
     @patch('uaaextras.webapp.UAAClient')
@@ -211,7 +225,7 @@ class TestAppConfig(unittest.TestCase):
                 sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
-            rv = c.post('/', data={'email': 'test@example.com', '_csrf_token': 'bar'})
+            rv = c.post('/invite', data={'email': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 500
             print(uaac.invite_users())
 
@@ -232,7 +246,7 @@ class TestAppConfig(unittest.TestCase):
                 sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
-            rv = c.post('/', data={'email': 'test@example.com', '_csrf_token': 'bar'})
+            rv = c.post('/invite', data={'email': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 200
             render_template.assert_called_with('invite_sent.html')
 
