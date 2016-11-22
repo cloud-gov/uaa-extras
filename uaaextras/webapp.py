@@ -357,7 +357,6 @@ def create_app(env=os.environ):
 
         return render_template('password_changed.html')
 
-
     @app.route('/logout')
     def logout():
         session.clear()
