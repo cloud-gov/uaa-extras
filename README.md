@@ -52,6 +52,6 @@ login screen under `cloud.gov`.
 The `/first-login` route is used to redirect users with an origin of `cloud.gov`
 to the cloud.gov IdP provider. This route is used to set the user's origin to
 `cloud.gov` and the `externalId` to their `userName`. On a successful update of
-the user, `cg-uaa-invite` will redirect to the `IDP_PROVIDER_URL` to complete
+the user, `cg-uaa-extras` will redirect to the `IDP_PROVIDER_URL` to complete
 the user's authentication and TOTP token creation. This is why the URL from the
 screenshot above is necessary for the `IDP_PROVIDER_URL`.
