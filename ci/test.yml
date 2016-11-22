@@ -7,7 +7,7 @@ image_resource:
     repository: higebu/tox
 
 inputs:
-  - name: cg-uaa-invite-app
+  - name: cg-uaa-extras-app
 
 run:
-  path: ./cg-uaa-invite-app/ci/test.sh
+  path: ./cg-uaa-extras-app/ci/test.sh
