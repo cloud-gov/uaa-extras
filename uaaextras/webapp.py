@@ -112,7 +112,8 @@ def create_app(env=os.environ):
             ],
             'font-src': [
                 '\'self\'',
-                'fonts.gstatic.com'
+                'fonts.gstatic.com',
+                '*.cloud.gov'
             ]
         }
         Talisman(app, content_security_policy=csp)
