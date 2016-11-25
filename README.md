@@ -55,3 +55,30 @@ to the cloud.gov IdP provider. This route is used to set the user's origin to
 the user, `cg-uaa-extras` will redirect to the `IDP_PROVIDER_URL` to complete
 the user's authentication and TOTP token creation. This is why the URL from the
 screenshot above is necessary for the `IDP_PROVIDER_URL`.
+
+### Development
+
+This project uses a `setup.py` to install dependencies. Run the following
+command to get started with development.
+
+```shell
+python3 ./setup.py install
+```
+
+To get a local server up, run the following command. Make sure you
+properly setup the environment variables mentioned above in the
+documentation.
+
+```shell
+python3 ./run.py
+```
+
+#### Running tests
+
+Tests are run using `tox` and `flake8`.
+
+```shell
+pip install tox
+```
+
+To run the tests, simply run `tox` from the root of the repository.
