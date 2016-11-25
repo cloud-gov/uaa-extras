@@ -153,7 +153,7 @@ def create_app(env=os.environ):
 
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
-        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'reset_password']:
+        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'reset_password', 'static']:
             return
 
         # check our token, and expirary date
