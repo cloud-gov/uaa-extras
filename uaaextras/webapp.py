@@ -399,7 +399,7 @@ def create_app(env=os.environ):
 
         subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
         body = render_template('email/body-password.html', reset=reset, branding=branding)
-        # send_email(app, email, subject, body)
+        send_email(app, email, subject, body)
         r.setex(email, EXPIRATION_TIME, IDENTITY_TOKEN)
 
         return render_template('forgot_password.html', email_sent=True, email=email)
@@ -438,7 +438,7 @@ def create_app(env=os.environ):
         # token with their email address.
         userToken = r.get(email)
 
-        if userToken == None:
+        if userToken is None:
             flash('Token has expired. Please try your forgot password request again.')
             return render_template('reset_password.html')
         elif userToken.decode('utf-8') == token:
