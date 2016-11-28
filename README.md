@@ -18,15 +18,17 @@ This application uses oauth to perform actions on your behalf in UAA.  To add a 
 
 Remember the client-id and client-secret, you'll need them in the next step
 
-#### Step Three: Configure the app
+#### Step Three: Create redis service instance
+
+Either create a locally running version of Redis, or create a service instance in Cloud Foundry if the app will be deployed there.
+
+EX:
+
+	cf create-service redis28 standard redis-accounts
+
+#### Step Four: Configure the app
 
 The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary
-
-#### Step Four: Ensure your UAA user has the proper scopes/groups
-
-Your UAA user must have the scim.invite scopes/group membership
-
-	uaac member add scim.invite [your-uaa-login]
 
 #### Step Five: Launch the app
 
