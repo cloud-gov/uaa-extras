@@ -5,8 +5,7 @@ import logging
 import os
 import smtplib
 import redis
-import uuid
-import string, random
+import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from talisman import Talisman
@@ -34,6 +33,23 @@ CONFIG_KEYS = {
 }
 
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
+
+# Get Redis credentials
+if 'VCAP_SERVICES' in os.environ:
+    services = json.loads(os.getenv('VCAP_SERVICES'))
+    redis_env = services['redis28'][0]['credentials']
+else:
+    redis_env = dict(hostname='localhost', port=6379, password='')
+redis_env['host'] = redis_env['hostname']
+del redis_env['hostname']
+redis_env['port'] = int(redis_env['port'])
+
+# Connect to redis
+try:
+    r = redis.StrictRedis(**redis_env)
+    r.info()
+except redis.ConnectionError:
+    r = None
 
 
 def generate_temporary_password():
@@ -377,7 +393,6 @@ def create_app(env=os.environ):
     def forgot_password():
         EXPIRATION_TIME = 43200
         IDENTITY_TOKEN = uuid.uuid4().hex
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
 
         # start with giving them the form
         if request.method == 'GET':
@@ -396,30 +411,35 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template('forgot_password.html')
 
-        # If we've made it this far, it's a valid email so we'll generate and store a
-        # token and send an email.
-        logging.info('generating validation token for user')
+        if r:
+            # If we've made it this far, it's a valid email so we'll generate and store a
+            # token and send an email.
+            logging.info('generating validation token for user')
 
-        branding = {
-            'company_name': app.config['BRANDING_COMPANY_NAME']
-        }
+            branding = {
+                'company_name': app.config['BRANDING_COMPANY_NAME']
+            }
 
-        reset = {
-            'verifyLink': '{0}/reset-password?validation={1}'.format(app.config['ACCOUNTS_BASE_URL'], IDENTITY_TOKEN)
-        }
-        logging.info(reset['verifyLink'])
+            reset = {
+                'verifyLink': '{0}/reset-password?validation={1}'.format(
+                    app.config['ACCOUNTS_BASE_URL'],
+                    IDENTITY_TOKEN
+                )
+            }
+            logging.info(reset['verifyLink'])
 
-        subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
-        body = render_template('email/body-password.html', reset=reset, branding=branding)
-        send_email(app, email, subject, body)
-        r.setex(email, EXPIRATION_TIME, IDENTITY_TOKEN)
+            subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
+            body = render_template('email/body-password.html', reset=reset, branding=branding)
+            send_email(app, email, subject, body)
+            r.setex(email, EXPIRATION_TIME, IDENTITY_TOKEN)
 
-        return render_template('forgot_password.html', email_sent=True, email=email)
+            return render_template('forgot_password.html', email_sent=True, email=email)
+
+        return render_template('error/internal.html'), 500
 
     @app.route('/reset-password', methods=['GET', 'POST'])
     def reset_password():
 
-        r = redis.StrictRedis(host='localhost', port=6379, db=0)
         validation_code = False
 
         # start with giving them the form
@@ -448,22 +468,23 @@ def create_app(env=os.environ):
 
         # If we've made it this far, it's a valid email so let's verify the generated
         # token with their email address.
-        userToken = r.get(email)
+        if r:
+            userToken = r.get(email)
 
-        if userToken is None:
-            flash('Token has expired. Please try your forgot password request again.')
-            return render_template('reset_password.html')
-        elif userToken.decode('utf-8') == token:
-            logging.info('Successfully verified email {0}'.format(userToken))
-            r.delete(email)
+            if userToken is None:
+                flash('Token has expired. Please try your forgot password request again.')
+                return render_template('reset_password.html')
+            elif userToken.decode('utf-8') == token:
+                logging.info('Successfully verified email {0}'.format(userToken))
+                r.delete(email)
 
-        temporaryPassword = generate_temporary_password()
-        try:
-            g.uaac.set_temporary_password(email, temporaryPassword)
-            logging.info('Set temporary password for {0}'.format(email))
-            return render_template('reset_password.html', password=temporaryPassword)
-        except Exception:
-            logging.exception('An error occured during the invite process')
+            temporaryPassword = generate_temporary_password()
+            try:
+                g.uaac.set_temporary_password(email, temporaryPassword)
+                logging.info('Set temporary password for {0}'.format(email))
+                return render_template('reset_password.html', password=temporaryPassword)
+            except Exception:
+                logging.exception('An error occured during the invite process')
 
         return render_template('error/internal.html'), 500
 
