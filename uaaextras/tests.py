@@ -305,6 +305,18 @@ class TestAppConfig(unittest.TestCase):
                 assert flask.session['UAA_TOKEN'] == 'foo'
                 assert flask.session['UAA_TOKEN_SCOPES'] == ['scim.invite']
 
+    @patch('uaaextras.webapp.render_template')
+    def test_get_forgot_password(self, render_template):
+        """When a GET request is made to /, the forgot-password.html template is displayed"""
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['UAA_TOKEN'] = 'foo'
+
+            rv = c.get('/')
+            assert rv.status_code == 200
+            render_template.assert_called_with('index.html')
 
 class TestUAAClient(unittest.TestCase):
     """Test our UAA Client"""

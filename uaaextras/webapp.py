@@ -4,6 +4,8 @@ import codecs
 import logging
 import os
 import smtplib
+import redis
+import uuid
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from talisman import Talisman
@@ -26,7 +28,8 @@ CONFIG_KEYS = {
     'SMTP_PASS': None,
     'BRANDING_COMPANY_NAME': 'Cloud Foundry',
     'IDP_PROVIDER_ORIGIN': 'https://idp.bosh-lite.com',
-    'IDP_PROVIDER_URL': 'my.idp.com'
+    'IDP_PROVIDER_URL': 'my.idp.com',
+    'ACCOUNTS_BASE_URL': 'https://accounts.bosh-lite.com'
 }
 
 
@@ -360,16 +363,91 @@ def create_app(env=os.environ):
 
     @app.route('/forgot-password', methods=['GET', 'POST'])
     def forgot_password():
+        EXPIRATION_TIME = 43200
+        IDENTITY_TOKEN = uuid.uuid4().hex
+        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+
         # start with giving them the form
         if request.method == 'GET':
             return render_template('forgot_password.html')
 
         # if we've reached here we are POST so we can email user link
-        pass
+        email = request.form.get('email_address', '')
+        if not email:
+            flash('Email cannot be blank.')
+            return render_template('forgot_password.html')
+        try:
+            v = validate_email(email)  # validate and get info
+            email = v["email"]  # replace with normalized form
+        except EmailNotValidError as exc:
+            # email is not valid, exception message is human-readable
+            flash(str(exc))
+            return render_template('forgot_password.html')
 
-    @app.route('/reset-password')
+        # If we've made it this far, it's a valid email so we'll generate and store a
+        # token and send an email.
+        logging.info('generating validation token for user')
+
+        branding = {
+            'company_name': app.config['BRANDING_COMPANY_NAME']
+        }
+
+        reset = {
+            'verifyLink': '{0}/reset-password?validation={1}'.format(app.config['ACCOUNTS_BASE_URL'], IDENTITY_TOKEN)
+        }
+        logging.info(reset['verifyLink'])
+
+        subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
+        body = render_template('email/body-password.html', reset=reset, branding=branding)
+        # send_email(app, email, subject, body)
+        r.setex(email, EXPIRATION_TIME, IDENTITY_TOKEN)
+
+        return render_template('forgot_password.html', email_sent=True, email=email)
+
+    @app.route('/reset-password', methods=['GET', 'POST'])
     def reset_password():
-        pass
+
+        r = redis.StrictRedis(host='localhost', port=6379, db=0)
+        validation_code = False
+
+        # start with giving them the form
+        if request.method == 'GET':
+            try:
+                validation_code = request.args['validation']
+            except:
+                flash('The password validation link is incomplete. Please verify your link is correct and try again.')
+                return render_template('reset_password.html')
+
+            return render_template('reset_password.html', validation_code=validation_code)
+
+        # if we've reached here we are POST so we can email user link
+        token = request.form.get('_validation_code', '')
+        email = request.form.get('email_address', '')
+        if not email:
+            flash('Email cannot be blank.')
+            return render_template('reset_password.html')
+        try:
+            v = validate_email(email)  # validate and get info
+            email = v["email"]  # replace with normalized form
+        except EmailNotValidError as exc:
+            # email is not valid, exception message is human-readable
+            flash(str(exc))
+            return render_template('reset_password.html')
+
+        # If we've made it this far, it's a valid email so let's verify the generated
+        # token with their email address.
+        userToken = r.get(email)
+
+        if userToken == None:
+            flash('Token has expired. Please try your forgot password request again.')
+            return render_template('reset_password.html')
+        elif userToken.decode('utf-8') == token:
+            logging.info('Successfully verified email {0}'.format(userToken))
+            r.delete(email)
+
+        temporaryPassword = codecs.encode(os.urandom(24), 'base-64').decode('utf-8').strip()
+
+        return render_template('reset_password.html', password=temporaryPassword)
 
     @app.route('/logout')
     def logout():

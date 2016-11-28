@@ -21,7 +21,8 @@ setup(
         'flask==0.11.1',
         'requests==2.11.1',
         'email_validator==1.0.1',
-        'talisman==0.1.0'
+        'talisman==0.1.0',
+        'redis==2.10.5'
     ],
 
     test_suite='uaaextras.tests',
