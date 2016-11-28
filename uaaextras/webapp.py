@@ -440,17 +440,14 @@ def create_app(env=os.environ):
     @app.route('/reset-password', methods=['GET', 'POST'])
     def reset_password():
 
-        validation_code = False
-
         # start with giving them the form
         if request.method == 'GET':
-            try:
-                validation_code = request.args['validation']
-            except:
-                flash('The password validation link is incomplete. Please verify your link is correct and try again.')
-                return render_template('reset_password.html')
 
-            return render_template('reset_password.html', validation_code=validation_code)
+            if 'validation' not in request.args:
+                flash('The password validation link is incomplete. Please verify your link is correct and try again.')
+                return render_template('reset_password.html', validation_code=None)
+
+            return render_template('reset_password.html', validation_code=request.args['validation'])
 
         # if we've reached here we are POST so we can email user link
         token = request.form.get('_validation_code', '')

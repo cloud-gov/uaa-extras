@@ -306,18 +306,63 @@ class TestAppConfig(unittest.TestCase):
                 assert flask.session['UAA_TOKEN_SCOPES'] == ['scim.invite']
 
     @patch('uaaextras.webapp.render_template')
-    def test_get_forgot_password(self, render_template):
-        """When a GET request is made to /, the forgot-password.html template is displayed"""
+    def test_get_change_password(self, render_template):
+        """ When a GET request is made to /change-password,
+            the change_password.html template is displayed
+        """
         render_template.return_value = 'template output'
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
                 sess['UAA_TOKEN'] = 'foo'
 
-            rv = c.get('/')
+            rv = c.get('/change-password')
             assert rv.status_code == 200
-            render_template.assert_called_with('index.html')
+            render_template.assert_called_with('change_password.html')
 
+    @patch('uaaextras.webapp.render_template')
+    def test_get_forgot_password(self, render_template):
+        """ When a GET request is made to /forgot-password,
+            the forgot_password.html template is displayed
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+
+            rv = c.get('/forgot-password')
+            assert rv.status_code == 200
+            render_template.assert_called_with('forgot_password.html')
+
+    @patch('uaaextras.webapp.render_template')
+    def test_get_reset_password(self, render_template):
+        """ When a GET request is made to /reset-password,
+            and the validation code is passed in correctly
+            the reset_password.html template is displayed
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+
+            rv = c.get('/reset-password?validation=foo')
+            assert rv.status_code == 200
+            render_template.assert_called_with('reset_password.html', validation_code='foo')
+
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.render_template')
+    def test_get_reset_password_bad_code(self, render_template, flash):
+        """ When a GET request is made to /reset-password,
+            and the validation code is not passed in correctly
+            the reset_password.html template is displayed
+            and error message is put in flash
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+
+            rv = c.get('/reset-password')
+            assert rv.status_code == 200
+            render_template.assert_called_with('reset_password.html', validation_code=None)
+            flash.assert_called_once()
 
 class TestUAAClient(unittest.TestCase):
     """Test our UAA Client"""
