@@ -318,6 +318,7 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('index.html')
 
+
 class TestUAAClient(unittest.TestCase):
     """Test our UAA Client"""
     def test_error_message(self):
