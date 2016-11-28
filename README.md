@@ -70,7 +70,7 @@ properly setup the environment variables mentioned above in the
 documentation.
 
 ```shell
-python3 ./run.py
+./debug.py
 ```
 
 #### Running tests
