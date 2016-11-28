@@ -237,7 +237,7 @@ class UAAClient(object):
         )
 
     def change_password(self, user_id, old_password, new_password):
-        """Changes a users password
+        """Changes a users password at their own request
 
         Args:
             user_id: the user id to act on
@@ -255,5 +255,39 @@ class UAAClient(object):
             body={
                 'oldPassword': old_password,
                 'password': new_password
+            }
+        )
+
+    def set_temporary_password(self, client_id, client_secret, user_id, new_password):
+        """ Changes password on behalf of the user with client credentials
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+            user_id: the user id to act on
+            new_password: the users desired password
+        Raises:
+            UAAError: there was an error changing the password
+
+        Returns:
+            dict: an object representing the response with user_id and code
+        """
+        token = self._request(
+            '/oauth/token',
+            'POST',
+            params={
+                'grant_type': 'client_credentials',
+                'response_type': 'token',
+                'client_id': client_id,
+                'client_secret': client_secret
+            }
+        )
+        return self._request(
+            urljoin('/Users', user_id, 'password'),
+            'PUT',
+            body={
+                'password': new_password
+            },
+            headers={
+                'Authorization': 'Bearer ' + token['access_token']
             }
         )

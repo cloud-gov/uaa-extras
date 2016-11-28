@@ -6,6 +6,7 @@ import os
 import smtplib
 import redis
 import uuid
+import string, random
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from talisman import Talisman
@@ -31,6 +32,17 @@ CONFIG_KEYS = {
     'IDP_PROVIDER_URL': 'my.idp.com',
     'ACCOUNTS_BASE_URL': 'https://accounts.bosh-lite.com'
 }
+
+PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
+
+
+def generate_temporary_password():
+    """ Generates a temporary password suitable for UAA """
+    passwordChars = string.ascii_letters + string.digits + ''.join(str(c) for c in PASSWORD_SPECIAL_CHARS)
+    newPassword = str(random.choice(string.ascii_letters))
+    for i in range(23):
+        newPassword += str(random.choice(list(passwordChars)))
+    return newPassword
 
 
 def generate_csrf_token():
@@ -445,9 +457,15 @@ def create_app(env=os.environ):
             logging.info('Successfully verified email {0}'.format(userToken))
             r.delete(email)
 
-        temporaryPassword = codecs.encode(os.urandom(24), 'base-64').decode('utf-8').strip()
+        temporaryPassword = generate_temporary_password()
+        try:
+            g.uaac.set_temporary_password(email, temporaryPassword)
+            logging.info('Set temporary password for {0}'.format(email))
+            return render_template('reset_password.html', password=temporaryPassword)
+        except Exception:
+            logging.exception('An error occured during the invite process')
 
-        return render_template('reset_password.html', password=temporaryPassword)
+        return render_template('error/internal.html'), 500
 
     @app.route('/logout')
     def logout():
