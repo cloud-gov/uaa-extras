@@ -4,5 +4,7 @@ applications:
   host: account
   domain: fr.cloud.gov
   buildpack: python_buildpack
+services:
+  - redis-accounts
 env:
   ENV: production

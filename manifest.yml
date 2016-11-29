@@ -3,6 +3,8 @@ applications:
 - name: uaaextra
   host: account
   buildpack: python_buildpack
+services:
+  - redis-accounts
 env:
   ENV: production
 #  UAA_BASE_URL: https://uaa.bosh-lite.com
