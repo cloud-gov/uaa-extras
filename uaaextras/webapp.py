@@ -481,7 +481,12 @@ def create_app(env=os.environ):
                     None,
                     verify_tls=app.config['UAA_VERIFY_TLS']
                 )
-                g.uaac.set_temporary_password(email, temporaryPassword)
+                g.uaac.set_temporary_password(
+                    app.config['UAA_CLIENT_ID'],
+                    app.config['UAA_CLIENT_SECRET'],
+                    email,
+                    temporaryPassword
+                )
                 logging.info('Set temporary password for {0}'.format(email))
                 return render_template('reset_password.html', password=temporaryPassword)
             except Exception:
