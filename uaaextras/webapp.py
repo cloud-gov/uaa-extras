@@ -39,6 +39,8 @@ PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-',
 if 'VCAP_SERVICES' in os.environ:
     services = json.loads(os.getenv('VCAP_SERVICES'))
     redis_env = services['redis28'][0]['credentials']
+    if 'ports' in redis_env:
+        del redis_env['ports']
 else:
     redis_env = dict(hostname='localhost', port=6379, password='')
 redis_env['host'] = redis_env['hostname']
