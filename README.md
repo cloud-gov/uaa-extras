@@ -14,19 +14,21 @@ For example, if you'll be deploying into Cloudfoundry on BOSH-lite your url woul
 
 This application uses oauth to perform actions on your behalf in UAA.  To add a new oauth client in UAA, run the following command:
 
-	uaac client add [your-client-id] --name "UAA Extras" --scope "scim.invite,password.write" --authorized_grant_types "authorization_code" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
+	uaac client add [your-client-id] --name "UAA Extras" --scope "scim.invite,password.write" --authorized_grant_types "client_credentials,authorization_code" --authorities "scim.read,uaa.admin" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
 
 Remember the client-id and client-secret, you'll need them in the next step
 
-#### Step Three: Configure the app
+#### Step Three: Create redis service instance
+
+Either create a locally running version of Redis, or create a service instance in Cloud Foundry if the app will be deployed there.
+
+EX:
+
+	cf create-service redis28 standard redis-accounts
+
+#### Step Four: Configure the app
 
 The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary
-
-#### Step Four: Ensure your UAA user has the proper scopes/groups
-
-Your UAA user must have the scim.invite scopes/group membership
-
-	uaac member add scim.invite [your-uaa-login]
 
 #### Step Five: Launch the app
 
@@ -55,3 +57,30 @@ to the cloud.gov IdP provider. This route is used to set the user's origin to
 the user, `cg-uaa-extras` will redirect to the `IDP_PROVIDER_URL` to complete
 the user's authentication and TOTP token creation. This is why the URL from the
 screenshot above is necessary for the `IDP_PROVIDER_URL`.
+
+### Development
+
+This project uses a `setup.py` to install dependencies. Run the following
+command to get started with development.
+
+```shell
+python3 ./setup.py install
+```
+
+To get a local server up, run the following command. Make sure you
+properly setup the environment variables mentioned above in the
+documentation.
+
+```shell
+./debug.py
+```
+
+#### Running tests
+
+Tests are run using `tox` and `flake8`.
+
+```shell
+pip install tox
+```
+
+To run the tests, simply run `tox` from the root of the repository.

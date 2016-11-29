@@ -4,6 +4,8 @@ import codecs
 import logging
 import os
 import smtplib
+import redis
+import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from talisman import Talisman
@@ -28,6 +30,36 @@ CONFIG_KEYS = {
     'IDP_PROVIDER_ORIGIN': 'https://idp.bosh-lite.com',
     'IDP_PROVIDER_URL': 'my.idp.com'
 }
+
+EXPIRATION_TIME_IN_SECONDS = 43200
+
+PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
+
+# Get Redis credentials
+if 'VCAP_SERVICES' in os.environ:
+    services = json.loads(os.getenv('VCAP_SERVICES'))
+    redis_env = services['redis28'][0]['credentials']
+else:
+    redis_env = dict(hostname='localhost', port=6379, password='')
+redis_env['host'] = redis_env['hostname']
+del redis_env['hostname']
+redis_env['port'] = int(redis_env['port'])
+
+# Connect to redis
+try:
+    r = redis.StrictRedis(**redis_env)
+    r.info()
+except redis.ConnectionError:
+    r = None
+
+
+def generate_temporary_password():
+    """ Generates a temporary password suitable for UAA """
+    passwordChars = string.ascii_letters + string.digits + ''.join(str(c) for c in PASSWORD_SPECIAL_CHARS)
+    newPassword = str(random.choice(string.ascii_letters))
+    for i in range(23):
+        newPassword += str(random.choice(list(passwordChars)))
+    return newPassword
 
 
 def generate_csrf_token():
@@ -153,7 +185,7 @@ def create_app(env=os.environ):
 
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
-        if request.endpoint and request.endpoint == 'oauth_login':
+        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'reset_password', 'static']:
             return
 
         # check our token, and expirary date
@@ -357,6 +389,103 @@ def create_app(env=os.environ):
             logging.exception('Error changing password')
 
         return render_template('password_changed.html')
+
+    @app.route('/forgot-password', methods=['GET', 'POST'])
+    def forgot_password():
+        identity_token = uuid.uuid4().hex
+
+        # start with giving them the form
+        if request.method == 'GET':
+            return render_template('forgot_password.html')
+
+        # if we've reached here we are POST so we can email user link
+        email = request.form.get('email_address', '')
+        if not email:
+            flash('Email cannot be blank.')
+            return render_template('forgot_password.html')
+        try:
+            v = validate_email(email)  # validate and get info
+            email = v["email"]  # replace with normalized form
+        except EmailNotValidError as exc:
+            # email is not valid, exception message is human-readable
+            flash(str(exc))
+            return render_template('forgot_password.html')
+
+        if r:
+            # If we've made it this far, it's a valid email so we'll generate and store a
+            # token and send an email.
+            logging.info('generating validation token for user')
+
+            branding = {
+                'company_name': app.config['BRANDING_COMPANY_NAME']
+            }
+
+            reset = {
+                'verifyLink': url_for('reset_password', validation=identity_token, _external=True)
+            }
+            logging.info(reset['verifyLink'])
+
+            subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
+            body = render_template('email/body-password.html', reset=reset, branding=branding)
+            send_email(app, email, subject, body)
+            r.setex(email, EXPIRATION_TIME_IN_SECONDS, identity_token)
+
+            return render_template('forgot_password.html', email_sent=True, email=email)
+
+        return render_template('error/internal.html'), 500
+
+    @app.route('/reset-password', methods=['GET', 'POST'])
+    def reset_password():
+
+        # start with giving them the form
+        if request.method == 'GET':
+
+            if 'validation' not in request.args:
+                flash('The password validation link is incomplete. Please verify your link is correct and try again.')
+                return render_template('reset_password.html', validation_code=None)
+
+            return render_template('reset_password.html', validation_code=request.args['validation'])
+
+        # if we've reached here we are POST so we can email user link
+        token = request.form.get('_validation_code', '')
+        email = request.form.get('email_address', '')
+        if not email:
+            flash('Email cannot be blank.')
+            return render_template('reset_password.html')
+        try:
+            v = validate_email(email)  # validate and get info
+            email = v["email"]  # replace with normalized form
+        except EmailNotValidError as exc:
+            # email is not valid, exception message is human-readable
+            flash(str(exc))
+            return render_template('reset_password.html')
+
+        # If we've made it this far, it's a valid email so let's verify the generated
+        # token with their email address.
+        if r:
+            userToken = r.get(email)
+
+            if userToken.decode('utf-8') == token:
+                logging.info('Successfully verified email {0}'.format(userToken))
+                r.delete(email)
+            else:
+                flash('Valid token not found. Please try your forgot password request again.')
+                return render_template('reset_password.html')
+
+            temporaryPassword = generate_temporary_password()
+            try:
+                g.uaac = UAAClient(
+                    app.config['UAA_BASE_URL'],
+                    None,
+                    verify_tls=app.config['UAA_VERIFY_TLS']
+                )
+                g.uaac.set_temporary_password(email, temporaryPassword)
+                logging.info('Set temporary password for {0}'.format(email))
+                return render_template('reset_password.html', password=temporaryPassword)
+            except Exception:
+                logging.exception('An error occured during the invite process')
+
+        return render_template('error/internal.html'), 500
 
     @app.route('/logout')
     def logout():

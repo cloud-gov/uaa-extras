@@ -305,6 +305,194 @@ class TestAppConfig(unittest.TestCase):
                 assert flask.session['UAA_TOKEN'] == 'foo'
                 assert flask.session['UAA_TOKEN_SCOPES'] == ['scim.invite']
 
+    @patch('uaaextras.webapp.render_template')
+    def test_get_change_password(self, render_template):
+        """ When a GET request is made to /change-password,
+            the change_password.html template is displayed
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['UAA_TOKEN'] = 'foo'
+
+            rv = c.get('/change-password')
+            assert rv.status_code == 200
+            render_template.assert_called_with('change_password.html')
+
+    @patch('uaaextras.webapp.render_template')
+    def test_get_forgot_password(self, render_template):
+        """ When a GET request is made to /forgot-password,
+            the forgot_password.html template is displayed
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+
+            rv = c.get('/forgot-password')
+            assert rv.status_code == 200
+            render_template.assert_called_with('forgot_password.html')
+
+    @patch('uaaextras.webapp.render_template')
+    def test_no_redis_forgot_password(self, render_template):
+        """ When submitting an email and redis is down, server responsds 500
+        """
+
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post('/forgot-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
+            assert rv.status_code == 500
+            render_template.assert_called_with('error/internal.html')
+
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.r')
+    @patch('uaaextras.webapp.smtplib')
+    @patch('uaaextras.webapp.uuid')
+    @patch('uaaextras.webapp.EXPIRATION_TIME_IN_SECONDS')
+    def test_setting_email_in_redis(
+        self,
+        EXPIRATION_TIME_IN_SECONDS,
+        uuid,
+        smtplib,
+        redis_conn,
+        render_template
+    ):
+        """ When submitting an email, the email and token are set in the Redis DB
+        """
+
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post('/forgot-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
+            assert rv.status_code == 200
+            redis_conn.setex.assert_called_with('test@example.com', EXPIRATION_TIME_IN_SECONDS, uuid.uuid4().hex)
+            render_template.assert_called_with(
+                'forgot_password.html',
+                email_sent=True,
+                email='test@example.com'
+            )
+
+    @patch('uaaextras.webapp.render_template')
+    def test_get_reset_password(self, render_template):
+        """ When a GET request is made to /reset-password,
+            and the validation code is passed in correctly
+            the reset_password.html template is displayed
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+
+            rv = c.get('/reset-password?validation=foo')
+            assert rv.status_code == 200
+            render_template.assert_called_with('reset_password.html', validation_code='foo')
+
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.render_template')
+    def test_get_reset_password_bad_code(self, render_template, flash):
+        """ When a GET request is made to /reset-password,
+            and the validation code is not passed in correctly
+            the reset_password.html template is displayed
+            and error message is put in flash
+        """
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+
+            rv = c.get('/reset-password')
+            assert rv.status_code == 200
+            render_template.assert_called_with('reset_password.html', validation_code=None)
+            flash.assert_called_once()
+
+    @patch('uaaextras.webapp.render_template')
+    def test_no_redis_reset_password(self, render_template):
+        """ When submitting an email and redis is down, server responsds 500
+        """
+
+        render_template.return_value = 'template output'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_validation_code'] = 'bar'
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post('/reset-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
+            assert rv.status_code == 500
+            render_template.assert_called_with('error/internal.html')
+
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.r')
+    @patch('uaaextras.webapp.generate_temporary_password')
+    @patch('uaaextras.webapp.UAAClient')
+    def test_render_temporary_password(
+        self,
+        uaac,
+        generate_temporary_password,
+        redis_conn,
+        render_template
+    ):
+        """ When submitting an email and a valid token, we should render a temporary password.
+        """
+
+        render_template.return_value = 'template output'
+        redis_conn.get.return_value = b'example'
+        uaac().set_temporary_password.return_value = generate_temporary_password()
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post(
+                '/reset-password',
+                data={
+                    'email_address': 'test@example.com',
+                    '_validation_code': 'example',
+                    '_csrf_token': 'bar'
+                }
+            )
+            assert rv.status_code == 200
+            redis_conn.get.assert_called_with('test@example.com')
+            redis_conn.delete.assert_called_with('test@example.com')
+            render_template.assert_called_with('reset_password.html', password=generate_temporary_password())
+
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.r')
+    def test_fail_to_render_temporary_password(
+        self,
+        redis_conn,
+        flash,
+        render_template
+    ):
+        """ When submitting an email without a valid token, I should see a flash error message.
+        """
+
+        render_template.return_value = 'template output'
+        redis_conn.get.return_value = b'example'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post(
+                '/reset-password',
+                data={
+                    'email_address': 'test@example.com',
+                    '_validation_code': 'not-example',
+                    '_csrf_token': 'bar'
+                }
+            )
+            assert rv.status_code == 200
+            redis_conn.get.assert_called_with('test@example.com')
+            render_template.assert_called_with('reset_password.html')
+            flash.assert_called_once()
+
 
 class TestUAAClient(unittest.TestCase):
     """Test our UAA Client"""
