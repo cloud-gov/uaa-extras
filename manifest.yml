@@ -19,4 +19,3 @@ env:
 #  BRANDING_COMPANY_NAME: Testoku
 #  IDP_PROVIDER_ORIGIN: my.idp.com
 #  IDP_PROVIDER_URL: https://idp.bosh-lite.com
-#  ACCOUNTS_BASE_URL: https://account.bosh-lite.com
