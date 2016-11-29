@@ -32,6 +32,8 @@ CONFIG_KEYS = {
     'ACCOUNTS_BASE_URL': 'https://accounts.bosh-lite.com'
 }
 
+EXPIRATION_TIME_IN_SECONDS = 43200
+
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
 
 # Get Redis credentials
@@ -391,8 +393,7 @@ def create_app(env=os.environ):
 
     @app.route('/forgot-password', methods=['GET', 'POST'])
     def forgot_password():
-        EXPIRATION_TIME = 43200
-        IDENTITY_TOKEN = uuid.uuid4().hex
+        identity_token = uuid.uuid4().hex
 
         # start with giving them the form
         if request.method == 'GET':
@@ -423,7 +424,7 @@ def create_app(env=os.environ):
             reset = {
                 'verifyLink': '{0}/reset-password?validation={1}'.format(
                     app.config['ACCOUNTS_BASE_URL'],
-                    IDENTITY_TOKEN
+                    identity_token
                 )
             }
             logging.info(reset['verifyLink'])
@@ -431,7 +432,7 @@ def create_app(env=os.environ):
             subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
             body = render_template('email/body-password.html', reset=reset, branding=branding)
             send_email(app, email, subject, body)
-            r.setex(email, EXPIRATION_TIME, IDENTITY_TOKEN)
+            r.setex(email, EXPIRATION_TIME_IN_SECONDS, identity_token)
 
             return render_template('forgot_password.html', email_sent=True, email=email)
 
@@ -468,15 +469,20 @@ def create_app(env=os.environ):
         if r:
             userToken = r.get(email)
 
-            if userToken is None:
-                flash('Token has expired. Please try your forgot password request again.')
-                return render_template('reset_password.html')
-            elif userToken.decode('utf-8') == token:
+            if userToken.decode('utf-8') == token:
                 logging.info('Successfully verified email {0}'.format(userToken))
                 r.delete(email)
+            else:
+                flash('Valid token not found. Please try your forgot password request again.')
+                return render_template('reset_password.html')
 
             temporaryPassword = generate_temporary_password()
             try:
+                g.uaac = UAAClient(
+                    app.config['UAA_BASE_URL'],
+                    None,
+                    verify_tls=app.config['UAA_VERIFY_TLS']
+                )
                 g.uaac.set_temporary_password(email, temporaryPassword)
                 logging.info('Set temporary password for {0}'.format(email))
                 return render_template('reset_password.html', password=temporaryPassword)
