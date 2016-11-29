@@ -421,10 +421,7 @@ def create_app(env=os.environ):
             }
 
             reset = {
-                'verifyLink': '{0}/reset-password?validation={1}'.format(
-                    url_for('index', _external=True),
-                    identity_token
-                )
+                'verifyLink': url_for('reset_password', validation=identity_token, _external=True)
             }
             logging.info(reset['verifyLink'])
 
