@@ -349,7 +349,6 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('error/internal.html')
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r.setex')
     @patch('uaaextras.webapp.r')
     @patch('uaaextras.webapp.smtplib')
     @patch('uaaextras.webapp.uuid')
@@ -360,7 +359,6 @@ class TestAppConfig(unittest.TestCase):
         uuid,
         smtplib,
         redis_conn,
-        redis_setex,
         render_template
     ):
         """ When submitting an email, the email and token are set in the Redis DB
@@ -374,7 +372,7 @@ class TestAppConfig(unittest.TestCase):
 
             rv = c.post('/forgot-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 200
-            redis_setex.assert_called_with('test@example.com', EXPIRATION_TIME_IN_SECONDS, uuid.uuid4().hex)
+            redis_conn.setex.assert_called_with('test@example.com', EXPIRATION_TIME_IN_SECONDS, uuid.uuid4().hex)
             render_template.assert_called_with(
                 'forgot_password.html',
                 email_sent=True,
@@ -429,8 +427,6 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('error/internal.html')
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r.get')
-    @patch('uaaextras.webapp.r.delete')
     @patch('uaaextras.webapp.r')
     @patch('uaaextras.webapp.generate_temporary_password')
     @patch('uaaextras.webapp.UAAClient')
@@ -439,15 +435,13 @@ class TestAppConfig(unittest.TestCase):
         uaac,
         generate_temporary_password,
         redis_conn,
-        redis_delete,
-        redis_get,
         render_template
     ):
         """ When submitting an email and a valid token, we should render a temporary password.
         """
 
         render_template.return_value = 'template output'
-        redis_get.return_value = b'example'
+        redis_conn.get.return_value = b'example'
         uaac().set_temporary_password.return_value = generate_temporary_password()
 
         with app.test_client() as c:
@@ -463,18 +457,16 @@ class TestAppConfig(unittest.TestCase):
                 }
             )
             assert rv.status_code == 200
-            redis_get.assert_called_with('test@example.com')
-            redis_delete.assert_called_with('test@example.com')
+            redis_conn.get.assert_called_with('test@example.com')
+            redis_conn.delete.assert_called_with('test@example.com')
             render_template.assert_called_with('reset_password.html', password=generate_temporary_password())
 
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.flash')
-    @patch('uaaextras.webapp.r.get')
     @patch('uaaextras.webapp.r')
     def test_fail_to_render_temporary_password(
         self,
         redis_conn,
-        redis_get,
         flash,
         render_template
     ):
@@ -482,7 +474,7 @@ class TestAppConfig(unittest.TestCase):
         """
 
         render_template.return_value = 'template output'
-        redis_get.return_value = b'example'
+        redis_conn.get.return_value = b'example'
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
@@ -497,7 +489,7 @@ class TestAppConfig(unittest.TestCase):
                 }
             )
             assert rv.status_code == 200
-            redis_get.assert_called_with('test@example.com')
+            redis_conn.get.assert_called_with('test@example.com')
             render_template.assert_called_with('reset_password.html')
             flash.assert_called_once()
 
