@@ -28,8 +28,7 @@ CONFIG_KEYS = {
     'SMTP_PASS': None,
     'BRANDING_COMPANY_NAME': 'Cloud Foundry',
     'IDP_PROVIDER_ORIGIN': 'https://idp.bosh-lite.com',
-    'IDP_PROVIDER_URL': 'my.idp.com',
-    'ACCOUNTS_BASE_URL': 'https://accounts.bosh-lite.com'
+    'IDP_PROVIDER_URL': 'my.idp.com'
 }
 
 EXPIRATION_TIME_IN_SECONDS = 43200
@@ -423,7 +422,7 @@ def create_app(env=os.environ):
 
             reset = {
                 'verifyLink': '{0}/reset-password?validation={1}'.format(
-                    app.config['ACCOUNTS_BASE_URL'],
+                    url_for(_external=True),
                     identity_token
                 )
             }
