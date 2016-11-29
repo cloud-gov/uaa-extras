@@ -276,10 +276,9 @@ class UAAClient(object):
             'POST',
             params={
                 'grant_type': 'client_credentials',
-                'response_type': 'token',
-                'client_id': client_id,
-                'client_secret': client_secret
-            }
+                'response_type': 'token'
+            },
+            auth=HTTPBasicAuth(client_id, client_secret)
         )
         return self._request(
             urljoin('/Users', user_id, 'password'),
