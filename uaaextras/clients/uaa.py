@@ -282,7 +282,7 @@ class UAAClient(object):
         )['access_token']
         if token:
             userList = self._request(
-                '/ids/Users',
+                '/Users',
                 'GET',
                 params={
                     'filter': 'userName eq {0}'.format(username),
