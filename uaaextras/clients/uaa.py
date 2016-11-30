@@ -285,7 +285,7 @@ class UAAClient(object):
                 '/Users',
                 'GET',
                 params={
-                    'filter': 'userName eq {0}'.format(username),
+                    'filter': 'userName eq "{0}"'.format(username),
                     'count': 1
                 },
                 headers={
