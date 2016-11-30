@@ -258,7 +258,7 @@ class UAAClient(object):
             }
         )
 
-    def set_temporary_password(self, client_id, client_secret, user_id, new_password):
+    def set_temporary_password(self, client_id, client_secret, username, new_password):
         """ Changes password on behalf of the user with client credentials
         Args:
             client_id: The oauth client id that this code was generated for
@@ -269,7 +269,7 @@ class UAAClient(object):
             UAAError: there was an error changing the password
 
         Returns:
-            dict: an object representing the response with user_id and code
+            boolean: Success/failure
         """
         token = self._request(
             '/oauth/token',
@@ -279,14 +279,31 @@ class UAAClient(object):
                 'response_type': 'token'
             },
             auth=HTTPBasicAuth(client_id, client_secret)
-        )
-        return self._request(
-            urljoin('/Users', user_id, 'password'),
-            'PUT',
-            body={
-                'password': new_password
-            },
-            headers={
-                'Authorization': 'Bearer ' + token['access_token']
-            }
-        )
+        )['access_token']
+        if token:
+            userList = self._request(
+                '/ids/Users',
+                'GET',
+                params={
+                    'filter': 'userName eq {0}'.format(username),
+                    'count': 1
+                },
+                headers={
+                    'Authorization': 'Bearer ' + token
+                }
+            )
+            if len(userList['resources']) > 0:
+                user_id = userList['resources'][0]['id']
+                self._request(
+                    urljoin('/Users', user_id, 'password'),
+                    'PUT',
+                    body={
+                        'password': new_password
+                    },
+                    headers={
+                        'Authorization': 'Bearer ' + token
+                    }
+                )
+                return True
+
+        return False

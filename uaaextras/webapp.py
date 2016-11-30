@@ -468,7 +468,7 @@ def create_app(env=os.environ):
             userToken = r.get(email)
 
             if userToken.decode('utf-8') == token:
-                logging.info('Successfully verified email {0}'.format(userToken))
+                logging.info('Successfully verified token {0} for {1}'.format(userToken, email))
                 r.delete(email)
             else:
                 flash('Valid token not found. Please try your forgot password request again.')
@@ -481,16 +481,19 @@ def create_app(env=os.environ):
                     None,
                     verify_tls=app.config['UAA_VERIFY_TLS']
                 )
-                g.uaac.set_temporary_password(
+                if g.uaac.set_temporary_password(
                     app.config['UAA_CLIENT_ID'],
                     app.config['UAA_CLIENT_SECRET'],
                     email,
                     temporaryPassword
-                )
-                logging.info('Set temporary password for {0}'.format(email))
-                return render_template('reset_password.html', password=temporaryPassword)
+                ):
+                    logging.info('Set temporary password for {0}'.format(email))
+                    return render_template('reset_password.html', password=temporaryPassword)
+                else:
+                    flash('Unable to set temporary password. Did you use the right email address?')
+                    return render_template('reset_password.html')
             except Exception:
-                logging.exception('An error occured during the invite process')
+                logging.exception('Unable to set your temporary password.')
 
         return render_template('error/internal.html'), 500
 
