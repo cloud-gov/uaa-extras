@@ -320,6 +320,55 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('change_password.html')
 
+    @patch('uaaextras.webapp.redirect')
+    @patch('uaaextras.webapp.UAAClient')
+    def test_first_login_with_idp_provider(self, uaac, redirect):
+        """ When a GET request is made to /first-login,
+            the user is redirected to IDP_PROVIDER_URL with an origin of 'uaa'
+        """
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['UAA_TOKEN'] = 'foo'
+
+            user = {
+                'origin': 'uaa',
+                'userName': 'testUser'
+            }
+
+            uaac().decode_access_token.return_value = {
+                'user_id': 'example'
+            }
+            uaac().get_user.return_value = user
+
+            c.get('/first-login')
+            assert 'externalId' in user
+            assert user['origin'] == app.config['IDP_PROVIDER_ORIGIN']
+            redirect.assert_called_with(app.config['IDP_PROVIDER_URL'])
+
+    @patch('uaaextras.webapp.redirect')
+    @patch('uaaextras.webapp.UAAClient')
+    def test_first_login_with_uaa_provider(self, uaac, redirect):
+        """ When a GET request is made to /first-login,
+            the user is redirected to UAA_BASE_URL with an origin other
+            than 'uaa'.
+        """
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['UAA_TOKEN'] = 'foo'
+
+            user = {
+                'origin': 'example',
+                'userName': 'testUser'
+            }
+
+            uaac().decode_access_token.return_value = {
+                'user_id': 'example'
+            }
+            uaac().get_user.return_value = user
+
+            c.get('/first-login')
+            redirect.assert_called_with(app.config['UAA_BASE_URL'])
+
     @patch('uaaextras.webapp.render_template')
     def test_get_forgot_password(self, render_template):
         """ When a GET request is made to /forgot-password,
