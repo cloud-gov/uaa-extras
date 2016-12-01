@@ -218,6 +218,8 @@ class TestAppConfig(unittest.TestCase):
         """When an error occurs during the invite process, the error/internal.html template is displayed"""
 
         uaac().invite_users.return_value = {'failed_invites': [{'fail': 'here'}], 'new_invites': []}
+        uaac().does_origin_user_exist.return_value = False
+
         render_template.return_value = 'template content'
 
         with app.test_client() as c:
@@ -238,6 +240,7 @@ class TestAppConfig(unittest.TestCase):
         """When an invite is sucessfully sent, the invite_sent template is displayed"""
 
         uaac().invite_users.return_value = {'failed_invites': [], 'new_invites': [{'some': 'invite'}]}
+        uaac().does_origin_user_exist.return_value = False
 
         render_template.return_value = 'template content'
 
@@ -249,6 +252,26 @@ class TestAppConfig(unittest.TestCase):
             rv = c.post('/invite', data={'email': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 200
             render_template.assert_called_with('invite_sent.html')
+
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.render_template')
+    def test_invite_user_exists(self, render_template, flash, uaac):
+        """When an user already exists during invite process, the invite.html template is displayed"""
+
+        uaac().does_origin_user_exist.return_value = True
+
+        render_template.return_value = 'template content'
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['UAA_TOKEN'] = 'foo'
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post('/invite', data={'email': 'test@example.com', '_csrf_token': 'bar'})
+            assert rv.status_code == 200
+            render_template.assert_called_with('invite.html')
+            flash.assert_called_once()
 
     @patch('uaaextras.webapp.session')
     def test_logout_good(self, session):
