@@ -84,3 +84,12 @@ pip install tox
 ```
 
 To run the tests, simply run `tox` from the root of the repository.
+
+### Deployment
+
+This repository leverages [Concourse](https://concourse.ci). The configuration
+files all reside in the `ci/` directory. All pull requests should have `staging`
+as a base branch which will automatically trigger a deployment for the staging
+job. Once development is stable on `staging`, create a new pull request
+promoting all the changes on `staging` to `master` to deploy the application in
+the production environment.
