@@ -5,7 +5,7 @@ jobs:
   - get: cg-uaa-extras-app-staging
     trigger: true
   - task: test
-    file: cg-uaa-extras-app/ci/test.yml
+    file: cg-uaa-extras-app-staging/ci/test.yml
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
@@ -47,7 +47,7 @@ jobs:
   - get: cg-uaa-extras-app-production
     trigger: true
   - task: test
-    file: cg-uaa-extras-app/ci/test.yml
+    file: cg-uaa-extras-app-production/ci/test.yml
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
