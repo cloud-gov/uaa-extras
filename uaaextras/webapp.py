@@ -27,8 +27,8 @@ CONFIG_KEYS = {
     'SMTP_USER': None,
     'SMTP_PASS': None,
     'BRANDING_COMPANY_NAME': 'Cloud Foundry',
-    'IDP_PROVIDER_ORIGIN': 'https://idp.bosh-lite.com',
-    'IDP_PROVIDER_URL': 'my.idp.com'
+    'IDP_PROVIDER_ORIGIN': 'idp.com',
+    'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com'
 }
 
 EXPIRATION_TIME_IN_SECONDS = 43200
@@ -294,6 +294,14 @@ def create_app(env=os.environ):
 
         # email is good, lets invite them
         try:
+            if g.uaac.does_origin_user_exist(
+                    app.config['UAA_CLIENT_ID'],
+                    app.config['UAA_CLIENT_SECRET'],
+                    email,
+                    app.config['IDP_PROVIDER_ORIGIN']):
+                flash('User already has a valid account.')
+                return render_template('invite.html')
+
             redirect_uri = os.path.join(request.url_root, 'oauth', 'login')
             logging.info('redirect for invite: {0}'.format(redirect_uri))
             invite = g.uaac.invite_users(email, redirect_uri)

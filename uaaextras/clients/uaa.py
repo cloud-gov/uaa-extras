@@ -307,3 +307,42 @@ class UAAClient(object):
                 return True
 
         return False
+
+    def does_origin_user_exist(self, client_id, client_secret, username, origin):
+        """ Checks to see if a user exists with a given origin
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+            user_id: the username to check
+            origin: the UAA origin
+        Raises:
+            UAAError: there was an error changing the password
+
+        Returns:
+            boolean: user exists or not
+        """
+        token = self._request(
+            '/oauth/token',
+            'POST',
+            params={
+                'grant_type': 'client_credentials',
+                'response_type': 'token'
+            },
+            auth=HTTPBasicAuth(client_id, client_secret)
+        )['access_token']
+        if token:
+            userList = self._request(
+                '/Users',
+                'GET',
+                params={
+                    'filter': 'userName eq "{0}" and origin eq "{1}"'.format(username, origin),
+                    'count': 1
+                },
+                headers={
+                    'Authorization': 'Bearer ' + token
+                }
+            )
+            if len(userList['resources']) > 0:
+                return True
+
+        return False
