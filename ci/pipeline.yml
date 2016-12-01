@@ -10,7 +10,6 @@ jobs:
     params:
       manifest: {{cf-manifest-staging}}
       path: cg-uaa-extras-app
-      current_app_name: invite
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
         UAA_CLIENT_ID: {{uaa-client-id-staging}}
@@ -54,7 +53,6 @@ jobs:
     params:
       manifest: {{cf-manifest-production}}
       path: cg-uaa-extras-app
-      current_app_name: invite
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
         UAA_CLIENT_ID: {{uaa-client-id-production}}
