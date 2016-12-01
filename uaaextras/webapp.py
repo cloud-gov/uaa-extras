@@ -46,12 +46,15 @@ else:
 redis_env['host'] = redis_env['hostname']
 del redis_env['hostname']
 redis_env['port'] = int(redis_env['port'])
+redis_env['socket_timeout'] = 0.5
+redis_env['socket_connect_timeout'] = 0.5
 
 # Connect to redis
 try:
     r = redis.StrictRedis(**redis_env)
     r.info()
-except redis.ConnectionError:
+except Exception as exc:
+    logging.warn('Unable to connect to Redis: {0}'.format(exc))
     r = None
 
 
