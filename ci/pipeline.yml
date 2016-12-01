@@ -46,7 +46,6 @@ jobs:
   plan:
   - get: cg-uaa-extras-app-production
     trigger: true
-    passed: [deploy-staging]
   - task: test
     file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-production
