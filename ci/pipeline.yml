@@ -6,6 +6,8 @@ jobs:
     trigger: true
   - task: test
     file: cg-uaa-extras-app-staging/ci/test.yml
+    input_mapping:
+      cg-uaa-extras-app: cg-uaa-extras-app-staging
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
@@ -48,6 +50,8 @@ jobs:
     trigger: true
   - task: test
     file: cg-uaa-extras-app-production/ci/test.yml
+    input_mapping:
+      cg-uaa-extras-app: cg-uaa-extras-app-production
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
