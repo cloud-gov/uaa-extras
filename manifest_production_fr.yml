@@ -1,10 +1,18 @@
 ---
 applications:
+- name: invite
+  host: invite
+  domain: fr.cloud.gov
+  buildpack: staticfile_buildpack
+  path: redirect
+  env:
+    TARGET_DOMAIN: account.fr.cloud.gov/invite
 - name: uaaextra
   host: account
   domain: fr.cloud.gov
   buildpack: python_buildpack
-services:
+  instances: 2
+  services:
   - redis-accounts
-env:
-  ENV: production
+  env:
+    ENV: production
