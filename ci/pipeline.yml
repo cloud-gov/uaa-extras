@@ -2,14 +2,16 @@
 jobs:
 - name: deploy-staging
   plan:
-  - get: cg-uaa-extras-app
+  - get: cg-uaa-extras-app-staging
     trigger: true
   - task: test
-    file: cg-uaa-extras-app/ci/test.yml
+    file: cg-uaa-extras-app-staging/ci/test.yml
+    input_mapping:
+      cg-uaa-extras-app: cg-uaa-extras-app-staging
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
-      path: cg-uaa-extras-app
+      path: cg-uaa-extras-app-staging
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
         UAA_CLIENT_ID: {{uaa-client-id-staging}}
@@ -44,15 +46,16 @@ jobs:
 
 - name: deploy-production
   plan:
-  - get: cg-uaa-extras-app
+  - get: cg-uaa-extras-app-production
     trigger: true
-    passed: [deploy-staging]
   - task: test
-    file: cg-uaa-extras-app/ci/test.yml
+    file: cg-uaa-extras-app-production/ci/test.yml
+    input_mapping:
+      cg-uaa-extras-app: cg-uaa-extras-app-production
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
-      path: cg-uaa-extras-app
+      path: cg-uaa-extras-app-production
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
         UAA_CLIENT_ID: {{uaa-client-id-production}}
@@ -86,7 +89,13 @@ jobs:
       icon_url: {{slack-icon-url}}
 
 resources:
-- name: cg-uaa-extras-app
+- name: cg-uaa-extras-app-staging
+  type: git
+  source:
+    uri: {{cg-uaa-extras-git-url}}
+    branch: staging
+
+- name: cg-uaa-extras-app-production
   type: git
   source:
     uri: {{cg-uaa-extras-git-url}}
