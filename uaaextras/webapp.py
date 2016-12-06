@@ -373,6 +373,8 @@ def create_app(env=os.environ):
         new_password = request.form.get('new_password', '')
         repeat_password = request.form.get('repeat_password', '')
         errors = []
+        if old_password == new_password or old_password == repeat_password:
+            errors.append('Your new password cannot match your old password.')
         if not old_password:
             errors.append('Your old password cannot be blank.')
         if not new_password:
@@ -398,10 +400,15 @@ def create_app(env=os.environ):
 
         try:
             g.uaac.change_password(decoded_token['user_id'], old_password, new_password)
-        except:
+            return render_template('password_changed.html')
+        except UAAError as exc:
+            for error in str(exc).split(','):
+                flash(error)
+            return render_template('change_password.html')
+        except Exception:
             logging.exception('Error changing password')
 
-        return render_template('password_changed.html')
+        return render_template('error/internal.html'), 500
 
     @app.route('/forgot-password', methods=['GET', 'POST'])
     def forgot_password():
