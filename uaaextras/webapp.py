@@ -1,5 +1,6 @@
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
+from datetime import timedelta
 import codecs
 import logging
 import os
@@ -251,7 +252,7 @@ def create_app(env=os.environ):
 
             # make flask expire our session for us, by expiring it shortly before the token expires
             session.permanent = True
-            app.permanent_session_lifetime = token['expires_in'] - 30
+            app.permanent_session_lifetime = timedelta(seconds=token['expires_in'] - 30)
 
             # stash the stuff we care about
             session['UAA_TOKEN'] = token['access_token']
