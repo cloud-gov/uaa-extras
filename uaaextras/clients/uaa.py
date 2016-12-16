@@ -98,6 +98,30 @@ class UAAClient(object):
         # return the response
         return json.loads(response.text)
 
+    def _get_client_token(self, client_id, client_secret):
+        """ Returns the client credentials token
+
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+
+        Raises:
+            UAAError: there was an error getting the token
+
+        Returns:
+            dict: An object representing the token
+
+        """
+        return self._request(
+            '/oauth/token',
+            'POST',
+            params={
+                'grant_type': 'client_credentials',
+                'response_type': 'token'
+            },
+            auth=HTTPBasicAuth(client_id, client_secret)
+        )
+
     def idps(self, active_only=True):
         """Return a list of IDPs from UAA
 
@@ -114,11 +138,12 @@ class UAAClient(object):
 
         return self._request('/identity-providers', 'GET', params={'active_only': str(active_only).lower()})
 
-    def users(self, list_filter=None):
+    def users(self, list_filter=None, token=None):
         """Return a list of users from UAA
 
         Args:
             list_filter(optional):  A filter to be applied to the users
+            token(optional): Bearer token to use for authentication
 
         Raises:
             UAAError: There was an error listing users
@@ -129,10 +154,30 @@ class UAAClient(object):
         """
 
         params = None
+        headers = {}
         if list_filter:
             params = {'filter': list_filter}
+        if token:
+            headers = {'Authorization': 'Bearer ' + token}
 
-        return self._request('/Users', 'GET', params=params)
+        return self._request('/Users', 'GET', params=params, headers=headers)
+
+    def client_users(self, client_id, client_secret, list_filter=None):
+        """ Return a list of users from UAA with client credentials
+
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+            list_filter(optional):  A filter to be applied to the users
+
+        Raises:
+            UAAError: there was an error changing the password
+
+        Returns:
+            dict:  A list of users matching list_filter
+        """
+        token = self._get_client_token(client_id, client_secret)['access_token']
+        return self.users(filter=list_filter, token=token)
 
     def get_user(self, user_id):
         """Retrive a user from UAA by their user id
@@ -243,6 +288,7 @@ class UAAClient(object):
             user_id: the user id to act on
             old_password: the users current password
             new_password: the users desired password
+
         Raises:
             UAAError: there was an error changing the password
 
@@ -260,26 +306,20 @@ class UAAClient(object):
 
     def set_temporary_password(self, client_id, client_secret, username, new_password):
         """ Changes password on behalf of the user with client credentials
+
         Args:
             client_id: The oauth client id that this code was generated for
             client_secret: The secret for the client_id above
             user_id: the user id to act on
             new_password: the users desired password
+
         Raises:
             UAAError: there was an error changing the password
 
         Returns:
             boolean: Success/failure
         """
-        token = self._request(
-            '/oauth/token',
-            'POST',
-            params={
-                'grant_type': 'client_credentials',
-                'response_type': 'token'
-            },
-            auth=HTTPBasicAuth(client_id, client_secret)
-        )['access_token']
+        token = self._get_client_token(client_id, client_secret)['access_token']
         if token:
             userList = self._request(
                 '/Users',
@@ -310,26 +350,20 @@ class UAAClient(object):
 
     def does_origin_user_exist(self, client_id, client_secret, username, origin):
         """ Checks to see if a user exists with a given origin
+
         Args:
             client_id: The oauth client id that this code was generated for
             client_secret: The secret for the client_id above
             user_id: the username to check
             origin: the UAA origin
+
         Raises:
             UAAError: there was an error changing the password
 
         Returns:
             boolean: user exists or not
         """
-        token = self._request(
-            '/oauth/token',
-            'POST',
-            params={
-                'grant_type': 'client_credentials',
-                'response_type': 'token'
-            },
-            auth=HTTPBasicAuth(client_id, client_secret)
-        )['access_token']
+        token = self._get_client_token(client_id, client_secret)['access_token']
         if token:
             userList = self._request(
                 '/Users',

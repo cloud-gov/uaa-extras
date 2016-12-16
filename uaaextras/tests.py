@@ -764,10 +764,16 @@ class TestUAAClient(unittest.TestCase):
         uaac._request = m
 
         uaac.users()
-        m.assert_called_with('/Users', 'GET', params=None)
+        m.assert_called_with('/Users', 'GET', params=None, headers={})
 
-        uaac.users('test filter')
-        m.assert_called_with('/Users', 'GET', params={'filter': 'test filter'})
+        uaac.users(list_filter='test filter')
+        m.assert_called_with('/Users', 'GET', params={'filter': 'test filter'}, headers={})
+
+        uaac.users(token='FOO')
+        m.assert_called_with('/Users', 'GET', params=None, headers={'Authorization': 'Bearer FOO'})
+
+        uaac.users('test filter', 'FOO')
+        m.assert_called_with('/Users', 'GET', params={'filter': 'test filter'}, headers={'Authorization': 'Bearer FOO'})
 
     def test_get_user(self):
         """get_user() makes a GET request to /Users/<id>"""
@@ -844,6 +850,28 @@ class TestUAAClient(unittest.TestCase):
         assert kwargs['auth'].username == 'bar'
         assert kwargs['auth'].password == 'baz'
 
+    def test_get_client_token(self):
+        """_get_client_token() makes a POST to /oauth/token with the appropriate headers and query params"""
+
+        uaac = UAAClient('http://example.com', 'foo', False)
+        m = Mock()
+        uaac._request = m
+
+        uaac._get_client_token('bar', 'baz')
+
+        args, kwargs = m.call_args
+
+        assert args == ('/oauth/token', 'POST')
+
+        assert kwargs['params'] == {
+            'grant_type': 'client_credentials',
+            'response_type': 'token'
+        }
+
+        assert isinstance(kwargs['auth'], HTTPBasicAuth)
+        assert kwargs['auth'].username == 'bar'
+        assert kwargs['auth'].password == 'baz'
+
     def test_decode_access_token(self):
         """decode_access_token() does a base64 decode of the JWT auth token data to get profile information"""
         uaac = UAAClient('http://example.com', 'foo', False)
@@ -852,3 +880,21 @@ class TestUAAClient(unittest.TestCase):
 
         assert 'scope' in profile
         assert 'exp' in profile
+
+    def test_change_password(self):
+        """change_password() makes a PUT request to /Users/<id>/password"""
+
+        uaac = UAAClient('http://example.com', 'foo', False)
+        m = Mock()
+        uaac._request = m
+
+        uaac.change_password('foo', 'bar', 'baz')
+
+        m.assert_called_with(
+            '/Users/foo/password',
+            'PUT',
+            body={
+                'oldPassword': 'bar',
+                'password': 'baz'
+            }
+        )
