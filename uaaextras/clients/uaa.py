@@ -177,7 +177,7 @@ class UAAClient(object):
             dict:  A list of users matching list_filter
         """
         token = self._get_client_token(client_id, client_secret)['access_token']
-        return self.users(filter=list_filter, token=token, start=start)
+        return self.users(list_filter=list_filter, token=token, start=start)
 
     def get_user(self, user_id):
         """Retrive a user from UAA by their user id
@@ -363,20 +363,11 @@ class UAAClient(object):
         Returns:
             boolean: user exists or not
         """
-        token = self._get_client_token(client_id, client_secret)['access_token']
-        if token:
-            userList = self._request(
-                '/Users',
-                'GET',
-                params={
-                    'filter': 'userName eq "{0}" and origin eq "{1}"'.format(username, origin),
-                    'count': 1
-                },
-                headers={
-                    'Authorization': 'Bearer ' + token
-                }
-            )
-            if len(userList['resources']) > 0:
-                return True
+
+        list_filter = 'userName eq "{0}" and origin eq "{1}"'.format(username, origin)
+        userList = self.client_users(client_id, client_secret, list_filter=list_filter)
+
+        if len(userList['resources']) > 0:
+            return True
 
         return False
