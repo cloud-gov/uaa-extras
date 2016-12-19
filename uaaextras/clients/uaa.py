@@ -138,7 +138,7 @@ class UAAClient(object):
 
         return self._request('/identity-providers', 'GET', params={'active_only': str(active_only).lower()})
 
-    def users(self, list_filter=None, token=None):
+    def users(self, list_filter=None, token=None, start=1):
         """Return a list of users from UAA
 
         Args:
@@ -153,16 +153,16 @@ class UAAClient(object):
 
         """
 
-        params = None
         headers = {}
+        params = {'startIndex': start}
         if list_filter:
-            params = {'filter': list_filter}
+            params['filter'] = list_filter
         if token:
             headers = {'Authorization': 'Bearer ' + token}
 
         return self._request('/Users', 'GET', params=params, headers=headers)
 
-    def client_users(self, client_id, client_secret, list_filter=None):
+    def client_users(self, client_id, client_secret, list_filter=None, start=1):
         """ Return a list of users from UAA with client credentials
 
         Args:
@@ -177,7 +177,7 @@ class UAAClient(object):
             dict:  A list of users matching list_filter
         """
         token = self._get_client_token(client_id, client_secret)['access_token']
-        return self.users(filter=list_filter, token=token)
+        return self.users(filter=list_filter, token=token, start=start)
 
     def get_user(self, user_id):
         """Retrive a user from UAA by their user id
