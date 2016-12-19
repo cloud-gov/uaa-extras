@@ -29,7 +29,8 @@ CONFIG_KEYS = {
     'SMTP_PASS': None,
     'BRANDING_COMPANY_NAME': 'Cloud Foundry',
     'IDP_PROVIDER_ORIGIN': 'idp.com',
-    'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com'
+    'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com',
+    'EXPIRATION_WARN_DAYS': '10'
 }
 
 EXPIRATION_TIME_IN_SECONDS = 43200
@@ -131,6 +132,38 @@ def send_email(app, email, subject, body):
     return True
 
 
+def do_expiring_pw_notifications(app, start=1):
+    """Sends a notice by email to users that their password will expire soon
+
+    Args:
+        app(flask.App): The application sending the email
+
+    """
+
+    list_filter = 'origin eq "{0}"'.format(app.config['IDP_PROVIDER_ORIGIN'])
+    uaac = UAAClient(app.config['UAA_BASE_URL'], None,
+                     verify_tls=app.config['UAA_VERIFY_TLS'])
+    users = uaac.client_users(app.config['UAA_CLIENT_ID'], app.config['UAA_CLIENT_SECRET'],
+                              list_filter=list_filter, start=start)
+
+    logging.info('trying to iterate users now..')
+    logging.info(users)
+    for user in users['resources']:
+        logging.info(user)
+
+    totalResults = users['totalResults']
+    itemsPerPage = users['itemsPerPage']
+    logging.info('totalResults: {0}'.format(totalResults))
+    if totalResults > itemsPerPage:
+        numPages, remainder = divmod(totalResults, itemsPerPage)
+        if remainder:
+            numPages += 1
+        logging.info('Num Pages: {0}'.format(numPages))
+        currentPage = divmod(start, itemsPerPage) + 1
+        if currentPage < numPages:
+            do_expiring_pw_notifications(app, start + itemsPerPage)
+
+
 def create_app(env=os.environ):
     """Create an instance of the web application"""
     # setup our app config
@@ -178,6 +211,9 @@ def create_app(env=os.environ):
     logging.info('Loaded application configuration:')
     for ck in sorted(CONFIG_KEYS.keys()):
         logging.info('{0}: {1}'.format(ck, app.config[ck]))
+
+    # with app.app_context():
+    #     do_expiring_pw_notifications(app)
 
     @app.before_request
     def have_uaa_and_csrf_token():
