@@ -764,16 +764,22 @@ class TestUAAClient(unittest.TestCase):
         uaac._request = m
 
         uaac.users()
-        m.assert_called_with('/Users', 'GET', params=None, headers={})
+        m.assert_called_with('/Users', 'GET', params={'startIndex': 1}, headers={})
+
+        uaac.users(start=2)
+        m.assert_called_with('/Users', 'GET', params={'startIndex': 2}, headers={})
 
         uaac.users(list_filter='test filter')
-        m.assert_called_with('/Users', 'GET', params={'filter': 'test filter'}, headers={})
+        m.assert_called_with('/Users', 'GET',
+                             params={'filter': 'test filter', 'startIndex': 1}, headers={})
 
         uaac.users(token='FOO')
-        m.assert_called_with('/Users', 'GET', params=None, headers={'Authorization': 'Bearer FOO'})
+        m.assert_called_with('/Users', 'GET', params={'startIndex': 1},
+                             headers={'Authorization': 'Bearer FOO'})
 
-        uaac.users('test filter', 'FOO')
-        m.assert_called_with('/Users', 'GET', params={'filter': 'test filter'}, headers={'Authorization': 'Bearer FOO'})
+        uaac.users('test filter', 'FOO', 9)
+        m.assert_called_with('/Users', 'GET', params={'filter': 'test filter', 'startIndex': 9},
+                             headers={'Authorization': 'Bearer FOO'})
 
     def test_get_user(self):
         """get_user() makes a GET request to /Users/<id>"""
