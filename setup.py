@@ -18,11 +18,12 @@ setup(
 
     install_requires=[
         'gunicorn==19.6.0',
-        'flask==0.11.1',
-        'requests==2.11.1',
+        'flask==0.12',
+        'requests==2.12.4',
         'email_validator==1.0.1',
         'talisman==0.1.0',
-        'redis==2.10.5'
+        'redis==2.10.5',
+        'schedule==0.4.2'
     ],
 
     test_suite='uaaextras.tests',
