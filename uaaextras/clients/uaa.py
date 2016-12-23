@@ -112,7 +112,7 @@ class UAAClient(object):
             dict: An object representing the token
 
         """
-        return self._request(
+        response = self._request(
             '/oauth/token',
             'POST',
             params={
@@ -121,6 +121,7 @@ class UAAClient(object):
             },
             auth=HTTPBasicAuth(client_id, client_secret)
         )
+        return response.get('access_token', None)
 
     def idps(self, active_only=True):
         """Return a list of IDPs from UAA
@@ -176,7 +177,7 @@ class UAAClient(object):
         Returns:
             dict:  A list of users matching list_filter
         """
-        token = self._get_client_token(client_id, client_secret)['access_token']
+        token = self._get_client_token(client_id, client_secret)
         return self.users(list_filter=list_filter, token=token, start=start)
 
     def get_user(self, user_id):
@@ -319,32 +320,23 @@ class UAAClient(object):
         Returns:
             boolean: Success/failure
         """
-        token = self._get_client_token(client_id, client_secret)['access_token']
-        if token:
-            userList = self._request(
-                '/Users',
-                'GET',
-                params={
-                    'filter': 'userName eq "{0}"'.format(username),
-                    'count': 1
+        list_filter = 'userName eq "{0}"'.format(username)
+        userList = self.client_users(client_id, client_secret, list_filter=list_filter)
+
+        if len(userList['resources']) > 0:
+            user_id = userList['resources'][0]['id']
+            token = self._get_client_token(client_id, client_secret)
+            self._request(
+                urljoin('/Users', user_id, 'password'),
+                'PUT',
+                body={
+                    'password': new_password
                 },
                 headers={
                     'Authorization': 'Bearer ' + token
                 }
             )
-            if len(userList['resources']) > 0:
-                user_id = userList['resources'][0]['id']
-                self._request(
-                    urljoin('/Users', user_id, 'password'),
-                    'PUT',
-                    body={
-                        'password': new_password
-                    },
-                    headers={
-                        'Authorization': 'Bearer ' + token
-                    }
-                )
-                return True
+            return True
 
         return False
 
