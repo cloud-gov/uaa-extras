@@ -166,15 +166,18 @@ class TestAppConfig(unittest.TestCase):
         uaac().client_users.assert_not_called()
 
     @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.timedelta')
+    @patch('uaaextras.webapp.datetime')
     @patch('uaaextras.webapp.divmod')
-    def test_notify_expiring_uaa_no_results(self, m_divmod, m_timedelta, uaac):
+    @patch('uaaextras.webapp.r')
+    def test_notify_expiring_uaa_no_results(self, redis_conn, m_divmod, m_datetime, uaac):
         """When UAA returns no results, make sure we don't do any time checking or paging"""
+
+        redis_conn.get.return_value = None
 
         uaac().client_users.return_value = {'totalResults': 0, 'itemsPerPage': 100, 'resources': []}
 
         do_expiring_pw_notifications(app, 'http://example.org/change')
-        m_timedelta.assert_not_called()
+        m_datetime.strptime.assert_not_called()
         m_divmod.assert_not_called()
 
     @patch('uaaextras.webapp.UAAClient')
