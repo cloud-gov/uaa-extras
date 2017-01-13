@@ -157,12 +157,17 @@ def do_expiring_pw_notifications(app, changeLink, start=1):
 
     # If we can't connect to redis, just skip
     if not r:
+        logging.warn("Unable to connect to redis, giving up!")
         return
 
     # figure if we need to run today, use redis
     now = datetime.now().date()
     ranToday = r.get(now)
+
+    logging.info("Checking if we've run on {0}: {1} (start {2})".format(now, ranToday, start))
+
     if ranToday and start == 1:
+        logging.info("Already run today, skipping! ({0}".format(now, ranToday, start))
         return
 
     # Let's make sure we don't run again today, and we can expire in a week
