@@ -167,7 +167,7 @@ def do_expiring_pw_notifications(app, changeLink, start=1):
     logging.info("Checking if we've run on {0}: {1} (start {2})".format(now, ranToday, start))
 
     if ranToday and start == 1:
-        logging.info("Already run today, skipping! ({0}".format(now, ranToday, start))
+        logging.info("Already run today, skipping! ({0} {1} {2})".format(now, ranToday, start))
         return
 
     # Let's make sure we don't run again today, and we can expire in a week
@@ -642,11 +642,14 @@ def create_app(env=os.environ):
 
         scheduler = Scheduler()
 
-        minutes = random.randrange(10)
-        tens_of_minutes = random.randrange(3)
+        # minutes = random.randrange(10)
+        # tens_of_minutes = random.randrange(3)
         # somewhere between 08:00 and 08:29 based on randomness above
-        job_time = "08:{0}{1}".format(tens_of_minutes, minutes)
-        scheduler.every().day.at(job_time).do(expiration_job)
+        # job_time = "08:{0}{1}".format(tens_of_minutes, minutes)
+        # scheduler.every().day.at(job_time).do(expiration_job)
+
+        scheduler.every().hour.do(expiration_job)
+
         schedThread = scheduler.daemon_thread(event=threadEvent)
         schedThread.start()
 
