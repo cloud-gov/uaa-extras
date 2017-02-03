@@ -357,6 +357,7 @@ def create_app(env=os.environ):
             user['origin'] = app.config['IDP_PROVIDER_ORIGIN']
             user['externalId'] = user['userName']
             g.uaac.put_user(user)
+        if user['origin'] == app.config['IDP_PROVIDER_ORIGIN']:
             return redirect(app.config['IDP_PROVIDER_URL'])
         else:
             return redirect(app.config['UAA_BASE_URL'])
