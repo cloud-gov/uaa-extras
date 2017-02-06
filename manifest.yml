@@ -4,6 +4,7 @@ applications:
   host: invite
   buildpack: staticfile_buildpack
   path: redirect
+  memory: 64M
   env:
     TARGET_DOMAIN: account.fr-stage.cloud.gov/invite
 - name: uaaextra
