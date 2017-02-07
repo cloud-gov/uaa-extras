@@ -511,9 +511,25 @@ class TestAppConfig(unittest.TestCase):
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'foo'
+
+            rv = c.post('/signup', data={'email': 'cloud-gov-notifications@gsa.gov', '_csrf_token': 'foo'})
+            assert rv.status_code == 200
+            render_template.assert_called_with('signup_invite_sent.html')
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
                 sess['_csrf_token'] = 'bar'
 
-            rv = c.post('/signup', data={'email': 'cloud-gov-notifications@gsa.gov', '_csrf_token': 'bar'})
+            rv = c.post('/signup', data={'email': 'example@mail.mil', '_csrf_token': 'bar'})
+            assert rv.status_code == 200
+            render_template.assert_called_with('signup_invite_sent.html')
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'baz'
+
+            rv = c.post('/signup', data={'email': 'example@fs.fed.us', '_csrf_token': 'baz'})
             assert rv.status_code == 200
             render_template.assert_called_with('signup_invite_sent.html')
 
@@ -530,10 +546,9 @@ class TestAppConfig(unittest.TestCase):
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
-            rv = c.post('/signup', data={'email': 'test@example.com', '_csrf_token': 'bar'})
+            rv = c.post('/signup', data={'email': 'cloud-gov-notifications@gsa.gov', '_csrf_token': 'bar'})
             assert rv.status_code == 200
             render_template.assert_called_with('signup.html')
             flash.assert_called_once()
@@ -1102,6 +1117,26 @@ class TestUAAClient(unittest.TestCase):
             'POST',
             body={'emails': [email]},
             headers={},
+            params={'redirect_uri': redirect_uri}
+        )
+
+    def test_users_with_token(self):
+        """invite_users() makes a PUT request to /invite_users<id>"""
+
+        uaac = UAAClient('http://example.com', 'foo', False)
+        m = Mock()
+        uaac._request = m
+
+        email = 'foo@example.com'
+        redirect_uri = 'http://www.example.com'
+
+        uaac.invite_users(email, redirect_uri, token="foobar")
+
+        m.assert_called_with(
+            '/invite_users',
+            'POST',
+            body={'emails': [email]},
+            headers={'Authorization': 'Bearer foobar'},
             params={'redirect_uri': redirect_uri}
         )
 
