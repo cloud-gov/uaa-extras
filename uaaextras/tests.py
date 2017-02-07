@@ -427,14 +427,13 @@ class TestAppConfig(unittest.TestCase):
             flash.assert_called_once()
 
     @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_get_signup(self, render_template):
         """When a GET request is made to /signup, the signup.html template is displayed"""
 
         render_template.return_value = 'template output'
 
         with app.test_client() as c:
-            with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
 
             rv = c.get('/signup')
             assert rv.status_code == 200
@@ -442,6 +441,7 @@ class TestAppConfig(unittest.TestCase):
 
     @patch('uaaextras.webapp.flash')
     @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_bad_email(self, render_template, flash):
         """When an email is blank or invalid, or not federal gov, the error is flashed to the user"""
 
@@ -449,7 +449,6 @@ class TestAppConfig(unittest.TestCase):
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
             rv = c.post('/signup', data={'email': '', '_csrf_token': 'bar'})
@@ -460,7 +459,6 @@ class TestAppConfig(unittest.TestCase):
         flash.reset_mock()
         with app.test_client() as c:
             with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
             rv = c.post('/signup', data={'email': 'not an email', '_csrf_token': 'bar'})
@@ -471,7 +469,6 @@ class TestAppConfig(unittest.TestCase):
         flash.reset_mock()
         with app.test_client() as c:
             with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
             rv = c.post('/signup', data={'email': 'foo@example.com', '_csrf_token': 'bar'})
@@ -481,39 +478,39 @@ class TestAppConfig(unittest.TestCase):
 
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_error(self, render_template, uaac):
         """When an error occurs during the signup process, the error/internal.html template is displayed"""
 
-        uaac().signup_users.return_value = {'failed_signups': [{'fail': 'here'}], 'new_signups': []}
+        uaac().client_invite_users.return_value = {'failed_invites': [{'fail': 'here'}], 'new_invites': []}
         uaac().does_origin_user_exist.return_value = False
 
         render_template.return_value = 'template content'
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
             rv = c.post('/signup', data={'email': 'cloud-gov-notifications@gsa.gov', '_csrf_token': 'bar'})
             assert rv.status_code == 500
-            print(uaac.signup_users())
+            print(uaac.client_invite_users())
 
             render_template.assert_called_with('error/internal.html')
 
     @patch('uaaextras.webapp.smtplib')
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_good(self, render_template, uaac, smtp):
         """When an signup is sucessfully sent, the signup_invite_sent template is displayed"""
 
-        uaac().signup_users.return_value = {'failed_signups': [], 'new_signups': [{'some': 'signup'}]}
+        uaac().client_invite_users.return_value = {'failed_invites': [], 'new_invites': [{'some': 'invite'}]}
         uaac().does_origin_user_exist.return_value = False
 
         render_template.return_value = 'template content'
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
-                sess['UAA_TOKEN'] = 'foo'
                 sess['_csrf_token'] = 'bar'
 
             rv = c.post('/signup', data={'email': 'cloud-gov-notifications@gsa.gov', '_csrf_token': 'bar'})
@@ -523,6 +520,7 @@ class TestAppConfig(unittest.TestCase):
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.flash')
     @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_user_exists(self, render_template, flash, uaac):
         """When an user already exists during signup process, the signup.html template is displayed"""
 

@@ -44,6 +44,14 @@ FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS = 43200
 
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
 
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+APP_STATIC = os.path.join(APP_ROOT, 'static')
+
+# Load valid list of .gov domains
+# data from https://github.com/GSA/data/tree/gh-pages/dotgov-domains
+FED_DOTGOV_CSV = open(os.path.join(APP_STATIC, 'current-federal.csv'), newline='')
+FED_DOTGOV_LIST = csv.reader(FED_DOTGOV_CSV)
+
 # Get Redis credentials
 if 'VCAP_SERVICES' in os.environ:
     services = json.loads(os.getenv('VCAP_SERVICES'))
@@ -285,9 +293,6 @@ def create_app(env=os.environ):
     # make sure our base url doesn't have a trailing slash as UAA will flip out
     app.config['UAA_BASE_URL'] = app.config['UAA_BASE_URL'].rstrip('/')
 
-    app.config['APP_ROOT'] = os.path.dirname(os.path.abspath(__file__))
-    app.config['APP_STATIC'] = os.path.join(app.config['APP_ROOT'], 'static')
-
     logging.info('Loaded application configuration:')
     for ck in sorted(CONFIG_KEYS.keys()):
         logging.info('{0}: {1}'.format(ck, app.config[ck]))
@@ -410,11 +415,8 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template('signup.html')
         # Check for feds here
-        # data from https://github.com/GSA/data/tree/gh-pages/dotgov-domains
-        fed_csv_file = open(os.path.join(app.config['APP_STATIC'], 'current-federal.csv'), newline='')
-        fed_csv_list = csv.reader(fed_csv_file)
         valid_gov_email = False
-        for row in fed_csv_list:
+        for row in FED_DOTGOV_LIST:
             pattern = re.compile(row[0].replace('.', '\.') + "$", flags=re.I)
             if re.search(pattern, email):
                 valid_gov_email = True
