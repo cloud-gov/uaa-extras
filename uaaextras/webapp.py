@@ -417,14 +417,11 @@ def create_app(env=os.environ):
         # Check for feds here
         valid_gov_email = False
         for row in FED_DOTGOV_LIST:
-            pattern = re.compile(row[0].replace('.', '\.') + "$", flags=re.I)
-            if re.search(pattern, email):
+            if re.search(row[0].replace('.', '\.') + '$', email, flags=re.I):
                 valid_gov_email = True
-        pattern = re.compile('\.mil$', flags=re.I)
-        if re.search(pattern, email):
+        if re.search('\.mil$', email, flags=re.I):
             valid_gov_email = True
-        pattern = re.compile('\.fed\.us$', flags=re.I)
-        if re.search(pattern, email):
+        if re.search('\.fed\.us$', email, flags=re.I):
             valid_gov_email = True
         if not valid_gov_email:
             flash('You must use a valid federal government email address.')
