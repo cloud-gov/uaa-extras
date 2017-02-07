@@ -3,7 +3,6 @@
 {% block header %}Get an invitation{% endblock %}
 
 {% block content %}
-<div class="island-content">
 {% with messages = get_flashed_messages() %}
 {% if messages %}
 {% for message in messages %}
@@ -11,8 +10,16 @@
 	    <p>{{ message }}</p>
 	</div>
 {% endfor %}
+  <div>
+     <p>Still interested in using cloud.gov?</p>
+     <p>
+        If you have a teammate with an account, have them <a href="https://cloud.gov/docs/apps/managing-teammates/">send you an invitation to collaborate</a>.
+        You can also email <a href="mailto:cloud-gov-inquiries@gsa.gov">cloud-gov-inquiries@gsa.gov</a> to discuss your needs.
+     </p>
+  </div>
 {% endif %}
 {% endwith %}
+<div class="island-content">
     <form method="post" action="{{url_for('signup')}}">
 
         <input name="email" type="email" placeholder="Enter email" autofocus="autofocus" class="form-control" />
