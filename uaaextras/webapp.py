@@ -399,15 +399,14 @@ def create_app(env=os.environ):
 
             # Check if Redis is working
             if r:
-                uaaInviteLink = r.get(verification_code)
-                
                 # Check if Redis key was previously requested, otherwise load the UAA invite
-                if uaaInviteLink == None:
-                    logging.info('UAA invite link for {0} is being requested after it has expired.'.format(verification_code))
+                uaaInviteLink = r.get(verification_code)
+                if uaaInviteLink is None:
+                    logging.info('UAA invite link is expired. {0}'.format(verification_code))
                     return render_template('error/token_validation.html'), 401
 
                 else:
-                    logging.info('Successfully accessed UAA invite link for {0} and deleted Redis key.'.format(verification_code))
+                    logging.info('Accessed UAA invite link. {0}'.format(verification_code))
                     r.delete(verification_code)
                     return render_template('redeem.html', uaa_invite_link=uaaInviteLink)
 
@@ -461,9 +460,9 @@ def create_app(env=os.environ):
             }
 
             # Lets store this invite link in Redis using the verification code
-            verification_code = uuid.uuid4().hex 
+            verification_code = uuid.uuid4().hex
             verification_url = url_for('redeem_invite', verification_code=verification_code)
-            
+
             if 'inviteLink' in invite:
                 r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite.inviteLink)
 
