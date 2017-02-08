@@ -4,13 +4,16 @@ jobs:
   plan:
   - get: dotgov-domain-data
     trigger: true
-  - get: cg-uaa-extras-app
-    resource: cg-uaa-extras-app-staging
+  - get: cg-uaa-extras-app-staging
     trigger: true
   - task: integrate-repos
-    file: cg-uaa-extras-app/ci/integrate.yml
+    file: cg-uaa-extras-app-staging/ci/integrate.yml
+    input_mapping:
+      cg-uaa-extras-app: cg-uaa-extras-app-staging
   - task: test
-    file: cg-uaa-extras-app/ci/test.yml
+    input_mapping:
+      cg-uaa-extras-app: uaa-extras-integrated
+    file: cg-uaa-extras-app-staging/ci/test.yml
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
@@ -51,13 +54,16 @@ jobs:
   plan:
   - get: dotgov-domain-data
     trigger: true
-  - get: cg-uaa-extras-app
-    resource: cg-uaa-extras-app-production
+  - get: cg-uaa-extras-app-production
     trigger: true
   - task: integrate-repos
-    file: cg-uaa-extras-app/ci/integrate.yml
+    file: cg-uaa-extras-app-production/ci/integrate.yml
+    input_mapping:
+      cg-uaa-extras-app: cg-uaa-extras-app-staging
   - task: test
-    file: cg-uaa-extras-app/ci/test.yml
+    input_mapping:
+      cg-uaa-extras-app: uaa-extras-integrated
+    file: cg-uaa-extras-app-production/ci/test.yml
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
