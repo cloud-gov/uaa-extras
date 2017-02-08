@@ -383,9 +383,30 @@ def create_app(env=os.environ):
     def index():
         return render_template('index.html')
 
-    @app.route('/redeem-invite', methods=['GET', 'POST'])
+    @app.route('/redeem-invite', methods=['GET'])
     def redeem_invite():
-        return render_template('redeem.html')
+
+        if request.method == 'GET':
+            # Store the validation token to check for UAA invite link
+            validation = request.args.get('validation_token')
+
+            # Make sure that the requested URL has validation_token,
+            # otherwise redirect to error page.
+            if 'validation_token' not in request.args:
+                logging.exception('The invitation link was missing a validation token.')
+                return render_template('error/token_validation.html'), 401
+
+            # Check if Redis is working
+            if r:
+                logging.info('Successfully accessed UAA invite link for {0}'.format(verification_code))
+                uaaInviteLink = r.get(verification_code)
+
+                return render_template('redeem.html', uaa_invite_link=uaaInviteLink)
+
+            # If Redis isnt working, log error and show internal error.
+            else: 
+                logging.exception('The UAA link was not accessible because Redis is down.')
+                return render_template('error/internal.html'), 500
 
     @app.route('/invite', methods=['GET', 'POST'])
     def invite():
