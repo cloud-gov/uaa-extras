@@ -2,16 +2,19 @@
 jobs:
 - name: deploy-staging
   plan:
-  - get: cg-uaa-extras-app-staging
+  - get: dotgov-domain-data
     trigger: true
+  - get: cg-uaa-extras-app
+    resource: cg-uaa-extras-app-staging
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
   - task: test
-    file: cg-uaa-extras-app-staging/ci/test.yml
-    input_mapping:
-      cg-uaa-extras-app: cg-uaa-extras-app-staging
+    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
-      path: cg-uaa-extras-app-staging
+      path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
         UAA_CLIENT_ID: {{uaa-client-id-staging}}
@@ -46,16 +49,19 @@ jobs:
 
 - name: deploy-production
   plan:
-  - get: cg-uaa-extras-app-production
+  - get: dotgov-domain-data
     trigger: true
+  - get: cg-uaa-extras-app
+    resource: cg-uaa-extras-app-production
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
   - task: test
-    file: cg-uaa-extras-app-production/ci/test.yml
-    input_mapping:
-      cg-uaa-extras-app: cg-uaa-extras-app-production
+    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
-      path: cg-uaa-extras-app-production
+      path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
         UAA_CLIENT_ID: {{uaa-client-id-production}}
@@ -94,6 +100,14 @@ resources:
   source:
     uri: {{cg-uaa-extras-git-url}}
     branch: staging
+
+- name: dotgov-domain-data
+  type: git
+  source:
+    uri: https://github.com/GSA/data.git
+    branch: master
+    paths:
+    - data/dotgov-domains/current-federal.csv
 
 - name: cg-uaa-extras-app-production
   type: git
