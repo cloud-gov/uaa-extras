@@ -105,9 +105,9 @@ resources:
   type: git
   source:
     uri: https://github.com/GSA/data.git
-    branch: master
+    branch: gh-pages
     paths:
-    - data/dotgov-domains/current-federal.csv
+    - dotgov-domains/*
 
 - name: cg-uaa-extras-app-production
   type: git
