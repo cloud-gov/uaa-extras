@@ -562,7 +562,10 @@ def create_app(env=os.environ):
             verification_url = url_for('redeem_invite', verification_code=verification_code)
 
             if 'inviteLink' in invite:
+                logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
                 r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite.inviteLink)
+            else: 
+                logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
 
             # we invited them, send them the link to validate their account
             subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
