@@ -2,8 +2,10 @@ from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
 from datetime import timedelta, datetime
 import codecs
+import csv
 import logging
 import os
+import re
 import redis
 import smtplib
 import signal
@@ -41,6 +43,14 @@ CONFIG_KEYS = {
 FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS = 43200
 
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
+
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+APP_STATIC = os.path.join(APP_ROOT, 'static')
+
+# Load valid list of .gov domains
+# data from https://github.com/GSA/data/tree/gh-pages/dotgov-domains
+FED_DOTGOV_CSV = open(os.path.join(APP_STATIC, 'current-federal.csv'), newline='')
+FED_DOTGOV_LIST = csv.reader(FED_DOTGOV_CSV)
 
 # Get Redis credentials
 if 'VCAP_SERVICES' in os.environ:
@@ -299,7 +309,8 @@ def create_app(env=os.environ):
 
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
-        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'reset_password', 'static']:
+        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password',
+                                                     'reset_password', 'signup', 'static']:
             return
 
         # check our token, and expirary date
@@ -382,6 +393,93 @@ def create_app(env=os.environ):
     @app.route('/', methods=['GET', 'POST'])
     def index():
         return render_template('index.html')
+
+    @app.route('/signup', methods=['GET', 'POST'])
+    def signup():
+        # start with giving them the form
+        if request.method == 'GET':
+            return render_template('signup.html')
+
+        # if we've reached here we are POST, and they've asked us to invite
+
+        # validate the email address
+        email = request.form.get('email', '').strip().rstrip()
+        if not email:
+            flash('Email cannot be blank.')
+            return render_template('signup.html')
+        try:
+            v = validate_email(email)  # validate and get info
+            email = v["email"]  # replace with normalized form
+        except EmailNotValidError as exc:
+            # email is not valid, exception message is human-readable
+            flash(str(exc))
+            return render_template('signup.html')
+        # Check for feds here
+        valid_gov_email = False
+        for row in FED_DOTGOV_LIST:
+            if re.search(row[0].replace('.', '\.') + '$', email, flags=re.I):
+                valid_gov_email = True
+        if re.search('\.mil$', email, flags=re.I):
+            valid_gov_email = True
+        if re.search('\.fed\.us$', email, flags=re.I):
+            valid_gov_email = True
+        if not valid_gov_email:
+            flash('You must use a valid federal government email address.')
+            return render_template('signup.html')
+
+        # email is good, lets invite them
+        try:
+            if not getattr(g, 'uaac', False):
+                g.uaac = UAAClient(
+                    app.config['UAA_BASE_URL'],
+                    None,
+                    verify_tls=app.config['UAA_VERIFY_TLS']
+                )
+            if g.uaac.does_origin_user_exist(
+                    app.config['UAA_CLIENT_ID'],
+                    app.config['UAA_CLIENT_SECRET'],
+                    email,
+                    app.config['IDP_PROVIDER_ORIGIN']):
+                flash('You already have a valid account.')
+                return render_template('signup.html')
+
+            redirect_uri = os.path.join(request.url_root, 'oauth', 'login')
+            logging.info('redirect for invite: {0}'.format(redirect_uri))
+            invite = g.uaac.client_invite_users(
+                app.config['UAA_CLIENT_ID'],
+                app.config['UAA_CLIENT_SECRET'],
+                email,
+                redirect_uri
+            )
+
+            if len(invite['failed_invites']):
+                raise RuntimeError('UAA failed to invite the user.')
+
+            invite = invite['new_invites'][0]
+
+            branding = {
+                'company_name': app.config['BRANDING_COMPANY_NAME']
+            }
+
+            # we invited them, send them the link to validate their account
+            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
+            body = render_template('email/body.html', invite=invite, branding=branding)
+
+            send_email(app, email, subject, body)
+            return render_template('signup_invite_sent.html')
+        except UAAError as exc:
+            # if UAA complains that our access token is invalid then force them back through the login
+            # process.
+            # TODO: Fix this properly by implementing the refresh token oauth flow
+            # in the UAAClient when it detects it's token is no longer valid
+            if 'Invalid access token' in str(exc):
+                return redirect(url_for('logout'))
+            else:
+                logging.exception('An error occured communicating with UAA')
+        except Exception:
+            logging.exception('An error occured during the invite process')
+
+        return render_template('error/internal.html'), 500
 
     @app.route('/invite', methods=['GET', 'POST'])
     def invite():

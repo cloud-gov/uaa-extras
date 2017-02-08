@@ -217,7 +217,26 @@ class UAAClient(object):
             headers={'If-Match': str(user['meta']['version'])}
         )
 
-    def invite_users(self, email, redirect_uri):
+    def client_invite_users(self, client_id, client_secret, email, redirect_uri):
+        """Invite a user to UAA with client credentials
+
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+            email(str, list(str)): An email or list of emails to invite
+            redirect_uri(str): Where to send the users after they have accepted their invite
+
+        Raises:
+            UAAError: There was an error inviting the user
+
+        Returns:
+            dict:   An object representing the invite, including an inviteLink which should be emailed
+                    to the user to validate their email address.  Visiting the link will activate the user.
+        """
+        token = self._get_client_token(client_id, client_secret)
+        return self.invite_users(email, redirect_uri, token)
+
+    def invite_users(self, email, redirect_uri, token=None):
         """Invite a user to UAA
 
         Args:
@@ -232,10 +251,25 @@ class UAAClient(object):
                     to the user to validate their email address.  Visiting the link will activate the user.
         """
 
+        headers = {}
+
         if not isinstance(email, list):
             email = [email]
 
-        return self._request('/invite_users', 'POST', params={'redirect_uri': redirect_uri}, body={'emails': email})
+        if token:
+            headers = {'Authorization': 'Bearer ' + token}
+
+        return self._request(
+            '/invite_users',
+            'POST',
+            params={
+                'redirect_uri': redirect_uri
+            },
+            headers=headers,
+            body={
+                'emails': email
+            }
+        )
 
     def decode_access_token(self, token):
         """Decodes an access token
