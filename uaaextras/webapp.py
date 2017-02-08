@@ -383,6 +383,10 @@ def create_app(env=os.environ):
     def index():
         return render_template('index.html')
 
+    @app.route('/redeem-invite', methods=['GET', 'POST'])
+    def redeem_invite():
+        return render_template('redeem.html')
+
     @app.route('/invite', methods=['GET', 'POST'])
     def invite():
         # start with giving them the form
