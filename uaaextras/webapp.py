@@ -388,7 +388,7 @@ def create_app(env=os.environ):
 
         if request.method == 'GET':
             # Store the validation token to check for UAA invite link
-            validation = request.args.get('validation_token')
+            verification_code = request.args.get('validation_token')
 
             # Make sure that the requested URL has validation_token,
             # otherwise redirect to error page.
