@@ -14,7 +14,7 @@ outputs:
 run:
   path: /bin/sh
   args:
-  - -ex
+  - -exc
   - |
     /bin/cp -R ./cg-uaa-extras-app/* uaa-extras-integrated
     /bin/cp ./dotgov-domain-data/data/dotgov-domains/current-federal.csv uaa-extras-integrated/uaaextras/static
