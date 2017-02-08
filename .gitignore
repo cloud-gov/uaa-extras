@@ -57,6 +57,7 @@ target/
 .DS_Store
 
 # secrets!
-uaapp/settings.py
+uaaextras/settings.py
+uaaextras/static/current-federal.csv
 credentials.yml
 .env
