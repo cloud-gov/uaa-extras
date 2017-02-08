@@ -1,0 +1,12 @@
+{% extends "_layout.html" %}
+
+{% block header %}Redeem Invitation{% endblock %}
+
+{% block content %}
+
+{% if uaa_invite_link %}
+<h2>You invitation link</h2>
+<a href="{{ uaa_invite_link }}">Redeem your invitation</a>
+{% endif %}
+
+{% endblock %}

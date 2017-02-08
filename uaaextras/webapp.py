@@ -38,6 +38,7 @@ CONFIG_KEYS = {
     'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com',
     'PW_EXPIRES_DAYS': 90,
     'PW_EXPIRATION_WARN_DAYS': 10,
+    'UAA_INVITE_EXPIRATION_IN_SECONDS': timedelta(days=7),
 }
 
 FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS = 43200
@@ -481,6 +482,37 @@ def create_app(env=os.environ):
 
         return render_template('error/internal.html'), 500
 
+    @app.route('/redeem-invite', methods=['GET'])
+    def redeem_invite():
+
+        if request.method == 'GET':
+            # Store the validation token to check for UAA invite link
+            verification_code = request.args.get('validation_token')
+
+            # Make sure that the requested URL has validation_token,
+            # otherwise redirect to error page.
+            if 'validation_token' not in request.args:
+                logging.exception('The invitation link was missing a validation token.')
+                return render_template('error/token_validation.html'), 401
+
+            # Check if Redis is working
+            if r:
+                # Check if Redis key was previously requested, otherwise load the UAA invite
+                uaaInviteLink = r.get(verification_code)
+                if uaaInviteLink is None:
+                    logging.info('UAA invite link is expired. {0}'.format(verification_code))
+                    return render_template('error/token_validation.html'), 401
+
+                else:
+                    logging.info('Accessed UAA invite link. {0}'.format(verification_code))
+                    r.delete(verification_code)
+                    return render_template('redeem.html', uaa_invite_link=uaaInviteLink)
+
+            # If Redis isnt working, log error and show internal error.
+            else:
+                logging.exception('The UAA link was not accessible because Redis is down.')
+                return render_template('error/internal.html'), 500
+
     @app.route('/invite', methods=['GET', 'POST'])
     def invite():
         # start with giving them the form
@@ -525,9 +557,16 @@ def create_app(env=os.environ):
                 'company_name': app.config['BRANDING_COMPANY_NAME']
             }
 
+            # Lets store this invite link in Redis using the verification code
+            verification_code = uuid.uuid4().hex
+            verification_url = url_for('redeem_invite', verification_code=verification_code)
+
+            if 'inviteLink' in invite:
+                r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite.inviteLink)
+
             # we invited them, send them the link to validate their account
             subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
-            body = render_template('email/body.html', invite=invite, branding=branding)
+            body = render_template('email/body.html', verification_url=verification_url, branding=branding)
 
             send_email(app, email, subject, body)
             return render_template('invite_sent.html')
