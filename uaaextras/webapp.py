@@ -455,6 +455,7 @@ def create_app(env=os.environ):
                 raise RuntimeError('UAA failed to invite the user.')
 
             invite = invite['new_invites'][0]
+            uaa_invite_link = invite.inviteLink
 
             branding = {
                 'company_name': app.config['BRANDING_COMPANY_NAME']
@@ -463,7 +464,7 @@ def create_app(env=os.environ):
             # Lets store this invite link in Redis using the verification code
             verification_code = uuid.uuid4().hex 
             verification_url = url_for('redeem_invite', verification_code=verification_code)
-            r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite.inviteLink)
+            r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], uaa_invite_link)
 
             # we invited them, send them the link to validate their account
             subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
