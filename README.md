@@ -28,18 +28,31 @@ EX:
 
 #### Step Four: Configure the app
 
-The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary
+The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary. Download a copy of https://github.com/GSA/data/tree/gh-pages/dotgov-domains/current-federal.csv and place into `uaaextras/static`
 
 #### Step Five: Launch the app
 
-This app was designed to run in Cloud Foundry:
+##### Running in Cloud Foundry
+This app was designed to deploy in Cloud Foundry:
 
 	cf push
 
-You can also run it locally in debug mode:
+##### Local Development
 
-	# set configuration env vars as needed
-	./debug.py
+This project uses a `setup.py` to install dependencies. Run the following
+command to get started with development.
+
+```shell
+python3 ./setup.py install
+```
+
+To get a local server up, run the following command. Make sure you
+properly setup the environment variables mentioned above in the
+documentation.
+
+```shell
+./debug.py
+```
 
 ### Configuring UAA Invites to leverage cloud.gov IdP
 
@@ -57,23 +70,6 @@ to the cloud.gov IdP provider. This route is used to set the user's origin to
 the user, `cg-uaa-extras` will redirect to the `IDP_PROVIDER_URL` to complete
 the user's authentication and TOTP token creation. This is why the URL from the
 screenshot above is necessary for the `IDP_PROVIDER_URL`.
-
-### Development
-
-This project uses a `setup.py` to install dependencies. Run the following
-command to get started with development.
-
-```shell
-python3 ./setup.py install
-```
-
-To get a local server up, run the following command. Make sure you
-properly setup the environment variables mentioned above in the
-documentation.
-
-```shell
-./debug.py
-```
 
 #### Running tests
 

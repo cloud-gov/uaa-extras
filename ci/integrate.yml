@@ -1,0 +1,20 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+
+inputs:
+  - name: dotgov-domain-data
+  - name: cg-uaa-extras-app
+outputs:
+  - name: uaa-extras-integrated
+run:
+  path: /bin/sh
+  args:
+  - -exc
+  - |
+    /bin/cp -R ./cg-uaa-extras-app/* uaa-extras-integrated
+    /bin/cp ./dotgov-domain-data/dotgov-domains/current-federal.csv uaa-extras-integrated/uaaextras/static
