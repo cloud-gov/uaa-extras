@@ -398,13 +398,20 @@ def create_app(env=os.environ):
 
             # Check if Redis is working
             if r:
-                logging.info('Successfully accessed UAA invite link for {0}'.format(verification_code))
                 uaaInviteLink = r.get(verification_code)
+                
+                # Check if Redis key was previously requested, otherwise load the UAA invite
+                if uaaInviteLink == None:
+                    logging.info('UAA invite link for {0} is being requested after it has expired.'.format(verification_code))
+                    return render_template('error/token_validation.html'), 401
 
-                return render_template('redeem.html', uaa_invite_link=uaaInviteLink)
+                else:
+                    logging.info('Successfully accessed UAA invite link for {0} and deleted Redis key.'.format(verification_code))
+                    r.delete(verification_code)
+                    return render_template('redeem.html', uaa_invite_link=uaaInviteLink)
 
             # If Redis isnt working, log error and show internal error.
-            else: 
+            else:
                 logging.exception('The UAA link was not accessible because Redis is down.')
                 return render_template('error/internal.html'), 500
 
