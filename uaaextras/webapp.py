@@ -340,7 +340,7 @@ def create_app(env=os.environ):
 
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
-        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password',
+        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'redeem_invite',
                                                      'reset_password', 'signup', 'static']:
             return
 
@@ -500,38 +500,6 @@ def create_app(env=os.environ):
 
         return render_template('error/internal.html'), 500
 
-    @app.route('/redeem-invite', methods=['GET'])
-    def redeem_invite():
-
-        # Store the validation token to check for UAA invite link
-        verification_code = request.args.get('verification_code')
-
-        # Make sure that the requested URL has validation_token,
-        # otherwise redirect to error page.
-        if 'verification_code' not in request.args:
-            logging.info('The invitation link was missing a validation code.')
-            return render_template('error/token_validation.html'), 401
-
-        # Check if Redis is working
-        if r:
-            # Check if Redis key was previously requested, otherwise load the UAA invite
-            invite = bytes.decode(r.get(verification_code))
-            if invite is None:
-                logging.info('UAA invite link is expired. {0}'.format(verification_code))
-                return render_template('error/token_validation.html'), 401
-
-            else:
-                logging.info('Accessed UAA invite link. {0}'.format(verification_code))
-
-                print(invite)
-
-                return render_template('redeem.html', invite=invite)
-
-        # If Redis isnt working, log error and show internal error.
-        else:
-            logging.exception('The UAA link was not accessible because Redis is down.')
-            return render_template('error/internal.html'), 500
-
     @app.route('/invite', methods=['GET', 'POST'])
     def invite():
         # start with giving them the form
@@ -584,7 +552,36 @@ def create_app(env=os.environ):
 
         return render_template('error/internal.html'), 500
 
-    
+    @app.route('/redeem-invite', methods=['GET'])
+    def redeem_invite():
+
+        # Make sure that the requested URL has validation_token,
+        # otherwise redirect to error page.
+        if 'verification_code' not in request.args:
+            logging.info('The invitation link was missing a validation code.')
+            return render_template('error/token_validation.html'), 401
+        
+        # Store the validation token to check for UAA invite link
+        verification_code = request.args.get('verification_code')
+
+        # Check if Redis is working
+        if r:
+            # Check if Redis key was previously requested, otherwise load the UAA invite
+            invite = bytes.decode(r.get(verification_code))
+            if invite is None:
+                logging.info('UAA invite link is expired. {0}'.format(verification_code))
+                return render_template('error/token_validation.html'), 401
+
+            else:
+                logging.info('Accessed UAA invite link. {0}'.format(verification_code))
+
+                return render_template('redeem.html', invite=invite)
+
+        # If Redis isnt working, log error and show internal error.
+        else:
+            logging.exception('The UAA link was not accessible because Redis is down.')
+            return render_template('error/internal.html'), 500
+
 
     @app.route('/first-login', methods=['GET'])
     def first_login():
