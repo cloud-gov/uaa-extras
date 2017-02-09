@@ -483,21 +483,9 @@ def create_app(env=os.environ):
                 redirect_uri
             )
 
-            if len(invite['failed_invites']):
-                raise RuntimeError('UAA failed to invite the user.')
+            if send_verification_code_email(app, email, invite):
+                return render_template('signup_invite_sent.html')
 
-            invite = invite['new_invites'][0]
-
-            branding = {
-                'company_name': app.config['BRANDING_COMPANY_NAME']
-            }
-
-            # we invited them, send them the link to validate their account
-            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
-            body = render_template('email/body.html', invite=invite, branding=branding)
-
-            send_email(app, email, subject, body)
-            return render_template('signup_invite_sent.html')
         except UAAError as exc:
             # if UAA complains that our access token is invalid then force them back through the login
             # process.

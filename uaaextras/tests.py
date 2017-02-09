@@ -510,14 +510,18 @@ class TestAppConfig(unittest.TestCase):
 
             render_template.assert_called_with('error/internal.html')
 
+    @patch('uaaextras.webapp.send_email')
     @patch('uaaextras.webapp.smtplib')
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.r')
+    @patch('uaaextras.webapp.uuid')
+    @patch('uaaextras.webapp.UAA_INVITE_EXPIRATION_IN_SECONDS')
     @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
-    def test_signup_good(self, render_template, uaac, smtp):
+    def test_signup_good(self, UAA_INVITE_EXPIRATION_IN_SECONDS, uuid, redis_conn, render_template, uaac, smtp, send_email):
         """When an signup is sucessfully sent, the signup_invite_sent template is displayed"""
 
-        uaac().invite_users.return_value = {'failed_invites': [], 'new_invites': [{'inviteLink': 'testLink', 'some': 'invite'}]}
+        uaac().client_invite_users.return_value = {'failed_invites': [], 'new_invites': [{'inviteLink': 'testLink', 'some': 'invite'}]}
         uaac().does_origin_user_exist.return_value = False
 
         render_template.return_value = 'template content'
