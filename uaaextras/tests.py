@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from contextlib import contextmanager
 import json
+import ipdb
 import random
 import string
 from posixpath import join as urljoin
@@ -531,6 +532,7 @@ class TestAppConfig(unittest.TestCase):
                 sess['_csrf_token'] = 'foo'
 
             rv = c.post('/signup', data={'email': 'cloud-gov-notifications@gsa.gov', '_csrf_token': 'foo'})
+            
             assert rv.status_code == 200
             render_template.assert_called_with('signup_invite_sent.html')
 
@@ -1045,6 +1047,23 @@ class TestUAAClient(unittest.TestCase):
         )
 
         assert resp['test'] == 'value'
+
+    @patch('uaaextras.webapp.render_template')
+    def test_redeem_no_verification_code(self, render_template):
+        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
+
+        inviteLink = b'inviteLink'
+        render_template.return_value = 'some value'
+        
+
+        with app.test_client() as c:
+
+            rv = c.get('/redeem-invite')
+
+            assert rv.status_code == 401
+
+            render_template.assert_called_with('error/token_validation.html')
+
 
     def test_idps(self):
         """idps() makes a GET request to /identity-providers"""
