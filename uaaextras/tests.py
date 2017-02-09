@@ -1077,7 +1077,7 @@ class TestUAAClient(unittest.TestCase):
 
             assert rv.status_code == 200
 
-            render_template.assert_called_with('redeem-confirm.html', invite=bytes.decode(inviteLink) )   
+            render_template.assert_called_with('redeem-confirm.html', verification_code=verification_code )   
     
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.r')
