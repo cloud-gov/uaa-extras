@@ -122,6 +122,37 @@ def str_to_bool(val):
 
     return None
 
+def send_verification_code_email(app, email, invite):
+    with app.app_context():    
+        if len(invite['failed_invites']):
+            raise RuntimeError('UAA failed to invite the user.')
+
+        invite = invite['new_invites'][0]
+
+        branding = {
+            'company_name': app.config['BRANDING_COMPANY_NAME']
+        }
+
+        # Lets store this invite link in Redis using the verification code
+        verification_code = uuid.uuid4().hex
+        verification_url = url_for('redeem_invite', verification_code=verification_code, _external=True)
+
+        logging.info('Invite {0}'.format(invite))
+
+        if 'inviteLink' in invite:
+            logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
+            r.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
+            
+            # we invited them, send them the link to validate their account
+            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
+            body = render_template('email/body.html', verification_url=verification_url, branding=branding)
+
+            send_email(app, email, subject, body)
+            return True
+        else: 
+            logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
+            return False
+
 
 def send_email(app, email, subject, body):
     """Send an email via an external SMTP server
@@ -248,7 +279,6 @@ def daemon_thread(self, interval=1, event=threading.Event()):
 
 
 Scheduler.daemon_thread = daemon_thread
-
 
 def create_app(env=os.environ):
     """Create an instance of the web application"""
@@ -488,8 +518,6 @@ def create_app(env=os.environ):
         # Store the validation token to check for UAA invite link
         verification_code = request.args.get('verification_code')
 
-
-
         # Make sure that the requested URL has validation_token,
         # otherwise redirect to error page.
         if 'verification_code' not in request.args:
@@ -551,33 +579,8 @@ def create_app(env=os.environ):
             logging.info('redirect for invite: {0}'.format(redirect_uri))
             invite = g.uaac.invite_users(email, redirect_uri)
 
-            if len(invite['failed_invites']):
-                raise RuntimeError('UAA failed to invite the user.')
-
-            invite = invite['new_invites'][0]
-
-            branding = {
-                'company_name': app.config['BRANDING_COMPANY_NAME']
-            }
-
-            # Lets store this invite link in Redis using the verification code
-            verification_code = uuid.uuid4().hex
-            verification_url = url_for('redeem_invite', verification_code=verification_code, _external=True)
-
-            logging.info('Invite {0}'.format(invite))
-
-            if 'inviteLink' in invite:
-                logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
-                r.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
-                
-                # we invited them, send them the link to validate their account
-                subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
-                body = render_template('email/body.html', verification_url=verification_url, branding=branding)
-
-                send_email(app, email, subject, body)
+            if send_verification_code_email(app, email, invite):
                 return render_template('invite_sent.html')
-            else: 
-                logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
 
         except UAAError as exc:
             # if UAA complains that our access token is invalid then force them back through the login
@@ -592,6 +595,8 @@ def create_app(env=os.environ):
             logging.exception('An error occured during the invite process')
 
         return render_template('error/internal.html'), 500
+
+    
 
     @app.route('/first-login', methods=['GET'])
     def first_login():
