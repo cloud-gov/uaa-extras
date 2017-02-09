@@ -4,9 +4,10 @@
 
 {% block content %}
 
-{% if uaa_invite_link %}
+{% if invite %}
 <h2>You invitation link</h2>
-<a href="{{ uaa_invite_link }}">Redeem your invitation</a>
+<a href="{{ invite }}">Redeem your invitation</a>
+<p>{{ invite }}</p>
 {% endif %}
 
 {% endblock %}
