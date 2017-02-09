@@ -567,19 +567,22 @@ def create_app(env=os.environ):
         # Check if Redis is working
         if r:
             # Check if Redis key was previously requested, otherwise load the UAA invite
-            invite = bytes.decode(r.get(verification_code))
+            invite = r.get(verification_code)
             if invite is None:
                 logging.info('UAA invite link is expired. {0}'.format(verification_code))
                 return render_template('error/token_validation.html'), 401
 
             else:
+                invite_url = bytes.decode(invite)
                 logging.info('Accessed UAA invite link. {0}'.format(verification_code))
 
                 if request.method == 'GET':
-                    return render_template('redeem-confirm.html', invite=invite)
+                    redeem_link = url_for('redeem_invite', verification_code=verification_code, _external=True)
+                    return render_template('redeem-confirm.html', redeem_link=redeem_link)
                 
                 if request.method == 'POST':
-                    return render_template('redeem.html', invite=invite)
+                    r.delete(verification_code)
+                    return redirect(invite_url, code=302)
 
         # If Redis isnt working, log error and show internal error.
         else:
