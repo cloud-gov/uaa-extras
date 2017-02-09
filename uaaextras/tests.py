@@ -1064,7 +1064,7 @@ class TestUAAClient(unittest.TestCase):
     
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.r')
-    def test_redeem_using_verification_code(self, redis_conn, render_template):
+    def test_redeem_confirm_using_verification_code(self, redis_conn, render_template):
         """When an redeem link is rendered, call the redis key to get the UAA invite link"""
 
         inviteLink = b'inviteLink'
@@ -1074,6 +1074,26 @@ class TestUAAClient(unittest.TestCase):
         with app.test_client() as c:
 
             rv = c.get('/redeem-invite?verification_code=some_verification_code')
+
+            assert rv.status_code == 200
+
+            render_template.assert_called_with('redeem-confirm.html', invite=bytes.decode(inviteLink) )   
+    
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.r')
+    def test_redeem_using_verification_code(self, redis_conn, render_template):
+        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
+
+        inviteLink = b'inviteLink'
+        render_template.return_value = 'some value'
+        redis_conn.get.return_value = inviteLink
+        
+        with app.test_client() as c:
+
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post('/redeem-invite?verification_code=some_verification_code', data={'_csrf_token': 'bar'})
 
             assert rv.status_code == 200
 
