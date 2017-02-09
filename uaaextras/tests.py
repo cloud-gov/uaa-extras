@@ -1048,14 +1048,12 @@ class TestUAAClient(unittest.TestCase):
 
         assert resp['test'] == 'value'
 
+
     @patch('uaaextras.webapp.render_template')
     def test_redeem_no_verification_code(self, render_template):
-        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
+        """When an redeem link is rendered, fail if there is no matching verification code"""
 
-        inviteLink = b'inviteLink'
         render_template.return_value = 'some value'
-        
-
         with app.test_client() as c:
 
             rv = c.get('/redeem-invite')
@@ -1063,7 +1061,38 @@ class TestUAAClient(unittest.TestCase):
             assert rv.status_code == 401
 
             render_template.assert_called_with('error/token_validation.html')
+    
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.r')
+    def test_redeem_using_verification_code(self, redis_conn, render_template):
+        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
 
+        inviteLink = b'inviteLink'
+        render_template.return_value = 'some value'
+        redis_conn.get.return_value = inviteLink
+        
+        with app.test_client() as c:
+
+            rv = c.get('/redeem-invite?verification_code=some_verification_code')
+
+            assert rv.status_code == 200
+
+            render_template.assert_called_with('redeem.html', invite=bytes.decode(inviteLink) )   
+    
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.r', None)
+    def test_redeem_using_verification_code(self, render_template):
+        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
+
+        render_template.return_value = 'some value'
+        
+        with app.test_client() as c:
+
+            rv = c.get('/redeem-invite?verification_code=some_verification_code')
+
+            assert rv.status_code == 500
+
+            render_template.assert_called_with('error/internal.html' )    
 
     def test_idps(self):
         """idps() makes a GET request to /identity-providers"""
