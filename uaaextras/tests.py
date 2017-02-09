@@ -1074,35 +1074,33 @@ class TestUAAClient(unittest.TestCase):
         with app.test_client() as c:
 
             rv = c.get('/redeem-invite?verification_code=some_verification_code')
+            redeem_link = 'http://localhost:5000/redeem-invite?verification_code=some_verification_code'
 
             assert rv.status_code == 200
 
-            render_template.assert_called_with('redeem-confirm.html', verification_code=verification_code )   
+            render_template.assert_called_with('redeem-confirm.html', redeem_link=redeem_link )   
     
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.r')
-    def test_redeem_using_verification_code(self, redis_conn, render_template):
-        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
+    def test_redeem_uaainvite_using_verification_code(self, redis_conn, render_template):
+        """Render UAA link after redeem link is clicked"""
 
         inviteLink = b'inviteLink'
         render_template.return_value = 'some value'
         redis_conn.get.return_value = inviteLink
         
         with app.test_client() as c:
-
             with c.session_transaction() as sess:
                 sess['_csrf_token'] = 'bar'
 
             rv = c.post('/redeem-invite?verification_code=some_verification_code', data={'_csrf_token': 'bar'})
 
-            assert rv.status_code == 200
-
-            render_template.assert_called_with('redeem.html', invite=bytes.decode(inviteLink) )   
+            assert rv.status_code == 302
     
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.r', None)
-    def test_redeem_using_verification_code(self, render_template):
-        """When an redeem link is rendered, call the redis key to get the UAA invite link"""
+    def test_redeem_without_redis(self, render_template):
+        """When an redeem endpoint is hit without redis, it should fail"""
 
         render_template.return_value = 'some value'
         
