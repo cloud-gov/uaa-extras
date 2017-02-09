@@ -38,9 +38,9 @@ CONFIG_KEYS = {
     'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com',
     'PW_EXPIRES_DAYS': 90,
     'PW_EXPIRATION_WARN_DAYS': 10,
-    'UAA_INVITE_EXPIRATION_IN_SECONDS': timedelta(days=7),
 }
 
+UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
 FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS = 43200
 
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
@@ -564,18 +564,21 @@ def create_app(env=os.environ):
             verification_code = uuid.uuid4().hex
             verification_url = url_for('redeem_invite', verification_code=verification_code, _external=True)
 
+            logging.info('Invite {0}'.format(invite))
+
             if 'inviteLink' in invite:
                 logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
-                r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite['inviteLink'])
+                r.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
+                
+                # we invited them, send them the link to validate their account
+                subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
+                body = render_template('email/body.html', verification_url=verification_url, branding=branding)
+
+                send_email(app, email, subject, body)
+                return render_template('invite_sent.html')
             else: 
                 logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
 
-            # we invited them, send them the link to validate their account
-            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
-            body = render_template('email/body.html', verification_url=verification_url, branding=branding)
-
-            send_email(app, email, subject, body)
-            return render_template('invite_sent.html')
         except UAAError as exc:
             # if UAA complains that our access token is invalid then force them back through the login
             # process.
