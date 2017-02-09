@@ -581,7 +581,6 @@ def create_app(env=os.environ):
                     return render_template('redeem-confirm.html', redeem_link=redeem_link)
                 
                 if request.method == 'POST':
-                    r.delete(verification_code)
                     return redirect(invite_url, code=302)
 
         # If Redis isnt working, log error and show internal error.
