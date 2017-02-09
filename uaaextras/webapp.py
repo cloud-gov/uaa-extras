@@ -552,7 +552,7 @@ def create_app(env=os.environ):
 
         return render_template('error/internal.html'), 500
 
-    @app.route('/redeem-invite', methods=['GET'])
+    @app.route('/redeem-invite', methods=['GET', 'POST'])
     def redeem_invite():
 
         # Make sure that the requested URL has validation_token,
@@ -575,13 +575,16 @@ def create_app(env=os.environ):
             else:
                 logging.info('Accessed UAA invite link. {0}'.format(verification_code))
 
-                return render_template('redeem.html', invite=invite)
+                if request.method == 'GET':
+                    return render_template('redeem-confirm.html', invite=invite)
+                
+                if request.method == 'POST':
+                    return render_template('redeem.html', invite=invite)
 
         # If Redis isnt working, log error and show internal error.
         else:
             logging.exception('The UAA link was not accessible because Redis is down.')
             return render_template('error/internal.html'), 500
-
 
     @app.route('/first-login', methods=['GET'])
     def first_login():
