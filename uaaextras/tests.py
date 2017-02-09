@@ -386,13 +386,17 @@ class TestAppConfig(unittest.TestCase):
 
             render_template.assert_called_with('error/internal.html')
 
-    @patch('uaaextras.webapp.smtplib')
     @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.smtplib')
+    @patch('uaaextras.webapp.send_email')
     @patch('uaaextras.webapp.render_template')
-    def test_invite_good(self, render_template, uaac, smtp):
+    @patch('uaaextras.webapp.r')
+    @patch('uaaextras.webapp.uuid')
+    @patch('uaaextras.webapp.UAA_INVITE_EXPIRATION_IN_SECONDS')
+    def test_invite_good(self, UAA_INVITE_EXPIRATION_IN_SECONDS, uuid, redis_conn, render_template, send_email, smtplib, uaac):
         """When an invite is sucessfully sent, the invite_sent template is displayed"""
 
-        uaac().invite_users.return_value = {'failed_invites': [], 'new_invites': [{'some': 'invite'}]}
+        uaac().invite_users.return_value = {'failed_invites': [], 'new_invites': [{'inviteLink': 'testLink', 'some': 'invite'}]}
         uaac().does_origin_user_exist.return_value = False
 
         render_template.return_value = 'template content'
@@ -404,7 +408,16 @@ class TestAppConfig(unittest.TestCase):
 
             rv = c.post('/invite', data={'email': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 200
+            redis_conn.setex.assert_called_with(
+                uuid.uuid4().hex,
+                UAA_INVITE_EXPIRATION_IN_SECONDS,
+                'testLink'
+            )
+
             render_template.assert_called_with('invite_sent.html')
+
+        assert send_email.called
+        assert send_email.call_count == 1
 
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.flash')
@@ -504,7 +517,7 @@ class TestAppConfig(unittest.TestCase):
     def test_signup_good(self, render_template, uaac, smtp):
         """When an signup is sucessfully sent, the signup_invite_sent template is displayed"""
 
-        uaac().client_invite_users.return_value = {'failed_invites': [], 'new_invites': [{'some': 'invite'}]}
+        uaac().invite_users.return_value = {'failed_invites': [], 'new_invites': [{'inviteLink': 'testLink', 'some': 'invite'}]}
         uaac().does_origin_user_exist.return_value = False
 
         render_template.return_value = 'template content'
