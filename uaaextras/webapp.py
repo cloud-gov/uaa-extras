@@ -486,26 +486,30 @@ def create_app(env=os.environ):
     def redeem_invite():
 
         # Store the validation token to check for UAA invite link
-        verification_code = request.args.get('validation_token')
+        verification_code = request.args.get('verification_code')
+
+
 
         # Make sure that the requested URL has validation_token,
         # otherwise redirect to error page.
-        if 'validation_token' not in request.args:
-            logging.exception('The invitation link was missing a validation token.')
+        if 'verification_code' not in request.args:
+            logging.info('The invitation link was missing a validation code.')
             return render_template('error/token_validation.html'), 401
 
         # Check if Redis is working
         if r:
             # Check if Redis key was previously requested, otherwise load the UAA invite
-            uaaInviteLink = r.get(verification_code)
-            if uaaInviteLink is None:
+            invite = bytes.decode(r.get(verification_code))
+            if invite is None:
                 logging.info('UAA invite link is expired. {0}'.format(verification_code))
                 return render_template('error/token_validation.html'), 401
 
             else:
                 logging.info('Accessed UAA invite link. {0}'.format(verification_code))
-                r.delete(verification_code)
-                return render_template('redeem.html', uaa_invite_link=uaaInviteLink)
+
+                print(invite)
+
+                return render_template('redeem.html', invite=invite)
 
         # If Redis isnt working, log error and show internal error.
         else:
@@ -558,11 +562,11 @@ def create_app(env=os.environ):
 
             # Lets store this invite link in Redis using the verification code
             verification_code = uuid.uuid4().hex
-            verification_url = url_for('redeem_invite', verification_code=verification_code)
+            verification_url = url_for('redeem_invite', verification_code=verification_code, _external=True)
 
             if 'inviteLink' in invite:
                 logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
-                r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite.inviteLink)
+                r.setex(verification_code, app.config['UAA_INVITE_EXPIRATION_IN_SECONDS'], invite['inviteLink'])
             else: 
                 logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
 
