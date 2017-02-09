@@ -2,7 +2,7 @@
 
 {% block content %}
 <div>
-	<h2>Unable to validate the login request from UAA</h2>
+	<h2>Unable to validate the login request from UAA. Your token may have already expired. Please request a new cloud.gov invitiation.</h2>
 	<p><a href="{{url_for('logout')}}">Try again?</a></p>
 </div>
 {% endblock %}
