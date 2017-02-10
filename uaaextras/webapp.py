@@ -122,8 +122,9 @@ def str_to_bool(val):
 
     return None
 
+
 def send_verification_code_email(app, email, invite):
-    with app.app_context():    
+    with app.app_context():
         if len(invite['failed_invites']):
             raise RuntimeError('UAA failed to invite the user.')
 
@@ -142,14 +143,13 @@ def send_verification_code_email(app, email, invite):
         if 'inviteLink' in invite:
             logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
             r.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
-            
             # we invited them, send them the link to validate their account
             subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
             body = render_template('email/body.html', verification_url=verification_url, branding=branding)
 
             send_email(app, email, subject, body)
             return True
-        else: 
+        else:
             logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
             return False
 
@@ -280,6 +280,7 @@ def daemon_thread(self, interval=1, event=threading.Event()):
 
 Scheduler.daemon_thread = daemon_thread
 
+
 def create_app(env=os.environ):
     """Create an instance of the web application"""
     # setup our app config
@@ -340,8 +341,8 @@ def create_app(env=os.environ):
 
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
-        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password', 'redeem_invite',
-                                                     'reset_password', 'signup', 'static']:
+        if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password',
+                                                     'redeem_invite', 'reset_password', 'signup', 'static']:
             return
 
         # check our token, and expirary date
@@ -560,7 +561,7 @@ def create_app(env=os.environ):
         if 'verification_code' not in request.args:
             logging.info('The invitation link was missing a validation code.')
             return render_template('error/token_validation.html'), 401
-        
+
         # Store the validation token to check for UAA invite link
         verification_code = request.args.get('verification_code')
 
@@ -579,7 +580,7 @@ def create_app(env=os.environ):
                 if request.method == 'GET':
                     redeem_link = url_for('redeem_invite', verification_code=verification_code, _external=True)
                     return render_template('redeem-confirm.html', redeem_link=redeem_link)
-                
+
                 if request.method == 'POST':
                     return redirect(invite_url, code=302)
 
