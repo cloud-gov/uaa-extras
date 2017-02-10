@@ -125,6 +125,7 @@ def str_to_bool(val):
 
 def send_verification_code_email(app, email, invite):
     with app.app_context():
+        # Check if Redis is working
         if len(invite['failed_invites']):
             raise RuntimeError('UAA failed to invite the user.')
 
@@ -139,6 +140,10 @@ def send_verification_code_email(app, email, invite):
         verification_url = url_for('redeem_invite', verification_code=verification_code, _external=True)
 
         logging.info('Invite {0}'.format(invite))
+
+        if r is None:
+            logging.error('Redis is not working for invite {0}'.format(verification_code))
+            return False
 
         if 'inviteLink' in invite:
             logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
