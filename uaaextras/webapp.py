@@ -53,19 +53,19 @@ APP_STATIC = os.path.join(APP_ROOT, 'static')
 FED_DOTGOV_CSV = open(os.path.join(APP_STATIC, 'current-federal.csv'), newline='')
 FED_DOTGOV_LIST = csv.reader(FED_DOTGOV_CSV)
 
+redis_env = dict(hostname='localhost', port=6379, password='')
 # Get Redis credentials
 if 'VCAP_SERVICES' in os.environ:
     services = json.loads(os.getenv('VCAP_SERVICES'))
-    redis_env = services['redis28'][0]['credentials']
-    if 'ports' in redis_env:
-        del redis_env['ports']
-else:
-    redis_env = dict(hostname='localhost', port=6379, password='')
-redis_env['host'] = redis_env['hostname']
-del redis_env['hostname']
-redis_env['port'] = int(redis_env['port'])
-redis_env['socket_timeout'] = 0.5
-redis_env['socket_connect_timeout'] = 0.5
+    redis_info = services['redis28'][0]['credentials']
+
+    redis_env = {
+        "host": redis_info['hostname'],
+        "port": int(redis_info['port']),
+        "password": redis_info['password'],
+        "socket_timeout": 0.5,
+        "socket_connect_timeout": 0.5
+    }
 
 # Connect to redis
 try:
