@@ -40,10 +40,14 @@ class UAAClient(object):
         token: A bearer token.
         verify_tls: Do we validate certs when talking to UAA
     """
-    def __init__(self, base_url, token, verify_tls=True):
+    def __init__(self, base_url, client_id, client_secret, verify_tls=True):
         self.base_url = base_url
-        self.token = token
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.verify_tls = verify_tls
+
+        self.client_token = None
+        self.user_token = None
 
     def _request(self, resource, method, body=None, params=None, auth=None, headers={}):
         """Make a request to the UAA API.
@@ -75,8 +79,13 @@ class UAAClient(object):
 
         int_headers = {}
 
-        if self.token and auth is None:
-            int_headers['Authorization'] = 'Bearer ' + self.token
+        # if they didn't give us specific auth, get a client token with a credential grant
+        # if we don't already have one
+        if auth is None:
+            if self.client_token is None:
+                self.client_token = self._get_client_token()
+
+            int_headers['Authorization'] = 'Bearer ' + self.client_token
 
         for kk, vv in headers.items():
             int_headers[kk] = vv
@@ -98,7 +107,7 @@ class UAAClient(object):
         # return the response
         return json.loads(response.text)
 
-    def _get_client_token(self, client_id, client_secret):
+    def _get_client_token(self):
         """ Returns the client credentials token
 
         Args:
@@ -119,7 +128,7 @@ class UAAClient(object):
                 'grant_type': 'client_credentials',
                 'response_type': 'token'
             },
-            auth=HTTPBasicAuth(client_id, client_secret)
+            auth=HTTPBasicAuth(self.client_id, self.client_secret)
         )
         return response.get('access_token', None)
 
@@ -139,12 +148,11 @@ class UAAClient(object):
 
         return self._request('/identity-providers', 'GET', params={'active_only': str(active_only).lower()})
 
-    def users(self, list_filter=None, token=None, start=1):
+    def users(self, list_filter=None, start=1):
         """Return a list of users from UAA
 
         Args:
             list_filter(optional):  A filter to be applied to the users
-            token(optional): Bearer token to use for authentication
 
         Raises:
             UAAError: There was an error listing users
@@ -154,31 +162,11 @@ class UAAClient(object):
 
         """
 
-        headers = {}
         params = {'startIndex': start}
         if list_filter:
             params['filter'] = list_filter
-        if token:
-            headers = {'Authorization': 'Bearer ' + token}
 
-        return self._request('/Users', 'GET', params=params, headers=headers)
-
-    def client_users(self, client_id, client_secret, list_filter=None, start=1):
-        """ Return a list of users from UAA with client credentials
-
-        Args:
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
-            list_filter(optional):  A filter to be applied to the users
-
-        Raises:
-            UAAError: there was an error changing the password
-
-        Returns:
-            dict:  A list of users matching list_filter
-        """
-        token = self._get_client_token(client_id, client_secret)
-        return self.users(list_filter=list_filter, token=token, start=start)
+        return self._request('/Users', 'GET', params=params)
 
     def get_user(self, user_id):
         """Retrive a user from UAA by their user id
@@ -217,26 +205,7 @@ class UAAClient(object):
             headers={'If-Match': str(user['meta']['version'])}
         )
 
-    def client_invite_users(self, client_id, client_secret, email, redirect_uri):
-        """Invite a user to UAA with client credentials
-
-        Args:
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
-            email(str, list(str)): An email or list of emails to invite
-            redirect_uri(str): Where to send the users after they have accepted their invite
-
-        Raises:
-            UAAError: There was an error inviting the user
-
-        Returns:
-            dict:   An object representing the invite, including an inviteLink which should be emailed
-                    to the user to validate their email address.  Visiting the link will activate the user.
-        """
-        token = self._get_client_token(client_id, client_secret)
-        return self.invite_users(email, redirect_uri, token)
-
-    def invite_users(self, email, redirect_uri, token=None):
+    def invite_users(self, email, redirect_uri):
         """Invite a user to UAA
 
         Args:
@@ -251,13 +220,8 @@ class UAAClient(object):
                     to the user to validate their email address.  Visiting the link will activate the user.
         """
 
-        headers = {}
-
         if not isinstance(email, list):
             email = [email]
-
-        if token:
-            headers = {'Authorization': 'Bearer ' + token}
 
         return self._request(
             '/invite_users',
@@ -265,13 +229,19 @@ class UAAClient(object):
             params={
                 'redirect_uri': redirect_uri
             },
-            headers=headers,
             body={
                 'emails': email
             }
         )
 
-    def decode_access_token(self, token):
+    def set_user_token(self, token):
+        if token:
+            self.user_token = token
+            return self.get_user_token()
+
+        return False
+
+    def get_user_token(self):
         """Decodes an access token
 
         Args:
@@ -281,20 +251,21 @@ class UAAClient(object):
             dict: An object representing the decoded access token.
 
         """
-        payload = token.split('.')[1]
+        if self.user_token is None:
+            return self.user_token
+
+        payload = self.user_token.split('.')[1]
         missing_padding = len(payload) % 4
         if missing_padding != 0:
             payload += '=' * (4 - missing_padding)
         decoded_token = str(base64.b64decode(payload), 'utf-8')
         return json.loads(decoded_token)
 
-    def oauth_token(self, code, client_id, client_secret):
+    def oauth_token(self, code):
         """Use an authorization code to retrieve a bearer token from UAA
 
         Args:
             code: The authorization code
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
 
         Raises:
             UAAError: There was an error retrieving the token
@@ -313,7 +284,6 @@ class UAAClient(object):
                 'grant_type': 'authorization_code',
                 'response_type': 'token'
             },
-            auth=HTTPBasicAuth(client_id, client_secret)
         )
 
     def change_password(self, user_id, old_password, new_password):
@@ -339,12 +309,10 @@ class UAAClient(object):
             }
         )
 
-    def set_temporary_password(self, client_id, client_secret, username, new_password):
+    def set_password(self, username, new_password):
         """ Changes password on behalf of the user with client credentials
 
         Args:
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
             user_id: the user id to act on
             new_password: the users desired password
 
@@ -355,31 +323,25 @@ class UAAClient(object):
             boolean: Success/failure
         """
         list_filter = 'userName eq "{0}"'.format(username)
-        userList = self.client_users(client_id, client_secret, list_filter=list_filter)
+        userList = self.users(list_filter)
 
         if len(userList['resources']) > 0:
             user_id = userList['resources'][0]['id']
-            token = self._get_client_token(client_id, client_secret)
             self._request(
                 urljoin('/Users', user_id, 'password'),
                 'PUT',
                 body={
                     'password': new_password
                 },
-                headers={
-                    'Authorization': 'Bearer ' + token
-                }
             )
             return True
 
         return False
 
-    def does_origin_user_exist(self, client_id, client_secret, username, origin):
+    def does_origin_user_exist(self, username, origin):
         """ Checks to see if a user exists with a given origin
 
         Args:
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
             user_id: the username to check
             origin: the UAA origin
 
@@ -391,7 +353,7 @@ class UAAClient(object):
         """
 
         list_filter = 'userName eq "{0}" and origin eq "{1}"'.format(username, origin)
-        userList = self.client_users(client_id, client_secret, list_filter=list_filter)
+        userList = self.users(list_filter)
 
         if len(userList['resources']) > 0:
             return True
