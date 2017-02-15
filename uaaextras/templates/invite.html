@@ -7,9 +7,9 @@
 {% with messages = get_flashed_messages() %}
 {% if messages %}
 {% for message in messages %}
-	<div class="alert alert-error">
-	    <p>{{ message }}</p>
-	</div>
+  <div class="alert alert-error">
+      <p>{{ message }}</p>
+  </div>
 {% endfor %}
 {% endif %}
 {% endwith %}
@@ -20,4 +20,6 @@
         <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
      </form>
 </div>
+<p>Learn more about <a href="https://cloud.gov/overview/overview/who-can-use-cloudgov/">who can use cloud.gov</a> and <a href="https://cloud.gov/docs/apps/managing-teammates/">inviting teammates</a>.
+</p>
 {% endblock %}
