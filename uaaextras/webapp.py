@@ -53,7 +53,7 @@ APP_STATIC = os.path.join(APP_ROOT, 'static')
 FED_DOTGOV_CSV = open(os.path.join(APP_STATIC, 'current-federal.csv'), newline='')
 FED_DOTGOV_LIST = csv.reader(FED_DOTGOV_CSV)
 
-redis_env = dict(hostname='localhost', port=6379, password='')
+redis_env = dict(host='localhost', port=6379, password='')
 # Get Redis credentials
 if 'VCAP_SERVICES' in os.environ:
     services = json.loads(os.getenv('VCAP_SERVICES'))
