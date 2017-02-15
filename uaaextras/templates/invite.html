@@ -1,6 +1,6 @@
 {% extends "_layout.html" %}
 {% block type %}-landscape{% endblock %}
-{% block header %}Send an invite{% endblock %}
+{% block header %}Send an invitation to a teammate{% endblock %}
 
 {% block content %}
 <div class="island-content">
@@ -20,6 +20,6 @@
         <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
      </form>
 </div>
-<p>Learn more about <a href="https://cloud.gov/overview/overview/who-can-use-cloudgov/">who can use cloud.gov</a> and <a href="https://cloud.gov/docs/apps/managing-teammates/">inviting teammates</a>.
+<p>Learn more about <a href="https://cloud.gov/docs/apps/managing-teammates/">inviting teammates</a>.
 </p>
 {% endblock %}
