@@ -40,6 +40,7 @@ CONFIG_KEYS = {
     'PW_EXPIRATION_WARN_DAYS': 10,
 }
 
+UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
 FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS = 43200
 
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
@@ -52,19 +53,19 @@ APP_STATIC = os.path.join(APP_ROOT, 'static')
 FED_DOTGOV_CSV = open(os.path.join(APP_STATIC, 'current-federal.csv'), newline='')
 FED_DOTGOV_LIST = csv.reader(FED_DOTGOV_CSV)
 
+redis_env = dict(host='localhost', port=6379, password='')
 # Get Redis credentials
 if 'VCAP_SERVICES' in os.environ:
     services = json.loads(os.getenv('VCAP_SERVICES'))
-    redis_env = services['redis28'][0]['credentials']
-    if 'ports' in redis_env:
-        del redis_env['ports']
-else:
-    redis_env = dict(hostname='localhost', port=6379, password='')
-redis_env['host'] = redis_env['hostname']
-del redis_env['hostname']
-redis_env['port'] = int(redis_env['port'])
-redis_env['socket_timeout'] = 0.5
-redis_env['socket_connect_timeout'] = 0.5
+    redis_info = services['redis28'][0]['credentials']
+
+    redis_env = {
+        "host": redis_info['hostname'],
+        "port": int(redis_info['port']),
+        "password": redis_info['password'],
+        "socket_timeout": 0.5,
+        "socket_connect_timeout": 0.5
+    }
 
 # Connect to redis
 try:
@@ -120,6 +121,37 @@ def str_to_bool(val):
         return False
 
     return None
+
+
+def send_verification_code_email(app, email, invite):
+    with app.app_context():
+        if len(invite['failed_invites']):
+            raise RuntimeError('UAA failed to invite the user.')
+
+        invite = invite['new_invites'][0]
+
+        branding = {
+            'company_name': app.config['BRANDING_COMPANY_NAME']
+        }
+
+        # Lets store this invite link in Redis using the verification code
+        verification_code = uuid.uuid4().hex
+        verification_url = url_for('redeem_invite', verification_code=verification_code, _external=True)
+
+        logging.info('Invite {0}'.format(invite))
+
+        if 'inviteLink' in invite:
+            logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
+            r.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
+            # we invited them, send them the link to validate their account
+            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
+            body = render_template('email/body.html', verification_url=verification_url, branding=branding)
+
+            send_email(app, email, subject, body)
+            return True
+        else:
+            logging.info('Failed: No inviteLink stored for {0}'.format(verification_code))
+            return False
 
 
 def send_email(app, email, subject, body):
@@ -310,7 +342,7 @@ def create_app(env=os.environ):
         """
         # don't authenticate the oauth code receiver, or we'll never get the code back from UAA
         if request.endpoint and request.endpoint in ['oauth_login', 'forgot_password',
-                                                     'reset_password', 'signup', 'static']:
+                                                     'redeem_invite', 'reset_password', 'signup', 'static']:
             return
 
         # check our token, and expirary date
@@ -424,7 +456,8 @@ def create_app(env=os.environ):
         if re.search('\.fed\.us$', email, flags=re.I):
             valid_gov_email = True
         if not valid_gov_email:
-            flash('You must use a valid federal government email address.')
+            flash('This does not seem to be a federal government email address.'
+                  'Self-service invitations are only offered for federal email addresses.')
             return render_template('signup.html')
 
         # email is good, lets invite them
@@ -452,21 +485,9 @@ def create_app(env=os.environ):
                 redirect_uri
             )
 
-            if len(invite['failed_invites']):
-                raise RuntimeError('UAA failed to invite the user.')
+            if send_verification_code_email(app, email, invite):
+                return render_template('signup_invite_sent.html')
 
-            invite = invite['new_invites'][0]
-
-            branding = {
-                'company_name': app.config['BRANDING_COMPANY_NAME']
-            }
-
-            # we invited them, send them the link to validate their account
-            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
-            body = render_template('email/body.html', invite=invite, branding=branding)
-
-            send_email(app, email, subject, body)
-            return render_template('signup_invite_sent.html')
         except UAAError as exc:
             # if UAA complains that our access token is invalid then force them back through the login
             # process.
@@ -516,21 +537,9 @@ def create_app(env=os.environ):
             logging.info('redirect for invite: {0}'.format(redirect_uri))
             invite = g.uaac.invite_users(email, redirect_uri)
 
-            if len(invite['failed_invites']):
-                raise RuntimeError('UAA failed to invite the user.')
+            if send_verification_code_email(app, email, invite):
+                return render_template('invite_sent.html')
 
-            invite = invite['new_invites'][0]
-
-            branding = {
-                'company_name': app.config['BRANDING_COMPANY_NAME']
-            }
-
-            # we invited them, send them the link to validate their account
-            subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
-            body = render_template('email/body.html', invite=invite, branding=branding)
-
-            send_email(app, email, subject, body)
-            return render_template('invite_sent.html')
         except UAAError as exc:
             # if UAA complains that our access token is invalid then force them back through the login
             # process.
@@ -544,6 +553,42 @@ def create_app(env=os.environ):
             logging.exception('An error occured during the invite process')
 
         return render_template('error/internal.html'), 500
+
+    @app.route('/redeem-invite', methods=['GET', 'POST'])
+    def redeem_invite():
+
+        # Make sure that the requested URL has validation_token,
+        # otherwise redirect to error page.
+        if 'verification_code' not in request.args:
+            logging.info('The invitation link was missing a validation code.')
+            return render_template('error/token_validation.html'), 401
+
+        # Store the validation token to check for UAA invite link
+        verification_code = request.args.get('verification_code')
+
+        # Check if Redis is working
+        if r:
+            # Check if Redis key was previously requested, otherwise load the UAA invite
+            invite = r.get(verification_code)
+            if invite is None:
+                logging.info('UAA invite link is expired. {0}'.format(verification_code))
+                return render_template('error/token_validation.html'), 401
+
+            else:
+                invite_url = bytes.decode(invite)
+                logging.info('Accessed UAA invite link. {0}'.format(verification_code))
+
+                if request.method == 'GET':
+                    redeem_link = url_for('redeem_invite', verification_code=verification_code, _external=True)
+                    return render_template('redeem-confirm.html', redeem_link=redeem_link)
+
+                if request.method == 'POST':
+                    return redirect(invite_url, code=302)
+
+        # If Redis isnt working, log error and show internal error.
+        else:
+            logging.exception('The UAA link was not accessible because Redis is down.')
+            return render_template('error/internal.html'), 500
 
     @app.route('/first-login', methods=['GET'])
     def first_login():
