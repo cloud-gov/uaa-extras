@@ -456,8 +456,8 @@ def create_app(env=os.environ):
         if re.search('\.fed\.us$', email, flags=re.I):
             valid_gov_email = True
         if not valid_gov_email:
-            flash('This does not seem to be a federal government email address. '
-                  'Self-service invitations are only offered for federal email addresses.')
+            flash('This does not seem to be a U.S. federal government email address. '
+                  'Self-service invitations are only offered for U.S.federal government email addresses.')
             return render_template('signup.html')
 
         # email is good, lets invite them
