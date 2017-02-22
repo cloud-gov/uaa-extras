@@ -457,7 +457,7 @@ def create_app(env=os.environ):
             valid_gov_email = True
         if not valid_gov_email:
             flash('This does not seem to be a U.S. federal government email address. '
-                  'Self-service invitations are only offered for U.S.federal government email addresses.')
+                  'Self-service invitations are only offered for U.S. federal government email addresses.')
             return render_template('signup.html')
 
         # email is good, lets invite them
