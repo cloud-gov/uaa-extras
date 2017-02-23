@@ -5,7 +5,6 @@ import codecs
 import csv
 import logging
 import os
-import re
 import redis
 import smtplib
 import signal
@@ -324,11 +323,11 @@ def create_app(env=os.environ):
     # download current-federal.csv from
     #   https://github.com/GSA/data/tree/gh-pages/dotgov-domains
     # and place into 'static' dir
-    fed_gov_csv = open(os.path.join(app.config['APP_STATIC'], 'current-federal.csv'), newline='')
-    domain_regex_list = ['\.mil$', '\.fed\.us$']
-    for row in csv.reader(fed_gov_csv):
-        domain_regex_list.append(row[0].strip().rstrip().replace('.', '\.') + '$')
-    app.config['VALID_FED_DOMAINS_REGEX'] = re.compile('(?:%s)' % '|'.join(domain_regex_list), flags=re.IGNORECASE)
+    domain_list = ['.mil']
+    with open(os.path.join(app.config['APP_STATIC'], 'current-federal.csv'), newline='') as fed_gov_csv:
+        for row in csv.reader(fed_gov_csv):
+            domain_list.append(row[0].strip().rstrip().lower())
+    app.config['VALID_FED_DOMAINS'] = tuple(domain_list)
 
     logging.info('Loaded application configuration:')
     for ck in sorted(CONFIG_KEYS.keys()):
@@ -452,10 +451,7 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template('signup.html')
         # Check for feds here
-        valid_gov_email = False
-        if app.config['VALID_FED_DOMAINS_REGEX'].search(email):
-            valid_gov_email = True
-        if not valid_gov_email:
+        if not email.endswith(app.config['VALID_FED_DOMAINS']):
             flash('This does not seem to be a U.S. federal government email address. '
                   'Self-service invitations are only offered for U.S. federal government email addresses. '
                   'If you do have a U.S. federal government email address, email us at '
