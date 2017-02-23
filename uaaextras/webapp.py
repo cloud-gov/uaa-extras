@@ -5,7 +5,6 @@ import codecs
 import csv
 import logging
 import os
-import re
 import redis
 import smtplib
 import signal
@@ -44,14 +43,6 @@ UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
 FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS = 43200
 
 PASSWORD_SPECIAL_CHARS = ('~', '@', '#', '$', '%', '^', '*', '_', '+', '=', '-', '/', '?')
-
-APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-APP_STATIC = os.path.join(APP_ROOT, 'static')
-
-# Load valid list of .gov domains
-# data from https://github.com/GSA/data/tree/gh-pages/dotgov-domains
-FED_DOTGOV_CSV = open(os.path.join(APP_STATIC, 'current-federal.csv'), newline='')
-FED_DOTGOV_LIST = csv.reader(FED_DOTGOV_CSV)
 
 redis_env = dict(host='localhost', port=6379, password='')
 # Get Redis credentials
@@ -325,6 +316,19 @@ def create_app(env=os.environ):
     # make sure our base url doesn't have a trailing slash as UAA will flip out
     app.config['UAA_BASE_URL'] = app.config['UAA_BASE_URL'].rstrip('/')
 
+    app.config['APP_ROOT'] = os.path.dirname(os.path.abspath(__file__))
+    app.config['APP_STATIC'] = os.path.join(app.config['APP_ROOT'], 'static')
+
+    # Load valid list of .gov domains
+    # download current-federal.csv from
+    #   https://github.com/GSA/data/tree/gh-pages/dotgov-domains
+    # and place into 'static' dir
+    domain_list = ['.mil']
+    with open(os.path.join(app.config['APP_STATIC'], 'current-federal.csv'), newline='') as fed_gov_csv:
+        for row in csv.reader(fed_gov_csv):
+            domain_list.append(row[0].strip().rstrip().lower())
+    app.config['VALID_FED_DOMAINS'] = tuple(domain_list)
+
     logging.info('Loaded application configuration:')
     for ck in sorted(CONFIG_KEYS.keys()):
         logging.info('{0}: {1}'.format(ck, app.config[ck]))
@@ -447,17 +451,11 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template('signup.html')
         # Check for feds here
-        valid_gov_email = False
-        for row in FED_DOTGOV_LIST:
-            if re.search(row[0].replace('.', '\.') + '$', email, flags=re.I):
-                valid_gov_email = True
-        if re.search('\.mil$', email, flags=re.I):
-            valid_gov_email = True
-        if re.search('\.fed\.us$', email, flags=re.I):
-            valid_gov_email = True
-        if not valid_gov_email:
-            flash('This does not seem to be a federal government email address.'
-                  'Self-service invitations are only offered for federal email addresses.')
+        if not email.endswith(app.config['VALID_FED_DOMAINS']):
+            flash('This does not seem to be a U.S. federal government email address. '
+                  'Self-service invitations are only offered for U.S. federal government email addresses. '
+                  'If you do have a U.S. federal government email address, email us at '
+                  'cloud-gov-inquiries@gsa.gov to let us know to whitelist your domain.')
             return render_template('signup.html')
 
         # email is good, lets invite them

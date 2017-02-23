@@ -442,7 +442,6 @@ class TestAppConfig(unittest.TestCase):
             flash.assert_called_once()
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_get_signup(self, render_template):
         """When a GET request is made to /signup, the signup.html template is displayed"""
 
@@ -456,7 +455,6 @@ class TestAppConfig(unittest.TestCase):
 
     @patch('uaaextras.webapp.flash')
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_bad_email(self, render_template, flash):
         """When an email is blank or invalid, or not federal gov, the error is flashed to the user"""
 
@@ -493,7 +491,6 @@ class TestAppConfig(unittest.TestCase):
 
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_error(self, render_template, uaac):
         """When an error occurs during the signup process, the error/internal.html template is displayed"""
 
@@ -519,7 +516,6 @@ class TestAppConfig(unittest.TestCase):
     @patch('uaaextras.webapp.r')
     @patch('uaaextras.webapp.uuid')
     @patch('uaaextras.webapp.UAA_INVITE_EXPIRATION_IN_SECONDS')
-    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_good(self, UAA_INVITE_EXPIRATION_IN_SECONDS, uuid, redis_conn,
                          render_template, uaac, smtp, send_email):
         """When an signup is sucessfully sent, the signup_invite_sent template is displayed"""
@@ -557,7 +553,6 @@ class TestAppConfig(unittest.TestCase):
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.flash')
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.FED_DOTGOV_LIST', [['GSA.GOV']])
     def test_signup_user_exists(self, render_template, flash, uaac):
         """When an user already exists during signup process, the signup.html template is displayed"""
 
