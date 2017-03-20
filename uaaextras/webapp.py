@@ -58,13 +58,24 @@ if 'VCAP_SERVICES' in os.environ:
         "socket_connect_timeout": 0.5
     }
 
-# Connect to redis
-try:
-    r = redis.StrictRedis(**redis_env)
-    r.info()
-except Exception as exc:
-    logging.warn('Unable to connect to Redis: {0}'.format(exc))
-    r = None
+
+class RedisWrapper(object):
+    def __init__(self, **kwargs):
+        self.kwargs = kwargs
+
+    @property
+    def redis(self):
+        if not hasattr(self, '_redis'):
+            try:
+                self._redis = redis.StrictRedis(**self.kwargs)
+                self._redis.info()
+            except Exception as exc:
+                logging.warn('Unable to connect to Redis: {0}'.format(exc))
+        return self._redis
+
+
+r = RedisWrapper(**redis_env)
+
 
 # Try to determine SERVER_NAME
 if 'VCAP_APPLICATION' in os.environ:
@@ -133,7 +144,7 @@ def send_verification_code_email(app, email, invite):
 
         if 'inviteLink' in invite:
             logging.info('Success: Storing inviteLink for {0} in Redis'.format(verification_code))
-            r.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
+            r.redis.setex(verification_code, UAA_INVITE_EXPIRATION_IN_SECONDS, invite['inviteLink'])
             # we invited them, send them the link to validate their account
             subject = render_template('email/subject.txt', invite=invite, branding=branding).strip()
             body = render_template('email/body.html', verification_url=verification_url, branding=branding)
@@ -189,13 +200,13 @@ def do_expiring_pw_notifications(app, changeLink, start=1):
     """
 
     # If we can't connect to redis, just skip
-    if not r:
+    if not r.redis:
         logging.warn("Unable to connect to redis, giving up!")
         return
 
     # figure if we need to run today, use redis
     now = datetime.now().date()
-    ranToday = r.get(now)
+    ranToday = r.redis.get(now)
 
     logging.info("Checking if we've run on {0}: {1} (start {2})".format(now, ranToday, start))
 
@@ -204,7 +215,7 @@ def do_expiring_pw_notifications(app, changeLink, start=1):
         return
 
     # Let's make sure we don't run again today, and we can expire in a week
-    r.setex(now, timedelta(days=7), True)
+    r.redis.setex(now, timedelta(days=7), True)
 
     list_filter = 'origin eq "{0}"'.format(app.config['IDP_PROVIDER_ORIGIN'])
     uaac = UAAClient(app.config['UAA_BASE_URL'], None,
@@ -565,9 +576,9 @@ def create_app(env=os.environ):
         verification_code = request.args.get('verification_code')
 
         # Check if Redis is working
-        if r:
+        if r.redis:
             # Check if Redis key was previously requested, otherwise load the UAA invite
-            invite = r.get(verification_code)
+            invite = r.redis.get(verification_code)
             if invite is None:
                 logging.info('UAA invite link is expired. {0}'.format(verification_code))
                 return render_template('error/token_validation.html'), 401
@@ -682,7 +693,7 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template('forgot_password.html')
 
-        if r:
+        if r.redis:
             # If we've made it this far, it's a valid email so we'll generate and store a
             # token and send an email.
             logging.info('generating validation token for user')
@@ -699,7 +710,7 @@ def create_app(env=os.environ):
             subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
             body = render_template('email/body-password.html', reset=reset, branding=branding)
             send_email(app, email, subject, body)
-            r.setex(email, FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS, identity_token)
+            r.redis.setex(email, FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS, identity_token)
 
             return render_template('forgot_password.html', email_sent=True, email=email)
 
@@ -733,12 +744,12 @@ def create_app(env=os.environ):
 
         # If we've made it this far, it's a valid email so let's verify the generated
         # token with their email address.
-        if r:
-            userToken = r.get(email)
+        if r.redis:
+            userToken = r.redis.get(email)
 
             if userToken.decode('utf-8') == token:
                 logging.info('Successfully verified token {0} for {1}'.format(userToken, email))
-                r.delete(email)
+                r.redis.delete(email)
             else:
                 flash('Valid token not found. Please try your forgot password request again.')
                 return render_template('reset_password.html')

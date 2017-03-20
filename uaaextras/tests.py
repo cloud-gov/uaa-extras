@@ -11,11 +11,18 @@ from flask import appcontext_pushed
 from mock import Mock, patch
 from requests.auth import HTTPBasicAuth
 
-from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS, do_expiring_pw_notifications
+from uaaextras.webapp import (
+    create_app, send_email, str_to_bool, CONFIG_KEYS, do_expiring_pw_notifications,
+    RedisWrapper
+)
 from uaaextras.clients import UAAError, UAAClient
 
 app = create_app({'UAA_CLIENT_ID': 'client-id', 'UAA_CLIENT_SECRET': 'client-secret',
                   'PW_EXPIRES_DAYS': 30, 'PW_EXPIRATION_WARN_DAYS': 5})
+
+
+null_wrapper = RedisWrapper()
+null_wrapper._redis = None
 
 
 @contextmanager
@@ -158,7 +165,7 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('error/missing_scope.html')
 
     @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.r', None)
+    @patch('uaaextras.webapp.r', null_wrapper)
     def test_notify_expiring_no_redis_connection(self, uaac):
         """When there is no redis connection, don't even connect to UAA"""
 
@@ -169,10 +176,9 @@ class TestAppConfig(unittest.TestCase):
     @patch('uaaextras.webapp.datetime')
     @patch('uaaextras.webapp.divmod')
     @patch('uaaextras.webapp.r')
-    def test_notify_expiring_uaa_no_results(self, redis_conn, m_divmod, m_datetime, uaac):
+    def test_notify_expiring_uaa_no_results(self, redis_wrapper, m_divmod, m_datetime, uaac):
         """When UAA returns no results, make sure we don't do any time checking or paging"""
-
-        redis_conn.get.return_value = None
+        redis_wrapper.redis.get.return_value = None
 
         uaac().client_users.return_value = {'totalResults': 0, 'itemsPerPage': 100, 'resources': []}
 
@@ -186,7 +192,7 @@ class TestAppConfig(unittest.TestCase):
     def test_notify_expiring_uaa_has_results_not_enough_to_page(self, redis_conn, m_divmod, uaac):
         """When When UAA does return results, do email, but not paging because not enough results"""
 
-        redis_conn.get.return_value = None
+        redis_conn.redis.get.return_value = None
 
         passwordLastModified = (datetime.now() - timedelta(days=31)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         val = {
@@ -211,7 +217,7 @@ class TestAppConfig(unittest.TestCase):
     def test_notify_expiring_uaa_has_results_and_handles_more_pages(self, redis_conn, uaac):
         """When When UAA does return results, do email, and paging"""
 
-        redis_conn.get.return_value = None
+        redis_conn.redis.get.return_value = None
 
         passwordLastModified = (datetime.now() - timedelta(days=31)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
@@ -254,7 +260,7 @@ class TestAppConfig(unittest.TestCase):
     @patch('uaaextras.webapp.r')
     def test_notifies_users_when_password_is_not_yet_expired(self, redis_conn, render_template, send_email, uaac):
         """When user password expires within warning days, notify"""
-        redis_conn.get.return_value = None
+        redis_conn.redis.get.return_value = None
 
         passwordLastModified = (datetime.now() - timedelta(days=26)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         val = {
@@ -281,7 +287,7 @@ class TestAppConfig(unittest.TestCase):
     @patch('uaaextras.webapp.r')
     def test_does_not_notify_after_password_expired(self, redis_conn, render_template, send_email, uaac):
         """When user password has already expired, do not notify"""
-        redis_conn.get.return_value = None
+        redis_conn.redis.get.return_value = None
 
         passwordLastModified = (datetime.now() - timedelta(days=31)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         val = {
@@ -305,9 +311,9 @@ class TestAppConfig(unittest.TestCase):
     def test_notify_expiring_only_runs_once_a_day(self, redis_conn, uaac):
         """When notifcations have already run once in a day, don't run again"""
 
-        redis_conn.get.return_value = True
+        redis_conn.redis.get.return_value = True
         do_expiring_pw_notifications(app, 'http://example.org/change')
-        redis_conn.setex.assert_not_called()
+        redis_conn.redis.setex.assert_not_called()
 
     @patch('uaaextras.webapp.render_template')
     def test_get_index(self, render_template):
@@ -410,7 +416,7 @@ class TestAppConfig(unittest.TestCase):
 
             rv = c.post('/invite', data={'email': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 200
-            redis_conn.setex.assert_called_with(
+            redis_conn.redis.setex.assert_called_with(
                 uuid.uuid4().hex,
                 UAA_INVITE_EXPIRATION_IN_SECONDS,
                 'testLink'
@@ -702,11 +708,10 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('forgot_password.html')
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r', None)
+    @patch('uaaextras.webapp.r', null_wrapper)
     def test_no_redis_forgot_password(self, render_template):
         """ When submitting an email and redis is down, server responsds 500
         """
-
         render_template.return_value = 'template output'
 
         with app.test_client() as c:
@@ -741,7 +746,7 @@ class TestAppConfig(unittest.TestCase):
 
             rv = c.post('/forgot-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
             assert rv.status_code == 200
-            redis_conn.setex.assert_called_with(
+            redis_conn.redis.setex.assert_called_with(
                 'test@example.com',
                 FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS,
                 uuid.uuid4().hex
@@ -784,7 +789,7 @@ class TestAppConfig(unittest.TestCase):
             flash.assert_called_once()
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r', None)
+    @patch('uaaextras.webapp.r', null_wrapper)
     def test_no_redis_reset_password(self, render_template):
         """ When submitting an email and redis is down, server responsds 500
         """
@@ -815,7 +820,7 @@ class TestAppConfig(unittest.TestCase):
         """
 
         render_template.return_value = 'template output'
-        redis_conn.get.return_value = b'example'
+        redis_conn.redis.get.return_value = b'example'
         uaac().set_temporary_password.return_value = generate_temporary_password()
 
         with app.test_client() as c:
@@ -831,8 +836,8 @@ class TestAppConfig(unittest.TestCase):
                 }
             )
             assert rv.status_code == 200
-            redis_conn.get.assert_called_with('test@example.com')
-            redis_conn.delete.assert_called_with('test@example.com')
+            redis_conn.redis.get.assert_called_with('test@example.com')
+            redis_conn.redis.delete.assert_called_with('test@example.com')
             render_template.assert_called_with('reset_password.html', password=generate_temporary_password())
 
     @patch('uaaextras.webapp.render_template')
@@ -848,7 +853,7 @@ class TestAppConfig(unittest.TestCase):
         """
 
         render_template.return_value = 'template output'
-        redis_conn.get.return_value = b'example'
+        redis_conn.redis.get.return_value = b'example'
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
@@ -863,7 +868,7 @@ class TestAppConfig(unittest.TestCase):
                 }
             )
             assert rv.status_code == 200
-            redis_conn.get.assert_called_with('test@example.com')
+            redis_conn.redis.get.assert_called_with('test@example.com')
             render_template.assert_called_with('reset_password.html')
             flash.assert_called_once()
 
@@ -1065,7 +1070,7 @@ class TestUAAClient(unittest.TestCase):
 
         inviteLink = b'inviteLink'
         render_template.return_value = 'some value'
-        redis_conn.get.return_value = inviteLink
+        redis_conn.redis.get.return_value = inviteLink
 
         with app.test_client() as c:
 
@@ -1080,10 +1085,9 @@ class TestUAAClient(unittest.TestCase):
     @patch('uaaextras.webapp.r')
     def test_redeem_uaainvite_using_verification_code(self, redis_conn, render_template):
         """Render UAA link after redeem link is clicked"""
-
         inviteLink = b'inviteLink'
         render_template.return_value = 'some value'
-        redis_conn.get.return_value = inviteLink
+        redis_conn.redis.get.return_value = inviteLink
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
@@ -1094,10 +1098,9 @@ class TestUAAClient(unittest.TestCase):
             assert rv.status_code == 302
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r', None)
+    @patch('uaaextras.webapp.r', null_wrapper)
     def test_redeem_without_redis(self, render_template):
         """When an redeem endpoint is hit without redis, it should fail"""
-
         render_template.return_value = 'some value'
 
         with app.test_client() as c:
