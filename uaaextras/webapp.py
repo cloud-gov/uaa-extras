@@ -231,7 +231,8 @@ def do_expiring_pw_notifications(app, changeLink, start=1):
 
             password = {
                 'daysUntilExpiration': daysUntilExpiration,
-                'changeLink': changeLink
+                'changeLink': changeLink,
+                'loginLink': app.config['UAA_BASE_URL']
             }
             with app.app_context():
                 subject = render_template('email/subject-expiring-password.txt',
@@ -757,7 +758,11 @@ def create_app(env=os.environ):
                     temporaryPassword
                 ):
                     logging.info('Set temporary password for {0}'.format(email))
-                    return render_template('reset_password.html', password=temporaryPassword)
+                    return render_template(
+                        'reset_password.html',
+                        password=temporaryPassword,
+                        loginLink=app.config['UAA_BASE_URL']
+                    )
                 else:
                     flash('Unable to set temporary password. Did you use the right email address?')
                     return render_template('reset_password.html')
