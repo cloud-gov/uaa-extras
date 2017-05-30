@@ -59,7 +59,7 @@ jobs:
   - task: integrate-repos
     file: cg-uaa-extras-app-production/ci/integrate.yml
     input_mapping:
-      cg-uaa-extras-app: cg-uaa-extras-app-staging
+      cg-uaa-extras-app: cg-uaa-extras-app-production
   - task: test
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
