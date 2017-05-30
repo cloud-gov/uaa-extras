@@ -833,7 +833,11 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             redis_conn.get.assert_called_with('test@example.com')
             redis_conn.delete.assert_called_with('test@example.com')
-            render_template.assert_called_with('reset_password.html', password=generate_temporary_password())
+            render_template.assert_called_with(
+                'reset_password.html',
+                password=generate_temporary_password(),
+                loginLink=app.config['UAA_BASE_URL']
+            )
 
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.flash')
