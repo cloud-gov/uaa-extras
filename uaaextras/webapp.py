@@ -697,8 +697,10 @@ def create_app(env=os.environ):
             }
             logging.info(reset['verifyLink'])
 
+            password = {'changeLink': changeLink}
+
             subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
-            body = render_template('email/body-password.html', reset=reset, branding=branding)
+            body = render_template('email/body-password.html', reset=reset, branding=branding, password=password)
             send_email(app, email, subject, body)
             r.setex(email, FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS, identity_token)
 
