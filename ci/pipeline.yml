@@ -20,7 +20,7 @@ jobs:
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
-        UAA_CLIENT_ID: {{uaa-client-id-staging}}
+        UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: {{uaa-client-secret-staging}}
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: {{smtp-host}}
@@ -70,7 +70,7 @@ jobs:
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
-        UAA_CLIENT_ID: {{uaa-client-id-production}}
+        UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: {{uaa-client-secret-production}}
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: {{smtp-host}}
