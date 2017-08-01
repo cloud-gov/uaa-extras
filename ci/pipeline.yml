@@ -4,23 +4,21 @@ jobs:
   plan:
   - get: dotgov-domain-data
     trigger: true
-  - get: cg-uaa-extras-app-staging
+  - get: cg-uaa-extras-app
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app-staging/ci/integrate.yml
-    input_mapping:
-      cg-uaa-extras-app: cg-uaa-extras-app-staging
   - task: test
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app-staging/ci/test.yml
+    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-staging
     params:
       manifest: {{cf-manifest-staging}}
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
-        UAA_CLIENT_ID: {{uaa-client-id-staging}}
+        UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: {{uaa-client-secret-staging}}
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: {{smtp-host}}
@@ -54,23 +52,22 @@ jobs:
   plan:
   - get: dotgov-domain-data
     trigger: true
-  - get: cg-uaa-extras-app-production
+  - get: cg-uaa-extras-app
+    passed: [deploy-staging]
     trigger: true
   - task: integrate-repos
-    file: cg-uaa-extras-app-production/ci/integrate.yml
-    input_mapping:
-      cg-uaa-extras-app: cg-uaa-extras-app-production
+    file: cg-uaa-extras-app/ci/integrate.yml
   - task: test
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app-production/ci/test.yml
+    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-production
     params:
       manifest: {{cf-manifest-production}}
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
-        UAA_CLIENT_ID: {{uaa-client-id-production}}
+        UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: {{uaa-client-secret-production}}
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: {{smtp-host}}
@@ -101,12 +98,6 @@ jobs:
       icon_url: {{slack-icon-url}}
 
 resources:
-- name: cg-uaa-extras-app-staging
-  type: git
-  source:
-    uri: {{cg-uaa-extras-git-url}}
-    branch: staging
-
 - name: dotgov-domain-data
   type: git
   source:
@@ -115,7 +106,7 @@ resources:
     paths:
     - dotgov-domains/*
 
-- name: cg-uaa-extras-app-production
+- name: cg-uaa-extras-app
   type: git
   source:
     uri: {{cg-uaa-extras-git-url}}
