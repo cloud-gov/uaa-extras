@@ -6,6 +6,7 @@ import string
 from posixpath import join as urljoin
 import unittest
 
+import redis
 import flask
 from flask import appcontext_pushed
 from mock import Mock, patch
@@ -701,12 +702,14 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('forgot_password.html')
 
+    @patch('uaaextras.webapp.send_email')
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r', None)
-    def test_no_redis_forgot_password(self, render_template):
+    @patch('uaaextras.webapp.r')
+    def test_no_redis_forgot_password(self, redis_conn, render_template, send_email):
         """ When submitting an email and redis is down, server responsds 500
         """
 
+        redis_conn.setex.side_effect = redis.exceptions.RedisError
         render_template.return_value = 'template output'
 
         with app.test_client() as c:
@@ -784,11 +787,12 @@ class TestAppConfig(unittest.TestCase):
             flash.assert_called_once()
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r', None)
-    def test_no_redis_reset_password(self, render_template):
+    @patch('uaaextras.webapp.r')
+    def test_no_redis_reset_password(self, redis_conn, render_template):
         """ When submitting an email and redis is down, server responsds 500
         """
 
+        redis_conn.get.side_effect = redis.exceptions.RedisError
         render_template.return_value = 'template output'
 
         with app.test_client() as c:
@@ -1098,10 +1102,11 @@ class TestUAAClient(unittest.TestCase):
             assert rv.status_code == 302
 
     @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r', None)
-    def test_redeem_without_redis(self, render_template):
+    @patch('uaaextras.webapp.r')
+    def test_redeem_without_redis(self, redis_conn, render_template):
         """When an redeem endpoint is hit without redis, it should fail"""
 
+        redis_conn.get.side_effect = redis.exceptions.RedisError
         render_template.return_value = 'some value'
 
         with app.test_client() as c:
