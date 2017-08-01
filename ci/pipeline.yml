@@ -7,14 +7,14 @@ jobs:
   - get: cg-uaa-extras-app
     trigger: true
   - task: integrate-repos
-    file: cg-uaa-extras-app-staging/ci/integrate.yml
+    file: cg-uaa-extras-app/ci/integrate.yml
   - task: test
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
     file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-staging
     params:
-      manifest: {{cf-manifest-staging}}
+      manifest: cg-uaa-extras-app/manifest.yml
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-staging}}
@@ -63,7 +63,7 @@ jobs:
     file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-production
     params:
-      manifest: {{cf-manifest-production}}
+      manifest: cg-uaa-extras-app/manifest_production_fr.yml
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: {{uaa-base-url-production}}
