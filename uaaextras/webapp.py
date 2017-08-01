@@ -59,12 +59,7 @@ if 'VCAP_SERVICES' in os.environ:
     }
 
 # Connect to redis
-try:
-    r = redis.StrictRedis(**redis_env)
-    r.info()
-except Exception as exc:
-    logging.warn('Unable to connect to Redis: {0}'.format(exc))
-    r = None
+r = redis.StrictRedis(**redis_env)
 
 # Try to determine SERVER_NAME
 if 'VCAP_APPLICATION' in os.environ:
@@ -565,29 +560,26 @@ def create_app(env=os.environ):
         # Store the validation token to check for UAA invite link
         verification_code = request.args.get('verification_code')
 
-        # Check if Redis is working
-        if r:
-            # Check if Redis key was previously requested, otherwise load the UAA invite
+        # Check if Redis key was previously requested, otherwise load the UAA invite
+        try:
             invite = r.get(verification_code)
-            if invite is None:
-                logging.info('UAA invite link is expired. {0}'.format(verification_code))
-                return render_template('error/token_validation.html'), 401
-
-            else:
-                invite_url = bytes.decode(invite)
-                logging.info('Accessed UAA invite link. {0}'.format(verification_code))
-
-                if request.method == 'GET':
-                    redeem_link = url_for('redeem_invite', verification_code=verification_code, _external=True)
-                    return render_template('redeem-confirm.html', redeem_link=redeem_link)
-
-                if request.method == 'POST':
-                    return redirect(invite_url, code=302)
-
-        # If Redis isnt working, log error and show internal error.
-        else:
+        except redis.exceptions.RedisError:
             logging.exception('The UAA link was not accessible because Redis is down.')
             return render_template('error/internal.html'), 500
+        if invite is None:
+            logging.info('UAA invite link is expired. {0}'.format(verification_code))
+            return render_template('error/token_validation.html'), 401
+
+        else:
+            invite_url = bytes.decode(invite)
+            logging.info('Accessed UAA invite link. {0}'.format(verification_code))
+
+            if request.method == 'GET':
+                redeem_link = url_for('redeem_invite', verification_code=verification_code, _external=True)
+                return render_template('redeem-confirm.html', redeem_link=redeem_link)
+
+            if request.method == 'POST':
+                return redirect(invite_url, code=302)
 
     @app.route('/first-login', methods=['GET'])
     def first_login():
@@ -683,30 +675,30 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template('forgot_password.html')
 
-        if r:
-            # If we've made it this far, it's a valid email so we'll generate and store a
-            # token and send an email.
-            logging.info('generating validation token for user')
+        # If we've made it this far, it's a valid email so we'll generate and store a
+        # token and send an email.
+        logging.info('generating validation token for user')
 
-            branding = {
-                'company_name': app.config['BRANDING_COMPANY_NAME']
-            }
+        branding = {
+            'company_name': app.config['BRANDING_COMPANY_NAME']
+        }
 
-            reset = {
-                'verifyLink': url_for('reset_password', validation=identity_token, _external=True)
-            }
-            logging.info(reset['verifyLink'])
+        reset = {
+            'verifyLink': url_for('reset_password', validation=identity_token, _external=True)
+        }
+        logging.info(reset['verifyLink'])
 
-            password = {'changeLink': changeLink}
+        password = {'changeLink': changeLink}
 
-            subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
-            body = render_template('email/body-password.html', reset=reset, branding=branding, password=password)
-            send_email(app, email, subject, body)
+        subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
+        body = render_template('email/body-password.html', reset=reset, branding=branding, password=password)
+        send_email(app, email, subject, body)
+        try:
             r.setex(email, FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS, identity_token)
+        except redis.exceptions.RedisError:
+            return render_template('error/internal.html'), 500
 
-            return render_template('forgot_password.html', email_sent=True, email=email)
-
-        return render_template('error/internal.html'), 500
+        return render_template('forgot_password.html', email_sent=True, email=email)
 
     @app.route('/reset-password', methods=['GET', 'POST'])
     def reset_password():
@@ -736,42 +728,45 @@ def create_app(env=os.environ):
 
         # If we've made it this far, it's a valid email so let's verify the generated
         # token with their email address.
-        if r:
+        try:
             userToken = r.get(email)
+        except redis.exceptions.RedisError:
+            return render_template('error/internal.html'), 500
 
-            if userToken.decode('utf-8') == token:
-                logging.info('Successfully verified token {0} for {1}'.format(userToken, email))
-                r.delete(email)
-            else:
-                flash('Valid token not found. Please try your forgot password request again.')
-                return render_template('reset_password.html')
-
-            temporaryPassword = generate_temporary_password()
+        if userToken.decode('utf-8') == token:
+            logging.info('Successfully verified token {0} for {1}'.format(userToken, email))
             try:
-                g.uaac = UAAClient(
-                    app.config['UAA_BASE_URL'],
-                    None,
-                    verify_tls=app.config['UAA_VERIFY_TLS']
-                )
-                if g.uaac.set_temporary_password(
-                    app.config['UAA_CLIENT_ID'],
-                    app.config['UAA_CLIENT_SECRET'],
-                    email,
-                    temporaryPassword
-                ):
-                    logging.info('Set temporary password for {0}'.format(email))
-                    return render_template(
-                        'reset_password.html',
-                        password=temporaryPassword,
-                        loginLink=app.config['UAA_BASE_URL']
-                    )
-                else:
-                    flash('Unable to set temporary password. Did you use the right email address?')
-                    return render_template('reset_password.html')
-            except Exception:
-                logging.exception('Unable to set your temporary password.')
+                r.delete(email)
+            except redis.exceptions.RedisError:
+                return render_template('error/internal.html'), 500
+        else:
+            flash('Valid token not found. Please try your forgot password request again.')
+            return render_template('reset_password.html')
 
-        return render_template('error/internal.html'), 500
+        temporaryPassword = generate_temporary_password()
+        try:
+            g.uaac = UAAClient(
+                app.config['UAA_BASE_URL'],
+                None,
+                verify_tls=app.config['UAA_VERIFY_TLS']
+            )
+            if g.uaac.set_temporary_password(
+                app.config['UAA_CLIENT_ID'],
+                app.config['UAA_CLIENT_SECRET'],
+                email,
+                temporaryPassword
+            ):
+                logging.info('Set temporary password for {0}'.format(email))
+                return render_template(
+                    'reset_password.html',
+                    password=temporaryPassword,
+                    loginLink=app.config['UAA_BASE_URL']
+                )
+            else:
+                flash('Unable to set temporary password. Did you use the right email address?')
+                return render_template('reset_password.html')
+        except Exception:
+            logging.exception('Unable to set your temporary password.')
 
     @app.route('/logout')
     def logout():
