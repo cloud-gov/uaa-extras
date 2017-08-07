@@ -1,9 +1,0 @@
-language: python
-env:
-    - TOXENV=py34
-    - TOXENV=flake8
-install:
-    - pip install tox
-    - curl -o uaaextras/static/current-federal.csv https://raw.githubusercontent.com/GSA/data/gh-pages/dotgov-domains/current-federal.csv
-script:
-    - tox
