@@ -702,12 +702,48 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('forgot_password.html')
 
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.send_email')
+    @patch('uaaextras.webapp.r')
+    def test_post_forgot_password_good(self, redis_conn, send_email, uaac):
+        """When a POST request is made to /forgot-password
+           and the user exists, send_email is called
+        """
+
+        uaac().does_origin_user_exist.return_value = True
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            c.post('/forgot-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
+            send_email.assert_called_once()
+
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.send_email')
+    @patch('uaaextras.webapp.r')
+    def test_post_forgot_password_bad(self, redis_conn, send_email, uaac):
+        """When a POST request is made to /forgot-password
+           and the user does not exist, send_email is not called
+        """
+
+        uaac().does_origin_user_exist.return_value = False
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            c.post('/forgot-password', data={'email_address': 'test@example.com', '_csrf_token': 'bar'})
+            send_email.assert_not_called()
+
+    @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.send_email')
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.r')
-    def test_no_redis_forgot_password(self, redis_conn, render_template, send_email):
+    def test_no_redis_forgot_password(self, redis_conn, render_template, send_email, uaac):
         """ When submitting an email and redis is down, server responsds 500
         """
+        uaac().does_origin_user_exist.return_value = True
 
         redis_conn.setex.side_effect = redis.exceptions.RedisError
         render_template.return_value = 'template output'
@@ -720,6 +756,7 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 500
             render_template.assert_called_with('error/internal.html')
 
+    @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
     @patch('uaaextras.webapp.r')
     @patch('uaaextras.webapp.smtplib')
@@ -731,10 +768,12 @@ class TestAppConfig(unittest.TestCase):
         uuid,
         smtplib,
         redis_conn,
-        render_template
+        render_template,
+        uaac
     ):
         """ When submitting an email, the email and token are set in the Redis DB
         """
+        uaac().does_origin_user_exist.return_value = True
 
         render_template.return_value = 'template output'
 
