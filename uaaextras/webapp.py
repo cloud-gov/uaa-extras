@@ -48,7 +48,7 @@ redis_env = dict(host='localhost', port=6379, password='')
 # Get Redis credentials
 if 'VCAP_SERVICES' in os.environ:
     services = json.loads(os.getenv('VCAP_SERVICES'))
-    redis_info = services['redis28'][0]['credentials']
+    redis_info = services['redis32'][0]['credentials']
 
     redis_env = {
         "host": redis_info['hostname'],
