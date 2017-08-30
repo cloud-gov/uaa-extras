@@ -692,11 +692,29 @@ def create_app(env=os.environ):
 
         subject = render_template('email/subject-password.txt', reset=reset, branding=branding).strip()
         body = render_template('email/body-password.html', reset=reset, branding=branding, password=password)
-        send_email(app, email, subject, body)
-        try:
-            r.setex(email, FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS, identity_token)
-        except redis.exceptions.RedisError:
-            return render_template('error/internal.html'), 500
+
+        uaac = UAAClient(
+            app.config['UAA_BASE_URL'],
+            None,
+            verify_tls=app.config['UAA_VERIFY_TLS']
+        )
+
+        user_exists = uaac.does_origin_user_exist(
+            app.config['UAA_CLIENT_ID'],
+            app.config['UAA_CLIENT_SECRET'],
+            email,
+            app.config['IDP_PROVIDER_ORIGIN']
+        )
+
+        if user_exists:
+            try:
+                r.setex(email, FORGOT_PW_TOKEN_EXPIRATION_IN_SECONDS, identity_token)
+            except redis.exceptions.RedisError:
+                return render_template('error/internal.html'), 500
+
+            send_email(app, email, subject, body)
+        else:
+            logging.info("{} does not exist. Forgot password email not sent".format(email))
 
         return render_template('forgot_password.html', email_sent=True, email=email)
 
