@@ -24,7 +24,7 @@ Either create a locally running version of Redis, or create a service instance i
 
 EX:
 
-	cf create-service redis28 standard redis-accounts
+	cf create-service redis32 standard-ha redis-accounts
 
 #### Step Four: Configure the app
 
