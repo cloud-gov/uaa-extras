@@ -8,7 +8,7 @@
         <p>Hello!</p>
         <p>
             You've been invited to join
-            <a href="https://cloud.gov">{{branding.company_name}}</a>.
+            <a href="https://cloud.gov">{{branding.company_name}} [1]</a>.
         </p>
         <p>
             {{branding.company_name}} is a service by 18F that helps federal teams create and deliver quality digital services securely hosted in the cloud.
@@ -17,18 +17,18 @@
         <p>
         <ol>
             <li>
-            <b>Accept the invitation</b> - <a href="{{verification_url}}">Accept your invite</a> to continue the registration process. (The invitation will expire after 24 hours.) You can also copy the URL below and paste it into your browser's address bar:
+            <b>Accept the invitation</b> - <a href="{{verification_url}}">Accept your invite [2]</a> to continue the registration process. (The invitation will expire after 24 hours.) You can also copy the URL below and paste it into your browser's address bar:
             <br />
             {{verification_url}}
             </li>
             <li>
-	          <b>Read the documentation</b> - After you register and log in, review the <a href="https://cloud.gov/docs/getting-started/accounts/#use-your-account-responsibly">acceptable uses and rules of behavior</a>.
+              <b>Read the documentation</b> - After you register and log in, review the <a href="https://cloud.gov/docs/getting-started/accounts/#use-your-account-responsibly">acceptable uses and rules of behavior [3]</a>.
             </li>
             <li>
-            If you signed up for a trial space (a sandbox), <strong>make sure you understand the <a href="https://cloud.gov/overview/pricing/free-limited-sandbox/#to-keep-in-mind-before-you-try-your-sandbox"><strong>sandbox policies and restrictions</a></strong>.
+            If you signed up for a trial space (a sandbox), <strong>make sure you understand the <a href="https://cloud.gov/overview/pricing/free-limited-sandbox/#to-keep-in-mind-before-you-try-your-sandbox">sandbox policies and restrictions [4]</a></strong>.
             </li>
             <li>
-            Then <a href="https://cloud.gov/docs/getting-started/setup/">set up your access and get started</a>.
+            Then <a href="https://cloud.gov/docs/getting-started/setup/">set up your access and get started [5]</a>.
             </li>
         </ol>
         </p>
@@ -37,7 +37,15 @@
         </p>
         <p>
             Thank you,<br />
-            The {{branding.company_name}} team
+            {{branding.company_name}} Team
         </p>
+        <hr>
+        <ul>
+            <li>[1] {{branding.company_name}}: https://cloud.gov</li>
+            <li>[2] Accept your invite: {{verification_url}}</li>
+            <li>[3] Acceptable uses and rules of behavior: https://cloud.gov/docs/getting-started/accounts/#use-your-account-responsibly</li>
+            <li>[4] Sandbox policies and restrictions: https://cloud.gov/overview/pricing/free-limited-sandbox/#to-keep-in-mind-before-you-try-your-sandbox</li>
+            <li>[5] Set up your access and get started: https://cloud.gov/docs/getting-started/setup/</li>
+        </ul>
     </body>
 </html>
