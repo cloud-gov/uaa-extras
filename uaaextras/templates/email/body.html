@@ -7,14 +7,14 @@
     <body>
         <p>Hello!</p>
         <p>
-            You've been invited to join 
-            <a href="https://cloud.gov">{{branding.company_name}}</a>.
+            You've been invited to join
+            <a href="https://cloud.gov">{{branding.company_name}} [1]</a>.
         </p>
         <p>
             {{branding.company_name}} is a service by 18F intended to help
             federal teams create and deliver quality digital services securely hosted in the cloud.
             {{branding.company_name}} is currently in
-            <a href="https://18f.gsa.gov/dashboard/">alpha state</a>
+            <a href="https://18f.gsa.gov/dashboard/">alpha state [2]</a>
             and under active development. We'll ask for your feedback and make
             improvements frequently.
         </p>
@@ -22,24 +22,35 @@
         <p>
         <ol>
             <li>
-                To log into cloud.gov, which requires multi-factor authentication, first install a mobile application that generates time-based one-time passwords.  We recommend installing either <a href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator</a> or <a href="https://www.authy.com/app/mobile">Authy</a> on your mobile device. In your next step, the cloud.gov registration process will give you instructions for using it.
+                To <a href="dashboard.fr.cloud.gov">log into cloud.gov [3]</a>, which requires multi-factor authentication, first install a mobile application that generates time-based one-time passwords.  We recommend installing either <a href="https://support.google.com/accounts/answer/1066447?hl=en">Google Authenticator [4]</a> or <a href="https://www.authy.com/app/mobile">Authy [5]</a> on your mobile device. In your next step, the cloud.gov registration process will give you instructions for using it.
             </li>
             <li>
-                <a href="{{invite.inviteLink}}">Accept your invite</a> to continue the registration process.
+                <a href="{{invite.inviteLink}}">Accept your invite [6]</a> to continue the registration process.
             </li>
             <li>
-                After you register and log in, review the <a href="https://cloud.gov/docs/getting-started/accounts/#using-your-account-responsibly">acceptable uses and rules of behavior</a>. Then <a href="https://cloud.gov/docs/getting-started/setup/">set up your access and get started</a>.
+                After you register and log in, review the <a href="https://cloud.gov/docs/getting-started/accounts/#using-your-account-responsibly">acceptable uses and rules of behavior [7]</a>. Then <a href="https://cloud.gov/docs/getting-started/setup/">set up your access and get started [8]</a>.
             </li>
         </ol>
         </p>
         <p>
             If you run into problems or have any questions,
-            please email us at 
+            please email us at
             <a href="mailto:cloud-gov-support@gsa.gov">cloud-gov-support@gsa.gov</a>.
         </p>
         <p>
             Thank you,<br />
             {{branding.company_name}} Team
         </p>
+        <hr>
+        <ul>
+            <li>[1] {{branding.company_name}}: https://cloud.gov</li>
+            <li>[2] Alpha state: https://18f.gsa.gov/dashboard/</li>
+            <li>[3] Log into cloud.gov: https://dashboard.fr.cloud.gov</li>
+            <li>[4] Google Authenticator: https://support.google.com/accounts/answer/1066447</li>
+            <li>[5] Authy: https://www.authy.com/app/mobile</li>
+            <li>[6] Accept your invite: {{invite.inviteLink}}</li>
+            <li>[7] Acceptable uses and rules of behavior: https://cloud.gov/docs/getting-started/accounts/#using-your-account-responsibly</li>
+            <li>[8] Set up your access and get started: https://cloud.gov/docs/getting-started/setup/</li>
+        </ul>
     </body>
 </html>
