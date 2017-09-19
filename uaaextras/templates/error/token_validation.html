@@ -2,8 +2,11 @@
 
 {% block content %}
 <div>
-	<h2>Unable to validate the login request from UAA.</h2>
-  <h3>Your token may have already been used. Please request a new invitation.</h3>
-	<p><a href="{{url_for('logout')}}">Try again?</a></p>
+	<h2>Unable to validate your login request</h2>
+	<ul>
+		<li>If you just tried to use an invitation, it may have expired. You can <a href="{{url_for('signup')}}">invite yourself again</a>.</li>
+		<li>If you tried to log into a cloud.gov customer application that uses cloud.gov authentication, it may have an issue. Ask the application maintainer to check its OAuth configuration.</li>
+		<li>If something else went wrong, <a href="{{url_for('logout')}}">log out and try again</a> or email cloud-gov-support@gsa.gov.</li>
+	</ul>
 </div>
 {% endblock %}
