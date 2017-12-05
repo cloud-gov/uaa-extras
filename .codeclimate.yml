@@ -1,17 +1,14 @@
-engines:
-  duplication:
-    enabled: true
-    config:
-      languages:
-      - python
+version: "2"
+plugins:
   fixme:
     enabled: true
   radon:
     enabled: true
+  sonar-python:
+    enabled: true
+    config:
+      tests_patterns:
+        - uaaextras/tests.py
 
-ratings:
-  paths:
-  - "**.py"
-
-exclude_paths:
+exclude_patterns:
 -  uaaextras/tests.py
