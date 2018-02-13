@@ -306,6 +306,10 @@ def create_app(env=os.environ):
     for ck, default in CONFIG_KEYS.items():
         app.config[ck] = env.get(ck, default)
 
+    # Assume we're running under TLS
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+
     # do boolean checks on this variable
     app.config['UAA_VERIFY_TLS'] = str_to_bool(app.config['UAA_VERIFY_TLS'])
 
