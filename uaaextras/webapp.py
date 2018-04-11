@@ -164,6 +164,8 @@ def send_email(app, email, subject, body):
     s = smtplib.SMTP(app.config['SMTP_HOST'], app.config['SMTP_PORT'])
     s.set_debuglevel(1)
 
+    s.starttls()
+
     # if smtp credentials were provided, login
     if app.config['SMTP_USER'] is not None and app.config['SMTP_PASS'] is not None:
         s.login(app.config['SMTP_USER'], app.config['SMTP_PASS'])
