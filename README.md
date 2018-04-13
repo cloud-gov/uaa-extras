@@ -28,7 +28,7 @@ EX:
 
 #### Step Four: Configure the app
 
-The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary. Download a copy of https://github.com/GSA/data/tree/gh-pages/dotgov-domains/current-federal.csv and place into `uaaextras/static`
+The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary. Download a copy of https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv and place into `uaaextras/static`
 
 #### Step Five: Launch the app
 
