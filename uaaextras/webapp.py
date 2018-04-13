@@ -164,10 +164,16 @@ def send_email(app, email, subject, body):
     s = smtplib.SMTP(app.config['SMTP_HOST'], app.config['SMTP_PORT'])
     s.set_debuglevel(1)
 
-    s.starttls()
+    # if we have a cert, then trust it
+    if 'SMTP_CERT' in app.config and app.config['SMTP_CERT']:
+        sslcontext = ssl.create_default_context()
+        sslcontext.load_verify_locations(cadata=app.config['SMTP_CERT'])
+        s.starttls(context=sslcontext)
+    else:
+        s.starttls()
 
     # if smtp credentials were provided, login
-    if app.config['SMTP_USER'] is not None and app.config['SMTP_PASS'] is not None:
+    if 'SMTP_USER' in app.config and 'SMTP_PASS' in app.config and app.config['SMTP_USER'] and app.config['SMTP_PASS']:
         s.login(app.config['SMTP_USER'], app.config['SMTP_PASS'])
 
     s.sendmail(app.config['SMTP_FROM'], [email], msg.as_string())
