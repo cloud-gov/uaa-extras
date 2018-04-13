@@ -26,6 +26,7 @@ jobs:
         SMTP_USER: {{smtp-user}}
         SMTP_PASS: {{smtp-pass}}
         SMTP_FROM: {{smtp-from}}
+        SMTP_CERT: {{smtp-cert}}
         BRANDING_COMPANY_NAME: {{branding-company-name-staging}}
         IDP_PROVIDER_ORIGIN: {{idp-provider-origin-staging}}
         IDP_PROVIDER_URL: {{idp-provider-url-staging}}
