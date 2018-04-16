@@ -32,6 +32,7 @@ CONFIG_KEYS = {
     'SMTP_FROM': 'no-reply@example.com',
     'SMTP_USER': None,
     'SMTP_PASS': None,
+    'SMTP_CERT': None,
     'BRANDING_COMPANY_NAME': 'Cloud Foundry',
     'IDP_PROVIDER_ORIGIN': 'idp.com',
     'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com',
@@ -165,7 +166,7 @@ def send_email(app, email, subject, body):
     s.set_debuglevel(1)
 
     # if we have a cert, then trust it
-    if 'SMTP_CERT' in app.config and app.config['SMTP_CERT']:
+    if app.config['SMTP_CERT'] is not None:
         sslcontext = ssl.create_default_context()
         sslcontext.load_verify_locations(cadata=app.config['SMTP_CERT'])
         s.starttls(context=sslcontext)
