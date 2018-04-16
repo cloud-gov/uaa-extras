@@ -173,7 +173,7 @@ def send_email(app, email, subject, body):
         s.starttls()
 
     # if smtp credentials were provided, login
-    if 'SMTP_USER' in app.config and 'SMTP_PASS' in app.config and app.config['SMTP_USER'] and app.config['SMTP_PASS']:
+    if app.config['SMTP_USER'] is not None and app.config['SMTP_PASS'] is not None:
         s.login(app.config['SMTP_USER'], app.config['SMTP_PASS'])
 
     s.sendmail(app.config['SMTP_FROM'], [email], msg.as_string())
