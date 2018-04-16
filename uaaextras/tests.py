@@ -75,7 +75,8 @@ class TestAppConfig(unittest.TestCase):
             'SMTP_HOST': 'remote-host',
             'SMTP_PORT': 9160,
             'SMTP_USER': None,
-            'SMTP_PASS': None
+            'SMTP_PASS': None,
+            'SMTP_CERT': None,
         }
 
         send_email(app, 'foo@example.com', 'da subject', 'body content')
@@ -100,7 +101,8 @@ class TestAppConfig(unittest.TestCase):
             'SMTP_HOST': 'remote-host',
             'SMTP_PORT': 9160,
             'SMTP_USER': 'user',
-            'SMTP_PASS': 'pass'
+            'SMTP_PASS': 'pass',
+            'SMTP_CERT': None,
         }
 
         send_email(app, 'foo@example.com', 'da subject', 'body content')
