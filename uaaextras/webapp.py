@@ -7,6 +7,7 @@ import logging
 import os
 import redis
 import smtplib
+import ssl
 import signal
 from schedule import Scheduler
 import time
