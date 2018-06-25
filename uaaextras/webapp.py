@@ -811,8 +811,10 @@ def create_app(env=os.environ):
     with app.app_context():
         changeLink = url_for('change_password', _external=True)
 
-        def expiration_job():
-            do_expiring_pw_notifications(app, changeLink)
+        # NIST 800-63B tells us that expiring passwords is not good
+        # Leaving the do_expiring_pw_notifications code alone in case we ever want to turn this back on.
+        # def expiration_job():
+        #     do_expiring_pw_notifications(app, changeLink)
 
         scheduler = Scheduler()
 
