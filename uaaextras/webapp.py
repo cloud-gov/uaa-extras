@@ -9,7 +9,6 @@ import redis
 import smtplib
 import ssl
 import signal
-from schedule import Scheduler
 import time
 import threading
 import uuid, string, random, json
@@ -37,8 +36,6 @@ CONFIG_KEYS = {
     'BRANDING_COMPANY_NAME': 'Cloud Foundry',
     'IDP_PROVIDER_ORIGIN': 'idp.com',
     'IDP_PROVIDER_URL': 'https://idp.bosh-lite.com',
-    'PW_EXPIRES_DAYS': 90,
-    'PW_EXPIRATION_WARN_DAYS': 10,
 }
 
 UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
@@ -180,100 +177,6 @@ def send_email(app, email, subject, body):
     s.quit()
 
     return True
-
-
-def do_expiring_pw_notifications(app, changeLink, start=1):
-    """Sends a notice by email to users that their password will expire soon
-
-    Args:
-        app: object holding the configuration
-        start: start index
-
-    """
-
-    # If we can't connect to redis, just skip
-    if not r:
-        logging.warn("Unable to connect to redis, giving up!")
-        return
-
-    # figure if we need to run today, use redis
-    now = datetime.now().date()
-    ranToday = r.get(now)
-
-    logging.info("Checking if we've run on {0}: {1} (start {2})".format(now, ranToday, start))
-
-    if ranToday and start == 1:
-        logging.info("Already run today, skipping! ({0} {1} {2})".format(now, ranToday, start))
-        return
-
-    # Let's make sure we don't run again today, and we can expire in a week
-    r.setex(now, timedelta(days=7), True)
-
-    list_filter = 'origin eq "{0}"'.format(app.config['IDP_PROVIDER_ORIGIN'])
-    uaac = UAAClient(app.config['UAA_BASE_URL'], None,
-                     verify_tls=app.config['UAA_VERIFY_TLS'])
-    users = uaac.client_users(app.config['UAA_CLIENT_ID'], app.config['UAA_CLIENT_SECRET'],
-                              list_filter=list_filter, start=start)
-
-    totalResults = int(users['totalResults'])
-    itemsPerPage = int(users['itemsPerPage'])
-    for user in users['resources']:
-        passwordLastModified = datetime.strptime(user.get('passwordLastModified'), '%Y-%m-%dT%H:%M:%S.%fZ')
-        now = datetime.now()
-        expiredDelta = timedelta(days=int(app.config['PW_EXPIRES_DAYS']))
-        lastModifiedDaysDiff = (now - passwordLastModified).days
-        daysUntilExpiration = int(app.config['PW_EXPIRES_DAYS']) - lastModifiedDaysDiff
-
-        isNotExpired = passwordLastModified > (now - expiredDelta)
-        shouldWarn = int(app.config['PW_EXPIRATION_WARN_DAYS']) >= daysUntilExpiration
-        if shouldWarn and isNotExpired:
-            logging.info('{0} expires in {1} days'.format(user.get('userName'), daysUntilExpiration))
-            branding = {
-                'company_name': app.config['BRANDING_COMPANY_NAME']
-            }
-
-            password = {
-                'daysUntilExpiration': daysUntilExpiration,
-                'changeLink': changeLink,
-                'loginLink': app.config['UAA_BASE_URL']
-            }
-            with app.app_context():
-                subject = render_template('email/subject-expiring-password.txt',
-                                          password=password, branding=branding).strip()
-                body = render_template('email/body-expiring-password.html',
-                                       password=password, branding=branding)
-                send_email(app, user.get('userName'), subject, body)
-
-    # Page through results if necessary
-    if totalResults > itemsPerPage:
-        numPages, remainder = divmod(totalResults, itemsPerPage)
-        if remainder:
-            numPages += 1
-        currentPage, remainder = divmod(start, itemsPerPage)
-        if currentPage + 1 < numPages:
-            do_expiring_pw_notifications(app, changeLink, start + itemsPerPage)
-
-
-# Monkey patch schedule so it will run in it's own thread
-def daemon_thread(self, interval=1, event=threading.Event()):
-    """Continuously run, while executing pending jobs at each elapsed
-    time interval.
-    """
-
-    class ScheduleThread(threading.Thread):
-
-        @classmethod
-        def run(cls):
-            while not event.is_set():
-                self.run_pending()
-                time.sleep(interval)
-
-    scheduleThread = ScheduleThread()
-    scheduleThread.daemon = True
-    return scheduleThread
-
-
-Scheduler.daemon_thread = daemon_thread
 
 
 def create_app(env=os.environ):
@@ -808,31 +711,5 @@ def create_app(env=os.environ):
 
     app.config['SERVER_NAME'] = SERVER_NAME
     app.config['PREFERRED_URL_SCHEME'] = PREFERRED_URL_SCHEME
-    with app.app_context():
-        changeLink = url_for('change_password', _external=True)
-
-        def expiration_job():
-            do_expiring_pw_notifications(app, changeLink)
-
-        scheduler = Scheduler()
-
-        minutes = random.randrange(10)
-        tens_of_minutes = random.randrange(3)
-        # somewhere between 08:00 and 08:29 based on randomness above
-        job_time = "08:{0}{1}".format(tens_of_minutes, minutes)
-
-        # NIST 800-63B tells us that expiring passwords is not good
-        # Leaving the do_expiring_pw_notifications code alone in case we ever want to turn this back on.
-        # scheduler.every().day.at(job_time).do(expiration_job)
-
-        schedThread = scheduler.daemon_thread(event=threadEvent)
-        schedThread.start()
-
-    def cease_scheduler(signum, _frame):
-        threadEvent.set()
-        schedThread.join(1)
-
-    signal.signal(signal.SIGTERM, cease_scheduler)
-    signal.signal(signal.SIGALRM, cease_scheduler)
 
     return app
