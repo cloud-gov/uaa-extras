@@ -811,10 +811,8 @@ def create_app(env=os.environ):
     with app.app_context():
         changeLink = url_for('change_password', _external=True)
 
-        # NIST 800-63B tells us that expiring passwords is not good
-        # Leaving the do_expiring_pw_notifications code alone in case we ever want to turn this back on.
-        # def expiration_job():
-        #     do_expiring_pw_notifications(app, changeLink)
+        def expiration_job():
+            do_expiring_pw_notifications(app, changeLink)
 
         scheduler = Scheduler()
 
@@ -822,7 +820,10 @@ def create_app(env=os.environ):
         tens_of_minutes = random.randrange(3)
         # somewhere between 08:00 and 08:29 based on randomness above
         job_time = "08:{0}{1}".format(tens_of_minutes, minutes)
-        scheduler.every().day.at(job_time).do(expiration_job)
+
+        # NIST 800-63B tells us that expiring passwords is not good
+        # Leaving the do_expiring_pw_notifications code alone in case we ever want to turn this back on.
+        # scheduler.every().day.at(job_time).do(expiration_job)
 
         schedThread = scheduler.daemon_thread(event=threadEvent)
         schedThread.start()
