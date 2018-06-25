@@ -10,7 +10,6 @@ import smtplib
 import ssl
 import signal
 import time
-import threading
 import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
@@ -706,8 +705,6 @@ def create_app(env=os.environ):
         session.clear()
 
         return redirect(url_for('index'))
-
-    threadEvent = threading.Event()
 
     app.config['SERVER_NAME'] = SERVER_NAME
     app.config['PREFERRED_URL_SCHEME'] = PREFERRED_URL_SCHEME
