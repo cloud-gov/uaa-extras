@@ -23,7 +23,6 @@ setup(
         'email_validator==1.0.1',
         'talisman==0.1.0',
         'redis==2.10.5',
-        'schedule==0.4.2'
     ],
 
     test_suite='uaaextras.tests',
