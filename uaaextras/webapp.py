@@ -1,6 +1,6 @@
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
-from datetime import timedelta, datetime
+from datetime import timedelta
 import codecs
 import csv
 import logging
@@ -8,8 +8,6 @@ import os
 import redis
 import smtplib
 import ssl
-import signal
-import time
 import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
@@ -708,5 +706,8 @@ def create_app(env=os.environ):
 
     app.config['SERVER_NAME'] = SERVER_NAME
     app.config['PREFERRED_URL_SCHEME'] = PREFERRED_URL_SCHEME
+
+    with app.app_context():
+        changeLink = url_for('change_password', _external=True)
 
     return app
