@@ -159,7 +159,6 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 403
             render_template.assert_called_with('error/missing_scope.html')
 
-
     @patch('uaaextras.webapp.render_template')
     def test_get_index(self, render_template):
         """When a GET request is made to /, the index.html template is displayed"""
