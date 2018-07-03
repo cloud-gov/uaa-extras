@@ -26,5 +26,3 @@ applications:
   #  BRANDING_COMPANY_NAME: Testoku
   #  IDP_PROVIDER_ORIGIN: my.idp.com
   #  IDP_PROVIDER_URL: https://idp.bosh-lite.com
-  #  PW_EXPIRATION_WARN_DAYS: 5
-  #  PW_EXPIRES_DAYS: 30

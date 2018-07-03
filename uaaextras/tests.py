@@ -12,11 +12,10 @@ from flask import appcontext_pushed
 from mock import Mock, patch
 from requests.auth import HTTPBasicAuth
 
-from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS, do_expiring_pw_notifications
+from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS
 from uaaextras.clients import UAAError, UAAClient
 
-app = create_app({'UAA_CLIENT_ID': 'client-id', 'UAA_CLIENT_SECRET': 'client-secret',
-                  'PW_EXPIRES_DAYS': 30, 'PW_EXPIRATION_WARN_DAYS': 5})
+app = create_app({'UAA_CLIENT_ID': 'client-id', 'UAA_CLIENT_SECRET': 'client-secret'})
 
 
 @contextmanager
@@ -160,157 +159,6 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 403
             render_template.assert_called_with('error/missing_scope.html')
 
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.r', None)
-    def test_notify_expiring_no_redis_connection(self, uaac):
-        """When there is no redis connection, don't even connect to UAA"""
-
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-        uaac().client_users.assert_not_called()
-
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.datetime')
-    @patch('uaaextras.webapp.divmod')
-    @patch('uaaextras.webapp.r')
-    def test_notify_expiring_uaa_no_results(self, redis_conn, m_divmod, m_datetime, uaac):
-        """When UAA returns no results, make sure we don't do any time checking or paging"""
-
-        redis_conn.get.return_value = None
-
-        uaac().client_users.return_value = {'totalResults': 0, 'itemsPerPage': 100, 'resources': []}
-
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-        m_datetime.strptime.assert_not_called()
-        m_divmod.assert_not_called()
-
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.divmod')
-    @patch('uaaextras.webapp.r')
-    def test_notify_expiring_uaa_has_results_not_enough_to_page(self, redis_conn, m_divmod, uaac):
-        """When When UAA does return results, do email, but not paging because not enough results"""
-
-        redis_conn.get.return_value = None
-
-        passwordLastModified = (datetime.now() - timedelta(days=31)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        val = {
-            'totalResults': 1,
-            'itemsPerPage': 1,
-            'resources': [
-                {
-                    'userName': 'test@example.org',
-                    'passwordLastModified': passwordLastModified
-                }
-            ]
-        }
-        uaac().client_users.return_value = val
-
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-        assert uaac().client_users.called
-        assert uaac().client_users.call_count == 1
-        m_divmod.assert_not_called()
-
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.r')
-    def test_notify_expiring_uaa_has_results_and_handles_more_pages(self, redis_conn, uaac):
-        """When When UAA does return results, do email, and paging"""
-
-        redis_conn.get.return_value = None
-
-        passwordLastModified = (datetime.now() - timedelta(days=31)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-
-        # This should give us 3 pages of results
-        val = {
-            'totalResults': 5,
-            'itemsPerPage': 2,
-            'resources': [
-                {
-                    'userName': 'test1@example.org',
-                    'passwordLastModified': passwordLastModified
-                },
-                {
-                    'userName': 'test2@example.org',
-                    'passwordLastModified': passwordLastModified
-                },
-                {
-                    'userName': 'test3@example.org',
-                    'passwordLastModified': passwordLastModified
-                },
-                {
-                    'userName': 'test4@example.org',
-                    'passwordLastModified': passwordLastModified
-                },
-                {
-                    'userName': 'test5@example.org',
-                    'passwordLastModified': passwordLastModified
-                }
-            ]
-        }
-        uaac().client_users.return_value = val
-
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-        assert uaac().client_users.called
-        assert uaac().client_users.call_count == 3
-
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.send_email')
-    @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r')
-    def test_notifies_users_when_password_is_not_yet_expired(self, redis_conn, render_template, send_email, uaac):
-        """When user password expires within warning days, notify"""
-        redis_conn.get.return_value = None
-
-        passwordLastModified = (datetime.now() - timedelta(days=26)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        val = {
-            'totalResults': 1,
-            'itemsPerPage': 1,
-            'resources': [
-                {
-                    'userName': 'test@example.org',
-                    'passwordLastModified': passwordLastModified
-                }
-            ]
-        }
-        uaac().client_users.return_value = val
-
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-        assert render_template.called
-        assert render_template.call_count == 2
-        assert send_email.called
-        assert send_email.call_count == 1
-
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.send_email')
-    @patch('uaaextras.webapp.render_template')
-    @patch('uaaextras.webapp.r')
-    def test_does_not_notify_after_password_expired(self, redis_conn, render_template, send_email, uaac):
-        """When user password has already expired, do not notify"""
-        redis_conn.get.return_value = None
-
-        passwordLastModified = (datetime.now() - timedelta(days=31)).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        val = {
-            'totalResults': 1,
-            'itemsPerPage': 1,
-            'resources': [
-                {
-                    'userName': 'test@example.org',
-                    'passwordLastModified': passwordLastModified
-                }
-            ]
-        }
-        uaac().client_users.return_value = val
-
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-
-        render_template.assert_not_called()
-
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.r')
-    def test_notify_expiring_only_runs_once_a_day(self, redis_conn, uaac):
-        """When notifcations have already run once in a day, don't run again"""
-
-        redis_conn.get.return_value = True
-        do_expiring_pw_notifications(app, 'http://example.org/change')
-        redis_conn.setex.assert_not_called()
 
     @patch('uaaextras.webapp.render_template')
     def test_get_index(self, render_template):
