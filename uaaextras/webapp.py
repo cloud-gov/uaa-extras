@@ -12,6 +12,7 @@ import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from talisman import Talisman
+from zxcvbn import zxcvbn
 
 from uaaextras.clients import UAAClient, UAAError
 
@@ -553,6 +554,21 @@ def create_app(env=os.environ):
         except:
             logging.exception('An invalid access token was decoded')
             return render_template('error/token_validation.html'), 401
+
+        username = g.uaac.get_user(decoded_token['user_id'])['userName']
+        userinfo = [username, app.config['IDP_PROVIDER_ORIGIN']]
+        for part in username.split('@'):
+            userinfo.append(part)
+
+        result = zxcvbn(new_password, user_inputs=userinfo)
+
+        if result.score < 3:
+            errors.append(result.feedback.warning)
+
+        if len(errors) != 0:
+            for error in errors:
+                flash(error)
+            return render_template('change_password.html')
 
         try:
             g.uaac.change_password(decoded_token['user_id'], old_password, new_password)
