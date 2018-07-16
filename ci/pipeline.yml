@@ -1,5 +1,54 @@
 ---
 jobs:
+- name: deploy-development
+  plan:
+  - get: dotgov-domain-data
+    trigger: true
+  - get: cg-uaa-extras-app
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - task: test
+    input_mapping:
+      cg-uaa-extras-app: uaa-extras-integrated
+    file: cg-uaa-extras-app/ci/test.yml
+  - put: cloud-gov-development
+    params:
+      manifest: cg-uaa-extras-app/manifest.yml
+      path: uaa-extras-integrated
+      environment_variables:
+        UAA_BASE_URL: {{uaa-base-url-development}}
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: {{uaa-client-secret-development}}
+        UAA_VERIFY_TLS: "true"
+        SMTP_HOST: {{smtp-host}}
+        SMTP_PORT: {{smtp-port}}
+        SMTP_USER: {{smtp-user}}
+        SMTP_PASS: {{smtp-pass}}
+        SMTP_FROM: {{smtp-from}}
+        SMTP_CERT: {{smtp-cert}}
+        BRANDING_COMPANY_NAME: {{branding-company-name-development}}
+        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-development}}
+        IDP_PROVIDER_URL: {{idp-provider-url-development}}
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to development
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to development
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: {{slack-channel}}
+      username: {{slack-username}}
+      icon_url: {{slack-icon-url}}
+
 - name: deploy-staging
   plan:
   - get: dotgov-domain-data
@@ -113,6 +162,16 @@ resources:
   source:
     uri: {{cg-uaa-extras-git-url}}
     branch: master
+
+- name: cloud-gov-development
+  type: cf
+  source:
+    api: {{cf-api-url-development}}
+    username: {{cf-deploy-username-development}}
+    password: {{cf-deploy-password-development}}
+    organization: {{cf-organization}}
+    space: {{cf-space}}
+    skip_cert_check: false
 
 - name: cloud-gov-staging
   type: cf
