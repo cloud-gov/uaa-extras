@@ -525,6 +525,15 @@ def create_app(env=os.environ):
 
         # if we've reached here we are POST so change the pass
 
+        # check our token, and expirary date
+        token = session.get('UAA_TOKEN', None)
+
+        try:
+            decoded_token = g.uaac.decode_access_token(token)
+        except:
+            logging.exception('An invalid access token was decoded')
+            return render_template('error/token_validation.html'), 401
+
         # validate new password
         old_password = request.form.get('old_password', '')
         new_password = request.form.get('new_password', '')
@@ -540,15 +549,6 @@ def create_app(env=os.environ):
             errors.append('You must repeat your new password.')
         if new_password != repeat_password:
             errors.append('Your new password does not match your repeated password.')
-
-        # check our token, and expirary date
-        token = session.get('UAA_TOKEN', None)
-
-        try:
-            decoded_token = g.uaac.decode_access_token(token)
-        except:
-            logging.exception('An invalid access token was decoded')
-            return render_template('error/token_validation.html'), 401
 
         # Get some userinfo to include in the zxcvbn check.
         # The info includes their email address, the IDP_PROVIDER_ORIGIN, and
