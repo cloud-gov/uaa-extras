@@ -541,11 +541,6 @@ def create_app(env=os.environ):
         if new_password != repeat_password:
             errors.append('Your new password does not match your repeated password.')
 
-        if len(errors) != 0:
-            for error in errors:
-                flash(error)
-            return render_template('change_password.html')
-
         # check our token, and expirary date
         token = session.get('UAA_TOKEN', None)
 
