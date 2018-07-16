@@ -23,7 +23,7 @@ setup(
         'email_validator==1.0.1',
         'talisman==0.1.0',
         'redis==2.10.5',
-        'zxcvbn-python=4.4.27',
+        'zxcvbn-python==4.4.27',
     ],
 
     test_suite='uaaextras.tests',
