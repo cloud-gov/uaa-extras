@@ -550,6 +550,9 @@ def create_app(env=os.environ):
             logging.exception('An invalid access token was decoded')
             return render_template('error/token_validation.html'), 401
 
+        # Get some userinfo to include in the zxcvbn check.
+        # The info includes their email address, the IDP_PROVIDER_ORIGIN, and
+        # their email address split at the '@' symbol.
         username = g.uaac.get_user(decoded_token['user_id'])['userName']
         userinfo = [username, app.config['IDP_PROVIDER_ORIGIN']]
         for part in username.split('@'):
