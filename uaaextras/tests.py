@@ -514,7 +514,11 @@ class TestAppConfig(unittest.TestCase):
                 }
             )
 
-        uaac().change_password.assert_called_with('example', 'Taeng0ooqua8ahchohGaechohS8zahG9', 'oZaighoo0bu2ofio7chaefe6mah8ooTe')
+        uaac().change_password.assert_called_with(
+            'example',
+            'Taeng0ooqua8ahchohGaechohS8zahG9',
+            'oZaighoo0bu2ofio7chaefe6mah8ooTe'
+        )
 
     @patch('uaaextras.webapp.flash')
     @patch('uaaextras.webapp.zxcvbn')
