@@ -560,8 +560,8 @@ def create_app(env=os.environ):
 
         result = zxcvbn(new_password, user_inputs=userinfo)
 
-        if result.score < 3:
-            errors.append(result.feedback.warning)
+        if result['score'] < 3:
+            errors.append(result['feedback']['warning'])
 
         if len(errors) != 0:
             for error in errors:
