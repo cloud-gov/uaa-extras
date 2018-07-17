@@ -18,6 +18,8 @@ This application uses oauth to perform actions on your behalf in UAA.  To add a 
 
 Remember the client-secret, you'll need it in step four.
 
+If you are doing this within an already existing cloudfoundry deployment, you might want to create the user by editing your cf deployment with an opsfile like https://github.com/18F/cg-deploy-cf/blob/master/bosh/opsfiles/clients.yml
+
 #### Step Three: Create redis service instance
 
 Either create a locally running version of Redis, or create a service instance in Cloud Foundry if the app will be deployed there.
