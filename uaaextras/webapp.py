@@ -554,7 +554,7 @@ def create_app(env=os.environ):
         # The info includes their email address, the IDP_PROVIDER_ORIGIN, and
         # their email address split at the '@' symbol.
         username = g.uaac.get_user(decoded_token['user_id'])['userName']
-        userinfo = [username, app.config['IDP_PROVIDER_ORIGIN']]
+        userinfo = [username, app.config['IDP_PROVIDER_ORIGIN'], old_password]
         for part in username.split('@'):
             userinfo.append(part)
 
