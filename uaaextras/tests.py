@@ -521,7 +521,7 @@ class TestAppConfig(unittest.TestCase):
 
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
-    def test_post_change_password_bad_repeat(self, render_template, uaac):
+    def test_post_change_password_old_repeat(self, render_template, uaac):
         """When you give it a password that is the same as the previous one,
            it should not work.
         """
@@ -540,6 +540,34 @@ class TestAppConfig(unittest.TestCase):
                     'old_password': 'correct horse battery staple',
                     'new_password': 'correct horse battery staple',
                     'repeat_password': 'correct horse battery staple',
+                    '_csrf_token': 'bar',
+                }
+            )
+
+        render_template.assert_called_with('change_password.html')
+        assert not uaac().change_password.called
+
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
+    def test_post_change_password_bad_repeat(self, render_template, uaac):
+        """When you give it a password that is the same as the previous one,
+           it should not work.
+        """
+        render_template.return_value = 'template output'
+
+        uaac().decode_access_token.return_value = {'user_id': 'example'}
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+                sess['UAA_TOKEN'] = 'foo'
+
+            c.post(
+                '/change-password',
+                data={
+                    'old_password': 'correct horse battery staple',
+                    'new_password': 'correct horse battery staple',
+                    'repeat_password': 'horse battery correct staple',
                     '_csrf_token': 'bar',
                 }
             )
