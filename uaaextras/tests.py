@@ -489,54 +489,16 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with('change_password.html')
 
-    @patch('uaaextras.webapp.UAAClient')
-    @patch('uaaextras.webapp.render_template')
-    def test_post_change_password_good(self, render_template, uaac):
-        """When a POST request is made to /forgot-password
-           and the user exists, send_email is called
-        """
-        render_template.return_value = 'template output'
-
-        uaac().decode_access_token.return_value = {'user_id': 'example'}
-
-        with app.test_client() as c:
-            with c.session_transaction() as sess:
-                sess['_csrf_token'] = 'bar'
-                sess['UAA_TOKEN'] = 'foo'
-
-            c.post(
-                '/change-password',
-                data={
-                    'old_password': 'Taeng0ooqua8ahchohGaechohS8zahG9',
-                    'new_password': 'oZaighoo0bu2ofio7chaefe6mah8ooTe',
-                    'repeat_password': 'oZaighoo0bu2ofio7chaefe6mah8ooTe',
-                    '_csrf_token': 'bar',
-                }
-            )
-
-        uaac().change_password.assert_called_with(
-            'example',
-            'Taeng0ooqua8ahchohGaechohS8zahG9',
-            'oZaighoo0bu2ofio7chaefe6mah8ooTe'
-        )
-
     @patch('uaaextras.webapp.flash')
-    @patch('uaaextras.webapp.zxcvbn')
     @patch('uaaextras.webapp.UAAClient')
     @patch('uaaextras.webapp.render_template')
-    def test_post_change_password_bad_too_simple(self, render_template, uaac, zxcvbn, flash):
-        """When a POST request is made to /forgot-password
-           and the user exists, send_email is called
+    def test_post_change_password_bad_zxcvbn(self, render_template, uaac, flash):
+        """When you give it a password that violates the zxcvbn function,
+           it should let you know.
         """
         render_template.return_value = 'template output'
 
         uaac().decode_access_token.return_value = {'user_id': 'example'}
-        zxcvbn.return_value = {
-            'score': 0,
-            'feedback': {
-                'warning': 'not great',
-            },
-        }
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
@@ -547,15 +509,78 @@ class TestAppConfig(unittest.TestCase):
                 '/change-password',
                 data={
                     'old_password': 'fdsa',
-                    'new_password': 'asdf',
-                    'repeat_password': 'asdf',
+                    'new_password': 'password',
+                    'repeat_password': 'password',
                     '_csrf_token': 'bar',
                 }
             )
 
         render_template.assert_called_with('change_password.html')
-        flash.assert_called_with('not great')
+        flash.assert_called_with('This is a top-10 common password.')
         assert not uaac().change_password.called
+
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
+    def test_post_change_password_bad_repeat(self, render_template, uaac):
+        """When you give it a password that is the same as the previous one,
+           it should not work.
+        """
+        render_template.return_value = 'template output'
+
+        uaac().decode_access_token.return_value = {'user_id': 'example'}
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+                sess['UAA_TOKEN'] = 'foo'
+
+            c.post(
+                '/change-password',
+                data={
+                    'old_password': 'correct horse battery staple',
+                    'new_password': 'correct horse battery staple',
+                    'repeat_password': 'correct horse battery staple',
+                    '_csrf_token': 'bar',
+                }
+            )
+
+        render_template.assert_called_with('change_password.html')
+        assert not uaac().change_password.called
+
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.UAAClient')
+    @patch('uaaextras.webapp.render_template')
+    def test_post_change_password_good(self, render_template, uaac, flash):
+        """If the password does not violate any of the bad password things,
+           it should be accepted.
+        """
+        render_template.return_value = 'template output'
+
+        uaac().decode_access_token.return_value = {'user_id': 'example'}
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+                sess['UAA_TOKEN'] = 'foo'
+
+            c.post(
+                '/change-password',
+                data={
+                    'old_password': 'fdsa',
+                    'new_password': 'correct horse battery staple',
+                    'repeat_password': 'correct horse battery staple',
+                    '_csrf_token': 'bar',
+                }
+            )
+
+        uaac().change_password.assert_called_with(
+            'example',
+            'fdsa',
+            'correct horse battery staple'
+        )
+        render_template.assert_called_with('password_changed.html')
+        flash.assert_not_called()
+        assert uaac().change_password.called
 
     @patch('uaaextras.webapp.redirect')
     @patch('uaaextras.webapp.UAAClient')
