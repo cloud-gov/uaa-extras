@@ -11,6 +11,7 @@ applications:
 - name: uaaextra
   host: account
   buildpack: python_buildpack
+  stack: cflinuxfs3
   services:
   - redis-accounts
   env:
