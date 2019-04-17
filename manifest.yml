@@ -3,6 +3,7 @@ applications:
 - name: invite
   host: invite
   buildpack: staticfile_buildpack
+  stack: cflinuxfs3
   path: redirect
   memory: 64M
   env:
