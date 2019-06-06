@@ -1,8 +1,7 @@
 ---
 applications:
 - name: invite
-  no-hostname: true
-  domain: invite.cloud.gov
+  no-route: true
   buildpack: python_buildpack
   stack: cflinuxfs3
 env:
