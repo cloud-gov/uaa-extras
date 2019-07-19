@@ -18,7 +18,7 @@ setup(
 
     install_requires=[
         'gunicorn==19.6.0',
-        'flask==0.12',
+        'flask==1.0',
         'requests==2.12.4',
         'email_validator==1.0.1',
         'talisman==0.1.0',
