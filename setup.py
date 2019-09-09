@@ -19,7 +19,7 @@ setup(
     install_requires=[
         'gunicorn==19.6.0',
         'flask==1.0',
-        'requests==2.12.4',
+        'requests==2.20.0',
         'email_validator==1.0.1',
         'talisman==0.1.0',
         'redis==2.10.5',
