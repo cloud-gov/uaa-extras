@@ -2,7 +2,8 @@
 applications:
 - name: invite
   host: invite
-  buildpack: staticfile_buildpack
+  buildpack:
+  - staticfile_buildpack
   stack: cflinuxfs3
   path: redirect
   memory: 64M
@@ -10,7 +11,8 @@ applications:
     TARGET_DOMAIN: account.fr-stage.cloud.gov/invite
 - name: uaaextra
   host: account
-  buildpack: python_buildpack
+  buildpacks:
+  - python_buildpack
   stack: cflinuxfs3
   services:
   - redis-accounts
