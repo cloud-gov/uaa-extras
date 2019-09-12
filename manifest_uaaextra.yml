@@ -1,14 +1,5 @@
 ---
 applications:
-- name: invite
-  host: invite
-  buildpack:
-  - staticfile_buildpack
-  stack: cflinuxfs3
-  path: redirect
-  memory: 64M
-  env:
-    TARGET_DOMAIN: account.fr-stage.cloud.gov/invite
 - name: uaaextra
   host: account
   buildpacks:
