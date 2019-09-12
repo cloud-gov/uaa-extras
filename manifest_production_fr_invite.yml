@@ -1,0 +1,11 @@
+---
+applications:
+- name: invite
+  host: invite
+  domain: fr.cloud.gov
+  buildpack:
+  - staticfile_buildpack
+  stack: cflinuxfs3
+  path: redirect
+  env:
+    TARGET_DOMAIN: account.fr.cloud.gov/invite
