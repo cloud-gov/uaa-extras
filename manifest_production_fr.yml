@@ -3,7 +3,8 @@ applications:
 - name: invite
   host: invite
   domain: fr.cloud.gov
-  buildpack: staticfile_buildpack
+  buildpack:
+  - staticfile_buildpack
   stack: cflinuxfs3
   path: redirect
   env:
@@ -11,7 +12,8 @@ applications:
 - name: uaaextra
   host: account
   domain: fr.cloud.gov
-  buildpack: python_buildpack
+  buildpack:
+  - python_buildpack
   stack: cflinuxfs3
   instances: 2
   services:
