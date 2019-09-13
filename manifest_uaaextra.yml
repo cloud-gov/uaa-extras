@@ -2,8 +2,7 @@
 applications:
 - name: uaaextra
   host: account
-  buildpacks:
-  - python_buildpack
+  buildpacks: python_buildpack
   stack: cflinuxfs3
   services:
   - redis-accounts
