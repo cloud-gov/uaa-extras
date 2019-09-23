@@ -17,55 +17,55 @@ jobs:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url-development}}
+        UAA_BASE_URL: ((uaa-base-url-development))
         UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: {{uaa-client-secret-development}}
+        UAA_CLIENT_SECRET: ((uaa-client-secret-development))
         UAA_VERIFY_TLS: "true"
-        SMTP_HOST: {{smtp-host}}
-        SMTP_PORT: {{smtp-port}}
-        SMTP_USER: {{smtp-user}}
-        SMTP_PASS: {{smtp-pass}}
-        SMTP_FROM: {{smtp-from}}
-        SMTP_CERT: {{smtp-cert}}
-        BRANDING_COMPANY_NAME: {{branding-company-name-development}}
-        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-development}}
-        IDP_PROVIDER_URL: {{idp-provider-url-development}}
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-development))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
+        IDP_PROVIDER_URL: ((idp-provider-url-development))
   - put: cloud-gov-development
     params:
       manifest: cg-uaa-extras-app/manifest_invite.yml
       path: uaa-extras-integrated
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url-development}}
+        UAA_BASE_URL: ((uaa-base-url-development))
         UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: {{uaa-client-secret-development}}
+        UAA_CLIENT_SECRET: ((uaa-client-secret-development))
         UAA_VERIFY_TLS: "true"
-        SMTP_HOST: {{smtp-host}}
-        SMTP_PORT: {{smtp-port}}
-        SMTP_USER: {{smtp-user}}
-        SMTP_PASS: {{smtp-pass}}
-        SMTP_FROM: {{smtp-from}}
-        SMTP_CERT: {{smtp-cert}}
-        BRANDING_COMPANY_NAME: {{branding-company-name-development}}
-        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-development}}
-        IDP_PROVIDER_URL: {{idp-provider-url-development}}
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-development))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
+        IDP_PROVIDER_URL: ((idp-provider-url-development))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to deploy cg-uaa-extras to development
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Successfully deployed cg-uaa-extras to development
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: deploy-staging
   plan:
@@ -84,55 +84,55 @@ jobs:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url-staging}}
+        UAA_BASE_URL: ((uaa-base-url-staging))
         UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: {{uaa-client-secret-staging}}
+        UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
         UAA_VERIFY_TLS: "true"
-        SMTP_HOST: {{smtp-host}}
-        SMTP_PORT: {{smtp-port}}
-        SMTP_USER: {{smtp-user}}
-        SMTP_PASS: {{smtp-pass}}
-        SMTP_FROM: {{smtp-from}}
-        SMTP_CERT: {{smtp-cert}}
-        BRANDING_COMPANY_NAME: {{branding-company-name-staging}}
-        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-staging}}
-        IDP_PROVIDER_URL: {{idp-provider-url-staging}}
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-staging))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
+        IDP_PROVIDER_URL: ((idp-provider-url-staging))
   - put: cloud-gov-staging
     params:
       manifest: cg-uaa-extras-app/manifest_invite.yml
       path: uaa-extras-integrated
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url-staging}}
+        UAA_BASE_URL: ((uaa-base-url-staging))
         UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: {{uaa-client-secret-staging}}
+        UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
         UAA_VERIFY_TLS: "true"
-        SMTP_HOST: {{smtp-host}}
-        SMTP_PORT: {{smtp-port}}
-        SMTP_USER: {{smtp-user}}
-        SMTP_PASS: {{smtp-pass}}
-        SMTP_FROM: {{smtp-from}}
-        SMTP_CERT: {{smtp-cert}}
-        BRANDING_COMPANY_NAME: {{branding-company-name-staging}}
-        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-staging}}
-        IDP_PROVIDER_URL: {{idp-provider-url-staging}}
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-staging))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
+        IDP_PROVIDER_URL: ((idp-provider-url-staging))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to deploy cg-uaa-extras to Staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Successfully deployed cg-uaa-extras to Staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: deploy-production
   plan:
@@ -152,55 +152,55 @@ jobs:
       manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
       path: uaa-extras-integrated
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url-production}}
+        UAA_BASE_URL: ((uaa-base-url-production))
         UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: {{uaa-client-secret-production}}
+        UAA_CLIENT_SECRET: ((uaa-client-secret-production))
         UAA_VERIFY_TLS: "true"
-        SMTP_HOST: {{smtp-host}}
-        SMTP_PORT: {{smtp-port}}
-        SMTP_USER: {{smtp-user}}
-        SMTP_PASS: {{smtp-pass}}
-        SMTP_FROM: {{smtp-from}}
-        SMTP_CERT: {{smtp-cert}}
-        BRANDING_COMPANY_NAME: {{branding-company-name-production}}
-        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-production}}
-        IDP_PROVIDER_URL: {{idp-provider-url-production}}
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-production))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-production))
+        IDP_PROVIDER_URL: ((idp-provider-url-production))
   - put: cloud-gov-production
     params:
       manifest: cg-uaa-extras-app/manifest_production_fr_invite.yml
       path: uaa-extras-integrated
       environment_variables:
-        UAA_BASE_URL: {{uaa-base-url-production}}
+        UAA_BASE_URL: ((uaa-base-url-production))
         UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: {{uaa-client-secret-production}}
+        UAA_CLIENT_SECRET: ((uaa-client-secret-production))
         UAA_VERIFY_TLS: "true"
-        SMTP_HOST: {{smtp-host}}
-        SMTP_PORT: {{smtp-port}}
-        SMTP_USER: {{smtp-user}}
-        SMTP_PASS: {{smtp-pass}}
-        SMTP_FROM: {{smtp-from}}
-        SMTP_CERT: {{smtp-cert}}
-        BRANDING_COMPANY_NAME: {{branding-company-name-production}}
-        IDP_PROVIDER_ORIGIN: {{idp-provider-origin-production}}
-        IDP_PROVIDER_URL: {{idp-provider-url-production}}
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-production))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-production))
+        IDP_PROVIDER_URL: ((idp-provider-url-production))
   on_failure:
     put: slack
     params:
       text: |
         :x: FAILED to deploy cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
   on_success:
     put: slack
     params:
       text: |
         :white_check_mark: Successfully deployed cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: {{slack-channel}}
-      username: {{slack-username}}
-      icon_url: {{slack-icon-url}}
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 resources:
 - name: dotgov-domain-data
@@ -214,43 +214,43 @@ resources:
 - name: cg-uaa-extras-app
   type: git
   source:
-    uri: {{cg-uaa-extras-git-url}}
+    uri: ((cg-uaa-extras-git-url))
     branch: master
 
 - name: cloud-gov-development
   type: cf
   source:
-    api: {{cf-api-url-development}}
-    username: {{cf-deploy-username-development}}
-    password: {{cf-deploy-password-development}}
-    organization: {{cf-organization}}
-    space: {{cf-space}}
+    api: ((cf-api-url-development))
+    username: ((cf-deploy-username-development))
+    password: ((cf-deploy-password-development))
+    organization: ((cf-organization))
+    space: ((cf-space))
     skip_cert_check: false
 
 - name: cloud-gov-staging
   type: cf
   source:
-    api: {{cf-api-url-staging}}
-    username: {{cf-deploy-username-staging}}
-    password: {{cf-deploy-password-staging}}
-    organization: {{cf-organization}}
-    space: {{cf-space}}
+    api: ((cf-api-url-staging))
+    username: ((cf-deploy-username-staging))
+    password: ((cf-deploy-password-staging))
+    organization: ((cf-organization))
+    space: ((cf-space))
     skip_cert_check: false
 
 - name: cloud-gov-production
   type: cf
   source:
-    api: {{cf-api-url-production}}
-    username: {{cf-deploy-username-production}}
-    password: {{cf-deploy-password-production}}
-    organization: {{cf-organization}}
-    space: {{cf-space}}
+    api: ((cf-api-url-production))
+    username: ((cf-deploy-username-production))
+    password: ((cf-deploy-password-production))
+    organization: ((cf-organization))
+    space: ((cf-space))
     skip_cert_check: false
 
 - name: slack
   type: slack-notification
   source:
-    url: {{slack-webhook-url}}
+    url: ((slack-webhook-url))
 
 resource_types:
 - name: slack-notification
