@@ -187,12 +187,18 @@ def create_app(env=os.environ):
     if env.get('ENV') == 'production':
         csp = {
             'default-src': '\'self\'',
-            'img-src': '*',
+            'script-src': '\'self\'',
+            'connect-src': '\'self\'',
+            'object-src': '\'self\'',
+            'frame-ancestors': '\'self\'',
+            'img-src': [
+                '\'self\'',
+                '*.cloud.gov'
+            ],
             'style-src': [
                 '\'self\'',
                 '*.cloud.gov',
-                '*.googleapis.com',
-                '\'unsafe-inline\''
+                '*.googleapis.com'
             ],
             'font-src': [
                 '\'self\'',
