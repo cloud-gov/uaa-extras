@@ -884,6 +884,38 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('reset_password.html')
             flash.assert_called_once()
 
+    @patch('uaaextras.webapp.render_template')
+    @patch('uaaextras.webapp.flash')
+    @patch('uaaextras.webapp.r')
+    def test_fail_to_render_temporary_password_no_token(
+        self,
+        redis_conn,
+        flash,
+        render_template
+    ):
+        """ When submitting an email without a valid token, I should see a flash error message.
+        """
+
+        render_template.return_value = 'template output'
+        redis_conn.get.return_value = None
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess['_csrf_token'] = 'bar'
+
+            rv = c.post(
+                '/reset-password',
+                data={
+                    'email_address': 'test@example.com',
+                    '_validation_code': 'not-example',
+                    '_csrf_token': 'bar'
+                }
+            )
+            assert rv.status_code == 200
+            redis_conn.get.assert_called_with('test@example.com')
+            render_template.assert_called_with('reset_password.html')
+            flash.assert_called_once()
+
 
 class TestUAAClient(unittest.TestCase):
     """Test our UAA Client"""
