@@ -683,7 +683,7 @@ def create_app(env=os.environ):
         except redis.exceptions.RedisError:
             return render_template('error/internal.html'), 500
 
-        if userToken.decode('utf-8') == token:
+        if userToken is not None and userToken.decode('utf-8') == token:
             logging.info('Successfully verified token {0} for {1}'.format(userToken, email))
             try:
                 r.delete(email)
