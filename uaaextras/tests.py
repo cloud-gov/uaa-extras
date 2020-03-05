@@ -419,8 +419,7 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with('signup.html')
             flash.assert_called_once()
 
-    @patch('uaaextras.webapp.session')
-    def test_logout_good(self, session):
+    def test_logout_good(self):
         """The session is cleared when logging out"""
 
         with app.test_request_context('/logout'):
@@ -431,7 +430,8 @@ class TestAppConfig(unittest.TestCase):
                 rv = c.get('/logout')
                 assert rv.status_code == 302
                 assert rv.location == 'http://localhost:5000/'
-                session.clear.assert_called_once()
+                with c.session_transaction() as sess:
+                    assert sess.get('UAA_TOKEN') is None
 
     @patch('uaaextras.webapp.UAAClient')
     def test_uaac_is_created_from_session(self, uaac):
