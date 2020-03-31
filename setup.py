@@ -24,6 +24,7 @@ setup(
         'talisman==0.1.0',
         'redis==2.10.5',
         'zxcvbn-python==4.4.24',
+        'sqlalchemy==1.3.15',
     ],
 
     test_suite='uaaextras.tests',
