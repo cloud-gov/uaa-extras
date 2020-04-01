@@ -425,10 +425,9 @@ class UAAClient(object):
         Returns:
             None
         """
-        token = self._get_client_token(client_id, client_secret)
-
-        headers = {'Authorization': "Bearer " + token}
+        headers = None
         if zone_id:
+            headers = dict()
             headers['X-Identity-Zone-Id'] = zone_id
             if zone_subdomain:
                 headers['X-Identity-Zone-Subdomain'] = zone_subdomain
