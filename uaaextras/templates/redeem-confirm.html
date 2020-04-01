@@ -1,5 +1,5 @@
 {% extends "_layout.html" %}
-
+{% block type %}-landscape{% endblock %}
 {% block header %}cloud.gov account invitation{% endblock %}
 
 {% block content %}
@@ -7,7 +7,7 @@
 {% if redeem_link %}
 
 <form action="{{redeem_link}}" method="post">
-  <input type="submit" value="Redeem your invitation" style='-moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; margin-top: 0.5em; margin-right: 0.5em; margin-bottom: 0.5em; appearance: none; background-color: #0071bc; border: 0; border-radius: 0.3rem; color: #ffffff; cursor: pointer; display: inline-block; font-family: "Source Sans Pro", "Helvetica Neue", "Helvetica", "Roboto", "Arial", sans-serif; font-size: 1.7rem; font-weight: 700; line-height: 1; outline: none; padding: 1rem 2rem; text-align: center; text-decoration: none; width: auto;'>
+  <input type="submit" value="Redeem your invitation" class="island-button">
 </form>
 {% endif %}
 
