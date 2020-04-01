@@ -11,10 +11,11 @@ import ssl
 import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from sqlalchemy import create_engine
 from talisman import Talisman
 from zxcvbn import zxcvbn
 
-from uaaextras.clients import UAAClient, UAAError
+from uaaextras.clients import UAAClient, UAAError, TOTPClient
 
 logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 
@@ -57,6 +58,8 @@ if 'VCAP_SERVICES' in os.environ:
 
 # Connect to redis
 r = redis.StrictRedis(**redis_env)
+
+uaadb_engine = create_engine(os.getenv('UAADB_CONNECTION_STRING', "sqlite:///:memory:"))
 
 # Try to determine SERVER_NAME
 if 'VCAP_APPLICATION' in os.environ:
@@ -284,6 +287,7 @@ def create_app(env=os.environ):
                 app.config['UAA_CLIENT_ID']
             ))
 
+        g.totp = TOTPClient(uaadb_engine)
         # if it's a POST request, that's not to oauth_login
         # Then check for a CSRF token, if we don't have one, bail
         if request.method == "POST":
@@ -717,6 +721,26 @@ def create_app(env=os.environ):
                 return render_template('reset_password.html')
         except Exception:
             logging.exception('Unable to set your temporary password.')
+
+    @app.route("/reset-totp", methods=["GET", "POST"])
+    def reset_totp():
+        if request.method == 'GET':
+            return render_template("reset_totp.html")
+
+        token = session.get('UAA_TOKEN', None)
+
+        try:
+            decoded_token = g.uaac.decode_access_token(token)
+        except:
+            logging.exception('An invalid access token was decoded')
+            return render_template('error/token_validation.html'), 401
+
+        username = g.uaac.get_user(decoded_token['user_id'])['userName']
+
+        g.totp.unset_totp_seed(username)
+        g.uaac.invalidate_tokens(token, decoded_token['user_id'])
+        session.clear()
+        return render_template("reset_totp.html", login_link=app.config['UAA_URL'], reset_complete=True)
 
     @app.route('/logout')
     def logout():
