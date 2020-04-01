@@ -415,7 +415,7 @@ class UAAClient(object):
         token = self._get_client_token(client_id, client_secret)
         return self._request(f'/Users/{user_id}', "DELETE", token=token)
 
-    def invalidate_tokens(self, client_id, client_secret, user_id) -> None:
+    def invalidate_tokens(self, client_id, client_secret, user_id, zone_id=None, zone_subdomain=None) -> None:
         """
         Invalidate all the tokens for a given user.
         Args:
@@ -426,8 +426,14 @@ class UAAClient(object):
             None
         """
         token = self._get_client_token(client_id, client_secret)
+
+        headers = {'Authorization': "Bearer " + token}
+        if zone_id:
+            headers['X-Identity-Zone-Id'] = zone_id
+            if zone_subdomain:
+                headers['X-Identity-Zone-Subdomain'] = zone_subdomain
         self._request(
             urljoin('/oauth/token/revoke/user', user_id),
             'GET',
-            headers={'Authorization': "Bearer " + token}
+            headers=headers
         )
