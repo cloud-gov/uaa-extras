@@ -1,4 +1,3 @@
-from urllib.parse import quote
 from bs4 import BeautifulSoup
 import pyotp
 import requests
