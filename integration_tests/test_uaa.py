@@ -14,7 +14,7 @@ def config():
     urls["extras"] = os.environ["EXTRAS_URL"]
     urls["idp"] = os.environ["IDP_URL"]
     for url in urls:
-        if not urls[url][0:4] == 'http':
+        if not urls[url][0:4] == "http":
             urls[url] = "https://" + urls[url]
     config["urls"] = urls
     config["idp_name"] = os.environ["IDP_NAME"]
@@ -43,9 +43,11 @@ def unauthenticated(config):
 
 @pytest.fixture
 def authenticated(unauthenticated, user):
-    token, changed = unauthenticated.log_in(user["name"], user["password"], user["token"])
+    token, changed = unauthenticated.log_in(
+        user["name"], user["password"], user["token"]
+    )
     if changed:
-        os.environ['TEST_TOKEN'] = token
+        os.environ["TEST_TOKEN"] = token
     return unauthenticated
 
 
