@@ -23,7 +23,7 @@ def user():
     user = {}
     user["name"] = os.environ["TEST_USERNAME"]
     user["password"] = os.environ["TEST_PASSWORD"]
-    user["token"] = os.environ["TEST_TOKEN"]
+    user["token"] = os.getenv("TEST_TOKEN")
     return user
 
 
@@ -40,7 +40,9 @@ def unauthenticated(config):
 
 @pytest.fixture
 def authenticated(unauthenticated, user):
-    unauthenticated.log_in(user["name"], user["password"], user["token"])
+    token, changed = unauthenticated.log_in(user["name"], user["password"], user["token"])
+    if changed:
+        os.environ['TEST_TOKEN'] = token
     return unauthenticated
 
 
