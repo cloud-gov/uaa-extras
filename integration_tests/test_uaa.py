@@ -13,6 +13,9 @@ def config():
     urls["uaa"] = os.environ["UAA_URL"]
     urls["extras"] = os.environ["EXTRAS_URL"]
     urls["idp"] = os.environ["IDP_URL"]
+    for url in urls:
+        if not urls[url][0:4] == 'http':
+            urls[url] = "https://" + urls[url]
     config["urls"] = urls
     config["idp_name"] = os.environ["IDP_NAME"]
     return config
