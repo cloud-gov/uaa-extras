@@ -23,15 +23,13 @@ class IntegrationTestClient:
 
     def log_in(self, username, password, totp_seed=None) -> typing.Tuple[str, bool]:
         """
-        log in using the shibboleth totp IDP. 
+        log in using the shibboleth totp IDP.
         handles registering totp if user does not have one currently
         returns a tuple of str, bool representing the user's totp_seed, and whether a new totp was registered
         """
         if totp_seed is not None:
             totp = pyotp.TOTP(totp_seed)
         totp_updated = False
-        # query param used to track steps. Probably better to get it from responses, but /shrug/
-        s = 1
         r = self.s.get(self.uaa_url + "/login")
         params = {
             "returnIDParam": "idp",
