@@ -397,3 +397,20 @@ class UAAClient(object):
             return True
 
         return False
+
+    def delete_user(self, client_id, client_secret, user_id):
+        """ Delete a user from UAA
+
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+            user_id: the id of the user to delete
+
+        Raises:
+            UAAError: there was an error deleting the user
+
+        Returns:
+            dict:  A list of users matching list_filter
+        """
+        token = self._get_client_token(client_id, client_secret)
+        return self._request(f'/Users/{user_id}', "DELETE", token=token)
