@@ -51,11 +51,11 @@ jobs:
   - task: integration-tests
     file: cg-uaa-extras-app/ci/test.yml
     params:
-        UAA_TARGET: ((uaa-base-url-development))
+        UAA_TARGET: ((uaa-api-url-development))
         UAA_USER: uaa_extras_app
         UAA_SECRET: ((uaa-client-secret-development))
-        UAA_URL: ((development-login-url-development))
-        IDP_URL: ((idp-provider-url-development))
+        UAA_URL: ((uaa-base-url-development))
+        IDP_URL: ((idp-base-url-development))
         EXTRAS_URL: ((uaa-extras-url-development))
         IDP_NAME: ((idp-provider-origin-development))
   on_failure:
