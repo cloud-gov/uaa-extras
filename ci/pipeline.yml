@@ -49,7 +49,7 @@ jobs:
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
         IDP_PROVIDER_URL: ((idp-provider-url-development))
   - task: integration-tests
-    file: cg-uaa-extras-app/ci/test.yml
+    file: cg-uaa-extras-app/ci/integration_test.yml
     params:
         UAA_TARGET: ((uaa-api-url-development))
         UAA_USER: uaa_extras_app
