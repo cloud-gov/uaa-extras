@@ -31,25 +31,6 @@ jobs:
         BRANDING_COMPANY_NAME: ((branding-company-name-development))
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
         IDP_PROVIDER_URL: ((idp-provider-url-development))
-  - put: cloud-gov-development
-    params:
-      manifest: cg-uaa-extras-app/manifest_invite.yml
-      path: uaa-extras-integrated
-      environment_variables:
-        UAA_BASE_URL: ((uaa-base-url-development))
-        UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: ((uaa-client-secret-development))
-        UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
-        UAA_VERIFY_TLS: "true"
-        SMTP_HOST: ((smtp-host))
-        SMTP_PORT: ((smtp-port))
-        SMTP_USER: ((smtp-user))
-        SMTP_PASS: ((smtp-pass))
-        SMTP_FROM: ((smtp-from))
-        SMTP_CERT: ((smtp-cert))
-        BRANDING_COMPANY_NAME: ((branding-company-name-development))
-        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
-        IDP_PROVIDER_URL: ((idp-provider-url-development))
   - task: integration-tests
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
@@ -112,25 +93,6 @@ jobs:
         BRANDING_COMPANY_NAME: ((branding-company-name-staging))
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
         IDP_PROVIDER_URL: ((idp-provider-url-staging))
-  - put: cloud-gov-staging
-    params:
-      manifest: cg-uaa-extras-app/manifest_invite.yml
-      path: uaa-extras-integrated
-      environment_variables:
-        UAA_BASE_URL: ((uaa-base-url-staging))
-        UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
-        UAA_VERIFY_TLS: "true"
-        UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
-        SMTP_HOST: ((smtp-host))
-        SMTP_PORT: ((smtp-port))
-        SMTP_USER: ((smtp-user))
-        SMTP_PASS: ((smtp-pass))
-        SMTP_FROM: ((smtp-from))
-        SMTP_CERT: ((smtp-cert))
-        BRANDING_COMPANY_NAME: ((branding-company-name-staging))
-        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
-        IDP_PROVIDER_URL: ((idp-provider-url-staging))
   - task: integration-tests
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
@@ -177,25 +139,6 @@ jobs:
   - put: cloud-gov-production
     params:
       manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
-      path: uaa-extras-integrated
-      environment_variables:
-        UAA_BASE_URL: ((uaa-base-url-production))
-        UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: ((uaa-client-secret-production))
-        UAA_VERIFY_TLS: "true"
-        UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
-        SMTP_HOST: ((smtp-host))
-        SMTP_PORT: ((smtp-port))
-        SMTP_USER: ((smtp-user))
-        SMTP_PASS: ((smtp-pass))
-        SMTP_FROM: ((smtp-from))
-        SMTP_CERT: ((smtp-cert))
-        BRANDING_COMPANY_NAME: ((branding-company-name-production))
-        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-production))
-        IDP_PROVIDER_URL: ((idp-provider-url-production))
-  - put: cloud-gov-production
-    params:
-      manifest: cg-uaa-extras-app/manifest_production_fr_invite.yml
       path: uaa-extras-integrated
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-production))
