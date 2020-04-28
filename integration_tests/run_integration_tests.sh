@@ -25,13 +25,13 @@ fi
 
 pushd "$(dirname "${BASH_SOURCE[0]}")"
 
-python3 -m  venv venv
+python3 -m venv venv
 
 source venv/bin/activate
 
 python3 -m pip install -r requirements.txt
 
-pytest
+pytest -v
 return=$?
 
 deactivate
