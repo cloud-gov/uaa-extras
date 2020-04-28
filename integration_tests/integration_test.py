@@ -56,12 +56,10 @@ class IntegrationTestClient:
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
         next_url = form.attrs["action"]
-        print(form)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
         next_url = form.attrs["action"]
-        print(form)
         payload = {
             "j_username": username,
             "j_password": password,
@@ -70,7 +68,6 @@ class IntegrationTestClient:
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
-        print(form)
         next_url = form.attrs["action"]
         if form is not None and "barcode" in str(form):
             totp_updated = True
