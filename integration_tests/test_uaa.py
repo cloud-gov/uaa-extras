@@ -80,18 +80,18 @@ def test_login_no_totp(unauthenticated, config, user):
 
 def test_reset_totp(authenticated, user):
     # get the page so we have a CSRF
-    r = authenticated.get_page('/reset-totp')
+    r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
 
     csrf = get_csrf(r.text)
     # actually reset our totp
-    r = authenticated.post_to_page('/reset-totp', data={"_csrf_token": csrf})
+    r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
     assert r.status_code == 200
 
     # reset-totp is supposed to log a user out. Logging in should reset our totp
-    token, changed = r.log_in(user['name'], user['password'])
+    token, changed = r.log_in(user["name"], user["password"])
     assert changed
-    os.environ['TEST_TOKEN'] = token
+    os.environ["TEST_TOKEN"] = token
 
 
 @pytest.mark.parametrize("page", ["/invite", "/change-password"])
