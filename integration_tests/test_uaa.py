@@ -66,12 +66,32 @@ def test_unauthenticated_pages_redirect(unauthenticated, page, config):
 
 # NOTE: Needs to be first test as long as we do not have a totp-reset method
 def test_login_no_totp(unauthenticated, config, user):
+    # log in to get/set our totp
     token, changed = unauthenticated.log_in(user["name"], user["password"])
     os.environ["TEST_TOKEN"] = token
     assert changed
+    # log out, so log in will work
     unauthenticated.log_out()
+
+    # log in again to make sure we have the right totp
     _, changed = unauthenticated.log_in(user["name"], user["password"], token)
     assert not changed
+
+
+def test_reset_totp(authenticated, user):
+    # get the page so we have a CSRF
+    r = authenticated.get_page('/reset-totp')
+    assert r.status_code == 200
+
+    csrf = get_csrf(r.text)
+    # actually reset our totp
+    r = authenticated.post_to_page('/reset-totp', data={"_csrf_token": csrf})
+    assert r.status_code == 200
+
+    # reset-totp is supposed to log a user out. Logging in should reset our totp
+    token, changed = r.log_in(user['name'], user['password'])
+    assert changed
+    os.environ['TEST_TOKEN'] = token
 
 
 @pytest.mark.parametrize("page", ["/invite", "/change-password"])
