@@ -21,6 +21,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-development))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -38,6 +39,7 @@ jobs:
         UAA_BASE_URL: ((uaa-base-url-development))
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-development))
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
@@ -100,6 +102,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -118,6 +121,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -169,6 +173,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-production))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -187,6 +192,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-production))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
