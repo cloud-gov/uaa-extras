@@ -1,0 +1,19 @@
+{% extends "_layout.html" %}
+{% block %}-landscape{% endblock %}
+
+{% block title %}cloud.gov Accounts | Reset MFA Token{% endblock %}
+{% block header %}Reset MFA Token{% endblock %}
+
+{% block content %}
+<div class="island-content">
+    {% if reset_complete %}
+    <p>Your MFA token has been reset and you have been logged out. To register a new token, please <a href="{{login_link}}">log in</a> again.</p>
+    {% else %}
+    <p>You can reset your MFA token here. Doing so will deactivate your currently registered MFA token, and require you to register a new token on your next login.</p>
+    <form action="{{ url_for('reset_totp') }}" method="post">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input class="island-button" type="submit" value="Reset MFA">
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

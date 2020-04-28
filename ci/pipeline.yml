@@ -21,6 +21,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-development))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -38,6 +39,7 @@ jobs:
         UAA_BASE_URL: ((uaa-base-url-development))
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-development))
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
         UAA_VERIFY_TLS: "true"
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
@@ -100,6 +102,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -118,6 +121,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -127,6 +131,16 @@ jobs:
         BRANDING_COMPANY_NAME: ((branding-company-name-staging))
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
         IDP_PROVIDER_URL: ((idp-provider-url-staging))
+  - task: integration-tests
+    file: cg-uaa-extras-app/ci/integration_test.yml
+    params:
+        UAA_TARGET: ((uaa-api-url-staging))
+        UAA_USER: uaa_extras_app
+        UAA_SECRET: ((uaa-client-secret-staging))
+        UAA_URL: ((uaa-base-url-staging))
+        IDP_URL: ((idp-base-url-staging))
+        EXTRAS_URL: ((uaa-extras-url-staging))
+        IDP_NAME: ((idp-provider-origin-staging))
   on_failure:
     put: slack
     params:
@@ -169,6 +183,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-production))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))
@@ -187,6 +202,7 @@ jobs:
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-production))
         UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
         SMTP_HOST: ((smtp-host))
         SMTP_PORT: ((smtp-port))
         SMTP_USER: ((smtp-user))

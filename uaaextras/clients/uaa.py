@@ -414,3 +414,25 @@ class UAAClient(object):
         """
         token = self._get_client_token(client_id, client_secret)
         return self._request(f'/Users/{user_id}', "DELETE", token=token)
+
+    def invalidate_tokens(self, client_id, client_secret, user_id, zone_id=None, zone_subdomain=None) -> None:
+        """
+        Invalidate all the tokens for a given user.
+        Args:
+            client_id: The oauth client id that this code was generated for
+            client_secret: The secret for the client_id above
+            user_id: the id of the user to log out
+        Returns:
+            None
+        """
+        headers = None
+        if zone_id:
+            headers = dict()
+            headers['X-Identity-Zone-Id'] = zone_id
+            if zone_subdomain:
+                headers['X-Identity-Zone-Subdomain'] = zone_subdomain
+        self._request(
+            urljoin('/oauth/token/revoke/user', user_id),
+            'GET',
+            headers=headers
+        )

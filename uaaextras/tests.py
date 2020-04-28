@@ -12,8 +12,10 @@ from flask import appcontext_pushed
 from mock import Mock, patch
 from requests.auth import HTTPBasicAuth
 
+import sqlalchemy
+
 from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS
-from uaaextras.clients import UAAError, UAAClient
+from uaaextras.clients import UAAError, UAAClient, TOTPClient
 
 app = create_app({'UAA_CLIENT_ID': 'client-id', 'UAA_CLIENT_SECRET': 'client-secret'})
 
@@ -1340,3 +1342,29 @@ class TestUAAClient(unittest.TestCase):
                 'password': 'baz'
             }
         )
+
+
+class TestTOTPClient(unittest.TestCase):
+
+    def setUp(self):
+        engine = sqlalchemy.create_engine("sqlite:///:memory:", echo=True)
+        self.client = TOTPClient(engine)
+        with engine.connect() as conn:
+            create = sqlalchemy.sql.text("""
+            CREATE TABLE IF NOT EXISTS totp_seed (
+                username varchar(255) PRIMARY KEY,
+                seed varchar(36),
+                backup_code varchar(36)
+            )
+            """)
+            add_user = sqlalchemy.sql.text("INSERT INTO totp_seed VALUES (:username, :seed, :backup_code)")
+            conn.execute(create)
+            conn.execute(add_user, username="example@cloud.gov", seed="asdfasdf", backup_code="xzcvzxcv")
+
+    def test_get_totp_exsisting_user(self):
+        assert self.client.get_user_totp_seed('example@cloud.gov') == "asdfasdf"
+        assert self.client.get_user_totp_seed('nobody') is None
+
+    def test_delete_totp(self):
+        self.client.unset_totp_seed('example@cloud.gov')
+        assert self.client.get_user_totp_seed('example@cloud.gov') is None
