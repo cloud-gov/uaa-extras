@@ -63,6 +63,7 @@ def test_unauthenticated_pages_redirect(unauthenticated, page, config):
     assert r.status_code == 200
     assert r.url == config["urls"]["uaa"] + "/login"
 
+
 # NOTE: Needs to be first test as long as we do not have a totp-reset method
 def test_login_no_totp(unauthenticated, config, user):
     token, changed = unauthenticated.log_in(user["name"], user["password"])
@@ -72,11 +73,13 @@ def test_login_no_totp(unauthenticated, config, user):
     _, changed = unauthenticated.log_in(user["name"], user["password"], token)
     assert not changed
 
+
 @pytest.mark.parametrize("page", ["/invite", "/change-password"])
 def test_authenticated_pages_work(authenticated, page, config):
     r = authenticated.get_page(page)
     assert r.status_code == 200
     assert r.url == config["urls"]["extras"] + page
+
 
 def test_change_password(authenticated, config, user):
     r = authenticated.get_page("/change-password")
