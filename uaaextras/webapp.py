@@ -724,19 +724,21 @@ def create_app(env=os.environ):
 
     @app.route("/reset-totp", methods=["GET", "POST"])
     def reset_totp():
-        if request.method == 'GET':
-            return render_template("reset_totp.html")
-
         token = session.get('UAA_TOKEN', None)
-
         try:
             decoded_token = g.uaac.decode_access_token(token)
         except:
             logging.exception('An invalid access token was decoded')
             return render_template('error/token_validation.html'), 401
 
-        username = g.uaac.get_user(decoded_token['user_id'])['userName']
+        user = g.uaac.get_user(decoded_token['user_id'])
+        if user['origin'] != app.config['IDP_PROVIDER_ORIGIN']:
+            return redirect(url_for('index'))
 
+        if request.method == 'GET':
+            return render_template("reset_totp.html")
+
+        username = user['userName']
         g.totp.unset_totp_seed(username)
         g.uaac.invalidate_tokens(token, decoded_token['user_id'])
         session.clear()
