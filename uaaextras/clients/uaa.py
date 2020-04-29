@@ -419,8 +419,7 @@ class UAAClient(object):
         """
         Invalidate all the tokens for a given user.
         Args:
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
+            token: a token with permissions to invalidate the tokens
             user_id: the id of the user to log out
         Returns:
             None
