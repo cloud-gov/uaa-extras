@@ -7,7 +7,7 @@ image_resource:
     repository: 18fgsa/concourse-task
 
 inputs:
-  - name: cg-uaa-extras-app
+  - name: uaa-extras-integrated
 params:
   UAA_USER:
   UAA_SECRET:
@@ -16,4 +16,4 @@ params:
   EXTRAS_URL:
   IDP_NAME:
 run:
-  path: ./cg-uaa-extras-app/integration_tests/run_integration_tests.sh
+  path: ./uaa-extras-integrated/integration_tests/run_integration_tests.sh
