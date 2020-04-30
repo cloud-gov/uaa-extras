@@ -442,12 +442,11 @@ class UAAClient(object):
         """
         return self._request(f'/Users/{user_id}', "DELETE")
 
-    def invalidate_tokens(self, client_id, client_secret, user_id, zone_id=None, zone_subdomain=None) -> None:
+    def invalidate_tokens(self, token, user_id, zone_id=None, zone_subdomain=None) -> None:
         """
         Invalidate all the tokens for a given user.
         Args:
-            client_id: The oauth client id that this code was generated for
-            client_secret: The secret for the client_id above
+            token: a token with permissions to invalidate the tokens
             user_id: the id of the user to log out
         Returns:
             None
