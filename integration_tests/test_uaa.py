@@ -116,9 +116,8 @@ def test_reset_totp(authenticated, user):
     assert r.status_code == 200
 
     # reset-totp is supposed to log a user out. Logging in should reset our totp
-    token, changed = r.log_in(user["name"], user["password"])
+    token, changed = authenticated.log_in(user["name"], user["password"])
     assert changed
-    os.environ["TEST_TOKEN"] = token
 
 
 @pytest.mark.parametrize("page", ["/invite", "/change-password"])
