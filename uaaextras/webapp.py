@@ -742,6 +742,7 @@ def create_app(env=os.environ):
         g.totp.unset_totp_seed(username)
         g.uaac.invalidate_tokens(decoded_token['user_id'])
         session.clear()
+        return redirect(app.config['UAA_BASE_URL'] + '/logout.do')
         return render_template("reset_totp.html", login_link=app.config['UAA_BASE_URL'], reset_complete=True)
 
     @app.route('/logout')
