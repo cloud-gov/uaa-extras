@@ -442,7 +442,7 @@ class UAAClient(object):
         """
         return self._request(f'/Users/{user_id}', "DELETE")
 
-    def invalidate_tokens(self, token, user_id, zone_id=None, zone_subdomain=None) -> None:
+    def invalidate_tokens(self, user_id, zone_id=None, zone_subdomain=None) -> None:
         """
         Invalidate all the tokens for a given user.
         Args:
