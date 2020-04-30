@@ -740,7 +740,7 @@ def create_app(env=os.environ):
 
         username = user['userName']
         g.totp.unset_totp_seed(username)
-        g.uaac.invalidate_tokens(token, decoded_token['user_id'])
+        g.uaac.invalidate_tokens(decoded_token['user_id'])
         session.clear()
         return render_template("reset_totp.html", login_link=app.config['UAA_URL'], reset_complete=True)
 
