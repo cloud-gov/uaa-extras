@@ -1,8 +1,11 @@
 import os
+import random
+import string
 
 from bs4 import BeautifulSoup
 import pytest
 
+from uaaextras.clients import UAAClient
 from .integration_test import IntegrationTestClient
 
 
@@ -18,16 +21,43 @@ def config():
             urls[url] = "https://" + urls[url]
     config["urls"] = urls
     config["idp_name"] = os.environ["IDP_NAME"]
+    config["uaa_client"] = os.environ["UAA_USER"]
+    config["uaa_secret"] = os.environ["UAA_SECRET"]
     return config
 
 
 @pytest.fixture
-def user():
+def uaa(config):
+    uaac = UAAClient(config["urls"]["uaa"], None, verify_tls=True)
+    token = uaac._get_client_token(config["uaa_client"], config["uaa_secret"])
+    uaac.token = token
+    return uaac
+
+
+@pytest.fixture
+def user(uaa, config):
     user = {}
-    user["name"] = os.environ["TEST_USERNAME"]
-    user["password"] = os.environ["TEST_PASSWORD"]
-    user["token"] = os.getenv("TEST_TOKEN")
-    return user
+    user["name"] = (
+        "noreply+" + "".join(random.choices(string.ascii_lowercase, k=8)) + "@cloud.gov"
+    )
+    user["password"] = "".join(
+        random.choices(
+            string.ascii_lowercase + string.ascii_uppercase + string.digits, k=20
+        )
+    )
+    r = uaa.create_user(
+        user["name"],
+        "unimportant",
+        "alsounimportant",
+        user["name"],
+        password=user["password"],
+        origin="cloud.gov",
+    )
+    uaa.set_temporary_password(
+        config["uaa_client"], config["uaa_secret"], user["name"], user["password"]
+    )
+    yield user
+    uaa.delete_user(r["id"])
 
 
 @pytest.fixture
@@ -43,11 +73,9 @@ def unauthenticated(config):
 
 @pytest.fixture
 def authenticated(unauthenticated, user):
-    token, changed = unauthenticated.log_in(
-        user["name"], user["password"], user["token"]
-    )
+    token, changed = unauthenticated.log_in(user["name"], user["password"])
     if changed:
-        os.environ["TEST_TOKEN"] = token
+        user["token"] = token
     return unauthenticated
 
 
@@ -68,7 +96,6 @@ def test_unauthenticated_pages_redirect(unauthenticated, page, config):
 def test_login_no_totp(unauthenticated, config, user):
     # log in to get/set our totp
     token, changed = unauthenticated.log_in(user["name"], user["password"])
-    os.environ["TEST_TOKEN"] = token
     assert changed
     # log out, so log in will work
     unauthenticated.log_out()

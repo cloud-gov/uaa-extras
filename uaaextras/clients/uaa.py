@@ -80,7 +80,6 @@ class UAAClient(object):
 
         for kk, vv in headers.items():
             int_headers[kk] = vv
-
         # make the request
         response = requests_method(
             endpoint,
@@ -398,7 +397,36 @@ class UAAClient(object):
 
         return False
 
-    def delete_user(self, client_id, client_secret, user_id):
+    def create_user(self, user_id, given_name, family_name, primary_email, password=None, origin=None):
+        """ Create a user in UAA
+        Args:
+            user_id
+            given_name
+            family_name
+            primary_email
+            password
+            origin
+        """
+        params = {
+            "name": {
+                "familyName": family_name,
+                "givenName": given_name,
+            },
+            "emails": [
+                {
+                    "primary": True,
+                    "value": primary_email
+                }
+            ],
+            "userName": user_id,
+        }
+        if password:
+            params['password'] = password
+        if origin:
+            params['origin'] = origin
+        return self._request("/Users", "POST", body=params)
+
+    def delete_user(self, user_id):
         """ Delete a user from UAA
 
         Args:
@@ -412,8 +440,7 @@ class UAAClient(object):
         Returns:
             dict:  A list of users matching list_filter
         """
-        token = self._get_client_token(client_id, client_secret)
-        return self._request(f'/Users/{user_id}', "DELETE", token=token)
+        return self._request(f'/Users/{user_id}', "DELETE")
 
     def invalidate_tokens(self, token, user_id, zone_id=None, zone_subdomain=None) -> None:
         """

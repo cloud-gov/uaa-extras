@@ -9,7 +9,6 @@ image_resource:
 inputs:
   - name: cg-uaa-extras-app
 params:
-  UAA_TARGET:
   UAA_USER:
   UAA_SECRET:
   UAA_URL:
@@ -17,4 +16,4 @@ params:
   EXTRAS_URL:
   IDP_NAME:
 run:
-  path: ./cg-uaa-extras-app/ci/integration_test.sh
+  path: ./cg-uaa-extras-app/integration_tests/run_integration_tests.sh
