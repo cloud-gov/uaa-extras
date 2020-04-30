@@ -45,7 +45,7 @@ class UAAClient(object):
         self.token = token
         self.verify_tls = verify_tls
 
-    def _request(self, resource, method, body=None, params=None, auth=None, headers=None):
+    def _request(self, resource, method, body=None, params=None, auth=None, headers=None, is_json=True):
         """Make a request to the UAA API.
 
         Args:
@@ -97,7 +97,9 @@ class UAAClient(object):
             raise UAAError(response)
 
         # return the response
-        return json.loads(response.text)
+        if is_json:
+            return json.loads(response.text)
+        return response.text
 
     def _get_client_token(self, client_id, client_secret):
         """ Returns the client credentials token
@@ -461,5 +463,6 @@ class UAAClient(object):
         self._request(
             urljoin('/oauth/token/revoke/user', user_id),
             'GET',
-            headers=headers
+            headers=headers,
+            is_json=False
         )
