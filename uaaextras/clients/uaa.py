@@ -45,7 +45,7 @@ class UAAClient(object):
         self.token = token
         self.verify_tls = verify_tls
 
-    def _request(self, resource, method, body=None, params=None, auth=None, headers={}):
+    def _request(self, resource, method, body=None, params=None, auth=None, headers=None):
         """Make a request to the UAA API.
 
         Args:
@@ -64,6 +64,8 @@ class UAAClient(object):
             dict:   The parsed json response
 
         """
+        if headers is None:
+            headers = {}
         # build our URL from all the pieces given to us
         endpoint = urljoin(
             self.base_url.rstrip('/'),
@@ -451,9 +453,8 @@ class UAAClient(object):
         Returns:
             None
         """
-        headers = None
+        headers = dict()
         if zone_id:
-            headers = dict()
             headers['X-Identity-Zone-Id'] = zone_id
             if zone_subdomain:
                 headers['X-Identity-Zone-Subdomain'] = zone_subdomain
