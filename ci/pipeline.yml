@@ -34,7 +34,6 @@ jobs:
   - task: integration-tests
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
-        UAA_TARGET: ((uaa-api-url-development))
         UAA_USER: uaa_extras_app
         UAA_SECRET: ((uaa-client-secret-development))
         UAA_URL: ((uaa-base-url-development))
@@ -96,7 +95,6 @@ jobs:
   - task: integration-tests
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
-        UAA_TARGET: ((uaa-api-url-staging))
         UAA_USER: uaa_extras_app
         UAA_SECRET: ((uaa-client-secret-staging))
         UAA_URL: ((uaa-base-url-staging))
