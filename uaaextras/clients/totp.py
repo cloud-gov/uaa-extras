@@ -2,7 +2,6 @@ from sqlalchemy.sql import text
 
 
 class TOTPClient:
-
     def __init__(self, db_engine) -> None:
         self.db_engine = db_engine
 
