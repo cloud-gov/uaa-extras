@@ -23,11 +23,12 @@ class UAAError(RuntimeError):
         response: The full response object that is causing this exception to be raised
 
     """
+
     def __init__(self, response):
         self.response = response
         self.error = json.loads(response.text)
 
-        message = self.error['error_description']
+        message = self.error["error_description"]
 
         super(UAAError, self).__init__(message)
 
@@ -40,12 +41,22 @@ class UAAClient(object):
         token: A bearer token.
         verify_tls: Do we validate certs when talking to UAA
     """
+
     def __init__(self, base_url, token, verify_tls=True):
         self.base_url = base_url
         self.token = token
         self.verify_tls = verify_tls
 
-    def _request(self, resource, method, body=None, params=None, auth=None, headers=None, is_json=True):
+    def _request(
+        self,
+        resource,
+        method,
+        body=None,
+        params=None,
+        auth=None,
+        headers=None,
+        is_json=True,
+    ):
         """Make a request to the UAA API.
 
         Args:
@@ -67,10 +78,7 @@ class UAAClient(object):
         if headers is None:
             headers = {}
         # build our URL from all the pieces given to us
-        endpoint = urljoin(
-            self.base_url.rstrip('/'),
-            resource.lstrip('/')
-        )
+        endpoint = urljoin(self.base_url.rstrip("/"), resource.lstrip("/"))
 
         # convert 'POST' to requests.post
         requests_method = getattr(requests, method.lower())
@@ -78,7 +86,7 @@ class UAAClient(object):
         int_headers = {}
 
         if self.token and auth is None:
-            int_headers['Authorization'] = 'Bearer ' + self.token
+            int_headers["Authorization"] = "Bearer " + self.token
 
         for kk, vv in headers.items():
             int_headers[kk] = vv
@@ -89,7 +97,7 @@ class UAAClient(object):
             json=body,
             verify=self.verify_tls,
             headers=int_headers,
-            auth=auth
+            auth=auth,
         )
 
         # if we errored raise an exception
@@ -116,15 +124,12 @@ class UAAClient(object):
 
         """
         response = self._request(
-            '/oauth/token',
-            'POST',
-            params={
-                'grant_type': 'client_credentials',
-                'response_type': 'token'
-            },
-            auth=HTTPBasicAuth(client_id, client_secret)
+            "/oauth/token",
+            "POST",
+            params={"grant_type": "client_credentials", "response_type": "token"},
+            auth=HTTPBasicAuth(client_id, client_secret),
         )
-        return response.get('access_token', None)
+        return response.get("access_token", None)
 
     def idps(self, active_only=True):
         """Return a list of IDPs from UAA
@@ -140,7 +145,11 @@ class UAAClient(object):
 
         """
 
-        return self._request('/identity-providers', 'GET', params={'active_only': str(active_only).lower()})
+        return self._request(
+            "/identity-providers",
+            "GET",
+            params={"active_only": str(active_only).lower()},
+        )
 
     def users(self, list_filter=None, token=None, start=1):
         """Return a list of users from UAA
@@ -158,13 +167,13 @@ class UAAClient(object):
         """
 
         headers = {}
-        params = {'startIndex': start}
+        params = {"startIndex": start}
         if list_filter:
-            params['filter'] = list_filter
+            params["filter"] = list_filter
         if token:
-            headers = {'Authorization': 'Bearer ' + token}
+            headers = {"Authorization": "Bearer " + token}
 
-        return self._request('/Users', 'GET', params=params, headers=headers)
+        return self._request("/Users", "GET", params=params, headers=headers)
 
     def client_users(self, client_id, client_secret, list_filter=None, start=1):
         """ Return a list of users from UAA with client credentials
@@ -197,7 +206,7 @@ class UAAClient(object):
 
         """
 
-        return self._request(urljoin('/Users', user_id), 'GET')
+        return self._request(urljoin("/Users", user_id), "GET")
 
     def put_user(self, user):
         """Update a user in UAAA
@@ -214,10 +223,10 @@ class UAAClient(object):
         """
 
         return self._request(
-            urljoin('/Users', user['id']),
-            'PUT',
+            urljoin("/Users", user["id"]),
+            "PUT",
             body=user,
-            headers={'If-Match': str(user['meta']['version'])}
+            headers={"If-Match": str(user["meta"]["version"])},
         )
 
     def client_invite_users(self, client_id, client_secret, email, redirect_uri):
@@ -260,18 +269,14 @@ class UAAClient(object):
             email = [email]
 
         if token:
-            headers = {'Authorization': 'Bearer ' + token}
+            headers = {"Authorization": "Bearer " + token}
 
         return self._request(
-            '/invite_users',
-            'POST',
-            params={
-                'redirect_uri': redirect_uri
-            },
+            "/invite_users",
+            "POST",
+            params={"redirect_uri": redirect_uri},
             headers=headers,
-            body={
-                'emails': email
-            }
+            body={"emails": email},
         )
 
     def decode_access_token(self, token):
@@ -284,11 +289,11 @@ class UAAClient(object):
             dict: An object representing the decoded access token.
 
         """
-        payload = token.split('.')[1]
+        payload = token.split(".")[1]
         missing_padding = len(payload) % 4
         if missing_padding != 0:
-            payload += '=' * (4 - missing_padding)
-        decoded_token = str(base64.b64decode(payload), 'utf-8')
+            payload += "=" * (4 - missing_padding)
+        decoded_token = str(base64.b64decode(payload), "utf-8")
         return json.loads(decoded_token)
 
     def oauth_token(self, code, client_id, client_secret):
@@ -309,14 +314,14 @@ class UAAClient(object):
         """
 
         return self._request(
-            '/oauth/token',
-            'POST',
+            "/oauth/token",
+            "POST",
             params={
-                'code': code,
-                'grant_type': 'authorization_code',
-                'response_type': 'token'
+                "code": code,
+                "grant_type": "authorization_code",
+                "response_type": "token",
             },
-            auth=HTTPBasicAuth(client_id, client_secret)
+            auth=HTTPBasicAuth(client_id, client_secret),
         )
 
     def change_password(self, user_id, old_password, new_password):
@@ -334,12 +339,9 @@ class UAAClient(object):
             dict: an object representing the response with user_id and code
         """
         return self._request(
-            urljoin('/Users', user_id, 'password'),
-            'PUT',
-            body={
-                'oldPassword': old_password,
-                'password': new_password
-            }
+            urljoin("/Users", user_id, "password"),
+            "PUT",
+            body={"oldPassword": old_password, "password": new_password},
         )
 
     def set_temporary_password(self, client_id, client_secret, username, new_password):
@@ -360,18 +362,14 @@ class UAAClient(object):
         list_filter = 'userName eq "{0}"'.format(username)
         userList = self.client_users(client_id, client_secret, list_filter=list_filter)
 
-        if len(userList['resources']) > 0:
-            user_id = userList['resources'][0]['id']
+        if len(userList["resources"]) > 0:
+            user_id = userList["resources"][0]["id"]
             token = self._get_client_token(client_id, client_secret)
             self._request(
-                urljoin('/Users', user_id, 'password'),
-                'PUT',
-                body={
-                    'password': new_password
-                },
-                headers={
-                    'Authorization': 'Bearer ' + token
-                }
+                urljoin("/Users", user_id, "password"),
+                "PUT",
+                body={"password": new_password},
+                headers={"Authorization": "Bearer " + token},
             )
             return True
 
@@ -396,12 +394,20 @@ class UAAClient(object):
         list_filter = 'userName eq "{0}" and origin eq "{1}"'.format(username, origin)
         userList = self.client_users(client_id, client_secret, list_filter=list_filter)
 
-        if len(userList['resources']) > 0:
+        if len(userList["resources"]) > 0:
             return True
 
         return False
 
-    def create_user(self, user_id, given_name, family_name, primary_email, password=None, origin=None):
+    def create_user(
+        self,
+        user_id,
+        given_name,
+        family_name,
+        primary_email,
+        password=None,
+        origin=None,
+    ):
         """ Create a user in UAA
         Args:
             user_id
@@ -412,22 +418,14 @@ class UAAClient(object):
             origin
         """
         params = {
-            "name": {
-                "familyName": family_name,
-                "givenName": given_name,
-            },
-            "emails": [
-                {
-                    "primary": True,
-                    "value": primary_email
-                }
-            ],
+            "name": {"familyName": family_name, "givenName": given_name},
+            "emails": [{"primary": True, "value": primary_email}],
             "userName": user_id,
         }
         if password:
-            params['password'] = password
+            params["password"] = password
         if origin:
-            params['origin'] = origin
+            params["origin"] = origin
         return self._request("/Users", "POST", body=params)
 
     def delete_user(self, user_id):
@@ -444,7 +442,7 @@ class UAAClient(object):
         Returns:
             dict:  A list of users matching list_filter
         """
-        return self._request(f'/Users/{user_id}', "DELETE")
+        return self._request(f"/Users/{user_id}", "DELETE")
 
     def invalidate_tokens(self, user_id, zone_id=None, zone_subdomain=None) -> None:
         """
@@ -457,12 +455,12 @@ class UAAClient(object):
         """
         headers = dict()
         if zone_id:
-            headers['X-Identity-Zone-Id'] = zone_id
+            headers["X-Identity-Zone-Id"] = zone_id
             if zone_subdomain:
-                headers['X-Identity-Zone-Subdomain'] = zone_subdomain
+                headers["X-Identity-Zone-Subdomain"] = zone_subdomain
         self._request(
-            urljoin('/oauth/token/revoke/user', user_id),
-            'GET',
+            urljoin("/oauth/token/revoke/user", user_id),
+            "GET",
             headers=headers,
-            is_json=False
+            is_json=False,
         )
