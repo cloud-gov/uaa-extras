@@ -797,7 +797,7 @@ def create_app(env=os.environ):
             decoded_token = g.uaac.decode_access_token(token)
             user = g.uaac.get_user(decoded_token["user_id"])
         except:
-            return redirect(app.config['UAA_BASE_URL'])
+            return redirect(app.config["UAA_BASE_URL"])
 
         if user["origin"] != app.config["IDP_PROVIDER_ORIGIN"]:
             return redirect(url_for("index"))
