@@ -194,7 +194,6 @@ def send_email(app, email, subject, body):
     msg["From"] = app.config["SMTP_FROM"]
 
     s = smtplib.SMTP(app.config["SMTP_HOST"], app.config["SMTP_PORT"])
-    s.set_debuglevel(1)
 
     # if we have a cert, then trust it
     sslcontext = ssl.create_default_context()
