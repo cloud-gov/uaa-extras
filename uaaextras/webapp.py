@@ -272,8 +272,9 @@ def create_app(env=os.environ):
     app.config["VALID_FED_DOMAINS"] = tuple(domain_list)
 
     logging.info("Loaded application configuration:")
-    for ck in sorted(CONFIG_KEYS.keys()):
-        logging.info("{0}: {1}".format(ck, app.config[ck]))
+    if app.config.get("DEBUG"):
+        for ck in sorted(CONFIG_KEYS.keys()):
+            logging.info("{0}: {1}".format(ck, app.config[ck]))
 
     @app.before_request
     def have_uaa_and_csrf_token():
