@@ -795,11 +795,10 @@ def create_app(env=os.environ):
         token = session.get("UAA_TOKEN", None)
         try:
             decoded_token = g.uaac.decode_access_token(token)
+            user = g.uaac.get_user(decoded_token["user_id"])
         except:
-            logging.exception("An invalid access token was decoded")
-            return render_template("error/token_validation.html"), 401
+            return redirect(app.config["UAA_BASE_URL"])
 
-        user = g.uaac.get_user(decoded_token["user_id"])
         if user["origin"] != app.config["IDP_PROVIDER_ORIGIN"]:
             return redirect(url_for("index"))
 
