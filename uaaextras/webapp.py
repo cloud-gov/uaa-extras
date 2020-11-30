@@ -264,9 +264,8 @@ def create_app(env=os.environ):
     #   https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv
     # and place into 'static' dir
     domain_list = [".mil"]
-    with open(
-        os.path.join(app.config["APP_STATIC"], "current-federal.csv"), newline=""
-    ) as fed_gov_csv:
+    csv_path = os.path.join(app.config["APP_STATIC"], "current-federal.csv")
+    with open(csv_path, newline='', encoding='utf-8') as fed_gov_csv:
         for row in csv.reader(fed_gov_csv):
             domain_list.append(row[0].strip().rstrip().lower())
     app.config["VALID_FED_DOMAINS"] = tuple(domain_list)
