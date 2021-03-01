@@ -45,8 +45,23 @@ This project uses a `setup.py` to install dependencies. Run the following
 command to get started with development.
 
 ```shell
-python3 ./setup.py install
+python setup.py install
 ```
+
+If you run into an issue with `psycopg2` and you're working on a Mac running
+Catalina or higher, make sure you've done the following:
+
+- `brew install postgresql@12` and add the location to your path
+- `brew install openssl@1.1` and add the location to your path
+
+Note that `psycopg2` currently doesn't support PostgreSQL 13.x
+(https://www.psycopg.org/docs/install.html#prerequisites), and PostgreSQL 13.x
+isn't available in AWS GovCloud yet, either.
+
+Then export two environment variables in your current shell session:
+
+- `export LDFLAGS="-L/usr/local/opt/openssl/lib"`
+- `export CPPFLAGS="-I/usr/local/opt/openssl/include"`
 
 To get a local server up, run the following command. Make sure you
 properly setup the environment variables mentioned above in the
@@ -81,7 +96,12 @@ Tests are run using `tox` and `flake8`.
 pip install tox
 ```
 
-To run the tests, simply run `tox` from the root of the repository.
+To run the tests, simply run `tox` from the root of the repository. If you run
+into the same `psycopg2` setup issue as noted above in local development, make
+sure you've followed the same steps and add the following line to each env
+setting in the `tox.ini` file:
+
+`setenv = LDFLAGS = "-L/usr/local/opt/openssl/lib"`
 
 ### Deployment
 
