@@ -38,6 +38,7 @@ jobs:
         UAA_SECRET: ((uaa-client-secret-development))
         UAA_URL: ((uaa-base-url-development))
         IDP_URL: ((idp-base-url-development))
+        UAA_TARGET: ((uaa-target-url-development))
         EXTRAS_URL: ((uaa-extras-url-development))
         IDP_NAME: ((idp-provider-origin-development))
   on_failure:
@@ -99,6 +100,7 @@ jobs:
         UAA_SECRET: ((uaa-client-secret-staging))
         UAA_URL: ((uaa-base-url-staging))
         IDP_URL: ((idp-base-url-staging))
+        UAA_TARGET: ((uaa-target-url-staging))
         EXTRAS_URL: ((uaa-extras-url-staging))
         IDP_NAME: ((idp-provider-origin-staging))
   on_failure:
