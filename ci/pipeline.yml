@@ -185,7 +185,7 @@ resources:
   type: git
   source:
     uri: ((cg-uaa-extras-git-url))
-    branch: ((cg-uaa-exras-git-branch))
+    branch: ((cg-uaa-extras-git-branch))
 
 - name: cloud-gov-development
   type: cf
