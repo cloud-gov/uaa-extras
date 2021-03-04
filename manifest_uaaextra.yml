@@ -5,7 +5,7 @@ applications:
   buildpack: python_buildpack
   stack: cflinuxfs3
   services:
-  - redis-accounts
+  - redis-accounts-aws
   env:
     ENV: production
   #  UAA_BASE_URL: https://uaa.bosh-lite.com

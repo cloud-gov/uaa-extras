@@ -60,7 +60,7 @@ redis_env = dict(host="localhost", port=6379, password="")
 # Get Redis credentials
 if "VCAP_SERVICES" in os.environ:
     services = json.loads(os.getenv("VCAP_SERVICES"))
-    redis_info = services["redis32"][0]["credentials"]
+    redis_info = services["aws-elasticache-redis"][0]["credentials"]
 
     redis_env = {
         "host": redis_info["hostname"],
@@ -68,10 +68,12 @@ if "VCAP_SERVICES" in os.environ:
         "password": redis_info["password"],
         "socket_timeout": 0.5,
         "socket_connect_timeout": 0.5,
+        "ssl": True,
+        "ssl_cert_reqs": None,
     }
 
 # Connect to redis
-r = redis.StrictRedis(**redis_env)
+r = redis.Redis(**redis_env)
 
 uaadb_engine = create_engine(os.getenv("UAADB_CONNECTION_STRING", "sqlite:///:memory:"))
 

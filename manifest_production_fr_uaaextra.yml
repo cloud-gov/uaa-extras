@@ -7,6 +7,6 @@ applications:
   stack: cflinuxfs3
   instances: 2
   services:
-  - redis-accounts
+  - redis-accounts-aws
   env:
     ENV: production
