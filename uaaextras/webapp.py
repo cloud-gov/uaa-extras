@@ -35,6 +35,7 @@ CONFIG_KEYS = {
     "BRANDING_COMPANY_NAME": "Cloud Foundry",
     "IDP_PROVIDER_ORIGIN": "idp.com",
     "IDP_PROVIDER_URL": "https://idp.bosh-lite.com",
+    "MAINTENANCE_MODE": False,
 }
 
 UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
@@ -276,6 +277,20 @@ def create_app(env=os.environ):
     if app.config.get("DEBUG"):
         for ck in sorted(CONFIG_KEYS.keys()):
             logging.info("{0}: {1}".format(ck, app.config[ck]))
+
+    @app.before_request
+    def check_maintenance_mode():
+        """
+        Before each request, check to see if we're in maintenance mode.
+
+        If we are, redirect all requests to the maintenance page to ensure users
+        don't try and perform any actions that the system will not support while
+        services are unavailable.
+        """
+
+        if app.config['MAINTENANCE_MODE']:
+            logging.warning('UAA Extras is currently in maintenance mode.')
+            return render_template("maintenance.html"), 200
 
     @app.before_request
     def have_uaa_and_csrf_token():

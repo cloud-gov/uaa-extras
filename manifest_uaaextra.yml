@@ -20,3 +20,4 @@ applications:
   #  BRANDING_COMPANY_NAME: Testoku
   #  IDP_PROVIDER_ORIGIN: my.idp.com
   #  IDP_PROVIDER_URL: https://idp.bosh-lite.com
+  #  MAINTENANCE_MODE: False
