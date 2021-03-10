@@ -166,6 +166,46 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with("error/missing_scope.html")
 
     @patch("uaaextras.webapp.render_template")
+    def test_maintenance_mode(self, render_template):
+        """When any request is made while the app is in maintenance mode, the
+        maintenance.html template is displayed"""
+
+        render_template.return_value = "template output"
+
+        app.config['MAINTENANCE_MODE'] = True
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess["UAA_TOKEN"] = "foo"
+
+            sample_get_request_paths = [
+                '/',
+                '/oauth_login',
+                '/forgot_password',
+                '/redeem_invite',
+                '/reset_password',
+                '/signup',
+                '/static',
+            ]
+
+            sample_post_request_paths = [
+                ("/invite", {"email": "", "_csrf_token": "bar"}),
+                ("/signup", {"email": "", "_csrf_token": "bar"}),
+            ]
+
+            for path in sample_get_request_paths:
+                rv = c.get(path)
+                assert rv.status_code == 200
+                render_template.assert_called_with('maintenance.html')
+
+            for path in sample_post_request_paths:
+                rv = c.post(path[0], data=path[1])
+                assert rv.status_code == 200
+                render_template.assert_called_with('maintenance.html')
+
+        app.config['MAINTENANCE_MODE'] = False
+
+    @patch("uaaextras.webapp.render_template")
     def test_get_index(self, render_template):
         """When a GET request is made to /, the index.html template is displayed"""
 
