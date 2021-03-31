@@ -317,8 +317,14 @@ def create_app(env=os.environ):
         # check our token, and expirary date
         token = session.get("UAA_TOKEN", None)
 
+        token_checking_client = UAAClient(
+                app.config["UAA_BASE_URL"],
+                None,
+                verify_tls=app.config["UAA_VERIFY_TLS"],
+            )
+
         # if all looks good, setup the client
-        if token:
+        if token and token_checking_client.check_token_valid(token, app.config["CLIENT_ID"], app.config["CLIENT_SECRET"]):
             g.uaac = UAAClient(
                 app.config["UAA_BASE_URL"],
                 session["UAA_TOKEN"],
