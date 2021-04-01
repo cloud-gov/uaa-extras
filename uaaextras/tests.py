@@ -11,6 +11,7 @@ import flask
 from flask import appcontext_pushed
 from mock import Mock, patch
 from requests.auth import HTTPBasicAuth
+import requests_mock
 
 import sqlalchemy
 
@@ -32,6 +33,7 @@ def uaac_set(app, uaac=Mock()):
 
 
 class TestAppConfig(unittest.TestCase):
+
     def test_str_bool(self):
         """Strings are apprpriate converted to booleans"""
 
@@ -117,11 +119,13 @@ class TestAppConfig(unittest.TestCase):
         smtplib.SMTP().login.assert_called_with("user", "pass")
 
     @patch("uaaextras.webapp.render_template")
-    def test_csrf_token(self, render_template):
+    @requests_mock.Mocker(kw="m")
+    def test_csrf_token(self, render_template, m):
         """When a post request is made with a missing or invalid csrf token,
         the error/csrf.html template is displayed
         """
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         with app.test_client() as c:
@@ -206,9 +210,11 @@ class TestAppConfig(unittest.TestCase):
         app.config['MAINTENANCE_MODE'] = False
 
     @patch("uaaextras.webapp.render_template")
-    def test_get_index(self, render_template):
+    @requests_mock.Mocker(kw="m")
+    def test_get_index(self, render_template, m):
         """When a GET request is made to /, the index.html template is displayed"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         with app.test_client() as c:
@@ -220,9 +226,11 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with("index.html")
 
     @patch("uaaextras.webapp.render_template")
-    def test_get_invite(self, render_template):
+    @requests_mock.Mocker(kw="m")
+    def test_get_invite(self, render_template, m):
         """When a GET request is made to /invite, the invite.html template is displayed"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         with app.test_client() as c:
@@ -235,9 +243,11 @@ class TestAppConfig(unittest.TestCase):
 
     @patch("uaaextras.webapp.flash")
     @patch("uaaextras.webapp.render_template")
-    def test_invite_bad_email(self, render_template, flash):
+    @requests_mock.Mocker(kw="m")
+    def test_invite_bad_email(self, render_template, flash, m):
         """When an email is blank or invalid, the error is flashed to the user"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         with app.test_client() as c:
@@ -263,9 +273,11 @@ class TestAppConfig(unittest.TestCase):
 
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
-    def test_invite_error(self, render_template, uaac):
+    @requests_mock.Mocker(kw="m")
+    def test_invite_error(self, render_template, uaac, m):
         """When an error occurs during the invite process, the error/internal.html template is displayed"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         uaac().invite_users.return_value = {
             "failed_invites": [{"fail": "here"}],
             "new_invites": [],
@@ -294,6 +306,7 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.r")
     @patch("uaaextras.webapp.uuid")
     @patch("uaaextras.webapp.UAA_INVITE_EXPIRATION_IN_SECONDS")
+    @requests_mock.Mocker(kw="m")
     def test_invite_good(
         self,
         UAA_INVITE_EXPIRATION_IN_SECONDS,
@@ -303,9 +316,11 @@ class TestAppConfig(unittest.TestCase):
         send_email,
         smtplib,
         uaac,
+        m,
     ):
         """When an invite is sucessfully sent, the invite_sent template is displayed"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         uaac().invite_users.return_value = {
             "failed_invites": [],
             "new_invites": [{"inviteLink": "testLink", "some": "invite"}],
@@ -335,9 +350,11 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.flash")
     @patch("uaaextras.webapp.render_template")
-    def test_invite_user_exists(self, render_template, flash, uaac):
+    @requests_mock.Mocker(kw="m")
+    def test_invite_user_exists(self, render_template, flash, uaac, m):
         """When an user already exists during invite process, the invite.html template is displayed"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         uaac().does_origin_user_exist.return_value = True
 
         render_template.return_value = "template content"
@@ -355,9 +372,11 @@ class TestAppConfig(unittest.TestCase):
             flash.assert_called_once()
 
     @patch("uaaextras.webapp.render_template")
-    def test_get_signup(self, render_template):
+    @requests_mock.Mocker(kw="m")
+    def test_get_signup(self, render_template, m):
         """When a GET request is made to /signup, the signup.html template is displayed"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         with app.test_client() as c:
@@ -510,9 +529,11 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with("signup.html")
             flash.assert_called_once()
 
-    def test_logout_good(self):
+    @requests_mock.Mocker(kw="m")
+    def test_logout_good(self, m):
         """The session is cleared when logging out"""
 
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         with app.test_request_context("/logout"):
             with app.test_client() as c:
                 with c.session_transaction() as sess:
@@ -525,8 +546,10 @@ class TestAppConfig(unittest.TestCase):
                     assert sess.get("UAA_TOKEN") is None
 
     @patch("uaaextras.webapp.UAAClient")
-    def test_uaac_is_created_from_session(self, uaac):
+    @requests_mock.Mocker(kw="m")
+    def test_uaac_is_created_from_session(self, uaac, m):
         """When a request is made, and a valid session exists g.uaac is created"""
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         with app.test_request_context("/"):
             with app.test_client() as c:
                 with c.session_transaction() as sess:
@@ -582,10 +605,12 @@ class TestAppConfig(unittest.TestCase):
                 assert flask.session["UAA_TOKEN_SCOPES"] == ["scim.invite"]
 
     @patch("uaaextras.webapp.render_template")
-    def test_get_change_password(self, render_template):
+    @requests_mock.Mocker(kw="m")
+    def test_get_change_password(self, render_template, m):
         """ When a GET request is made to /change-password,
             the change_password.html template is displayed
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         with app.test_client() as c:
@@ -599,10 +624,12 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.flash")
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
-    def test_post_change_password_bad_zxcvbn(self, render_template, uaac, flash):
+    @requests_mock.Mocker(kw="m")
+    def test_post_change_password_bad_zxcvbn(self, render_template, uaac, flash, m):
         """When you give it a password that violates the zxcvbn function,
            it should let you know.
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         uaac().decode_access_token.return_value = {"user_id": "example"}
@@ -628,10 +655,12 @@ class TestAppConfig(unittest.TestCase):
 
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
-    def test_post_change_password_old_repeat(self, render_template, uaac):
+    @requests_mock.Mocker(kw="m")
+    def test_post_change_password_old_repeat(self, render_template, uaac, m):
         """When you give it a password that is the same as the previous one,
            it should not work.
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         uaac().decode_access_token.return_value = {"user_id": "example"}
@@ -656,10 +685,12 @@ class TestAppConfig(unittest.TestCase):
 
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
-    def test_post_change_password_bad_repeat(self, render_template, uaac):
+    @requests_mock.Mocker(kw="m")
+    def test_post_change_password_bad_repeat(self, render_template, uaac, m):
         """When you give it a password that is the same as the previous one,
            it should not work.
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         uaac().decode_access_token.return_value = {"user_id": "example"}
@@ -685,10 +716,12 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.flash")
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
-    def test_post_change_password_good(self, render_template, uaac, flash):
+    @requests_mock.Mocker(kw="m")
+    def test_post_change_password_good(self, render_template, uaac, flash, m):
         """If the password does not violate any of the bad password things,
            it should be accepted.
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
 
         uaac().decode_access_token.return_value = {"user_id": "example"}
@@ -717,10 +750,12 @@ class TestAppConfig(unittest.TestCase):
 
     @patch("uaaextras.webapp.redirect")
     @patch("uaaextras.webapp.UAAClient")
-    def test_first_login_with_idp_provider(self, uaac, redirect):
+    @requests_mock.Mocker(kw="m")
+    def test_first_login_with_idp_provider(self, uaac, redirect, m):
         """ When a GET request is made to /first-login,
             the user is redirected to IDP_PROVIDER_URL with an origin of 'uaa'
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         with app.test_client() as c:
             with c.session_transaction() as sess:
                 sess["UAA_TOKEN"] = "foo"
@@ -737,11 +772,13 @@ class TestAppConfig(unittest.TestCase):
 
     @patch("uaaextras.webapp.redirect")
     @patch("uaaextras.webapp.UAAClient")
-    def test_first_login_with_uaa_provider(self, uaac, redirect):
+    @requests_mock.Mocker(kw="m")
+    def test_first_login_with_uaa_provider(self, uaac, redirect, m):
         """ When a GET request is made to /first-login,
             the user is redirected to UAA_BASE_URL with an origin other
             than 'uaa'.
         """
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         with app.test_client() as c:
             with c.session_transaction() as sess:
                 sess["UAA_TOKEN"] = "foo"
@@ -1019,6 +1056,19 @@ class TestAppConfig(unittest.TestCase):
             redis_conn.get.assert_called_with("test@example.com")
             render_template.assert_called_with("reset_password.html")
             flash.assert_called_once()
+
+    @requests_mock.Mocker(kw="m")
+    def test_bad_token_redirects(self, m):
+        """The session is cleared when logging out"""
+
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": false}')
+        with app.test_request_context("/logout"):
+            with app.test_client() as c:
+                with c.session_transaction() as sess:
+                    sess["UAA_TOKEN"] = "foo"
+
+                rv = c.get("/")
+                assert rv.status_code == 302
 
 
 class TestUAAClient(unittest.TestCase):
@@ -1489,3 +1539,4 @@ class TestTOTPClient(unittest.TestCase):
     def test_delete_totp(self):
         self.client.unset_totp_seed("example@cloud.gov")
         assert self.client.get_user_totp_seed("example@cloud.gov") is None
+

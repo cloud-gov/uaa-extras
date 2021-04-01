@@ -22,5 +22,5 @@ setup(
         "psycopg2==2.8.6",
     ],
     test_suite="uaaextras.tests",
-    tests_require=["blinker", "httmock", "mock"],
+    tests_require=["blinker", "httmock", "mock", "requests_mock"],
 )
