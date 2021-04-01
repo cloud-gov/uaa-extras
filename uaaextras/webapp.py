@@ -333,7 +333,7 @@ def create_app(env=os.environ):
                 token,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
-            has_valid_token = g.uaac.check_token_valid(token)
+            has_valid_token = g.uaac.check_token_valid(token, app.config["UAA_CLIENT_ID"], app.config["UAA_CLIENT_SECRET"])
 
         if not has_valid_token:
             # if not forget the token, it's bad (if we have one)
