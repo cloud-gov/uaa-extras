@@ -311,6 +311,7 @@ def create_app(env=os.environ):
             "reset_password",
             "signup",
             "static",
+            "logout",
         ]:
             return
 
@@ -322,15 +323,19 @@ def create_app(env=os.environ):
                 None,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
+        
+        has_valid_token = False
 
         # if all looks good, setup the client
-        if token and token_checking_client.check_token_valid(token, app.config["CLIENT_ID"], app.config["CLIENT_SECRET"]):
+        if token:
             g.uaac = UAAClient(
                 app.config["UAA_BASE_URL"],
-                session["UAA_TOKEN"],
+                token,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
-        else:
+            has_valid_token = g.uaac.check_token_valid(token)
+
+        if not has_valid_token:
             # if not forget the token, it's bad (if we have one)
             session.clear()
             session["_endpoint"] = request.endpoint

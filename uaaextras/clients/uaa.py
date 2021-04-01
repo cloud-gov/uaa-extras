@@ -466,16 +466,15 @@ class UAAClient(object):
         )
 
 
-    def check_token_valid(self, maybe_valid_token, client_id, client_secret) -> bool:
+    def check_token_valid(self, maybe_valid_token) -> bool:
         """
         Check whether the provided token is valid, using the client_id and client_secret to authenticate
         """
-        our_token = self._get_client_token(client_id, client_secret)
         headers = {
-            "Authorization": f"bearer {our_token}",
+            "Authorization": f"bearer {maybe_valid_token}",
         }
         url = urljoin(self.base_url.rstrip("/"), "/introspect".lstrip("/"))
         response = requests.post(url, data={"token": maybe_valid_token}, headers=headers)
         if response.status_code != 200:
-            raise UAAError(response)
+            return False
         return response.json().get("active", False)
