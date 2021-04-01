@@ -10,6 +10,7 @@ import json
 import base64
 import requests
 from requests.auth import HTTPBasicAuth
+import logging
 
 
 class UAAError(RuntimeError):
@@ -466,15 +467,12 @@ class UAAClient(object):
         )
 
 
-    def check_token_valid(self, maybe_valid_token) -> bool:
+    def check_token_valid(self, maybe_valid_token, client_id, client_secret) -> bool:
         """
         Check whether the provided token is valid, using the client_id and client_secret to authenticate
         """
-        headers = {
-            "Authorization": f"bearer {maybe_valid_token}",
-        }
         url = urljoin(self.base_url.rstrip("/"), "/introspect".lstrip("/"))
-        response = requests.post(url, data={"token": maybe_valid_token}, headers=headers)
+        response = requests.post(url, data={"token": maybe_valid_token}, auth=HTTPBasicAuth(client_id, client_secret))
         if response.status_code != 200:
             return False
         return response.json().get("active", False)
