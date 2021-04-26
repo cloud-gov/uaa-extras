@@ -179,7 +179,7 @@ resources:
   type: git
   source:
     uri: https://github.com/cisagov/dotgov-data.git
-    branch: mamain
+    branch: main
 
 - name: cg-uaa-extras-app
   type: git
