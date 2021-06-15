@@ -10,8 +10,8 @@ setup(
     license="Public Domain",
     packages=find_packages(exclude=["integration_tests*", "test"]),
     install_requires=[
-        "gunicorn==20.0.4",
-        "flask==1.1.2",
+        "gunicorn==19.10.0",
+        "flask==1.1.0",
         "idna==2.10",
         "requests==2.25.1",
         "email_validator==1.1.2",
@@ -20,6 +20,8 @@ setup(
         "zxcvbn-python==4.4.24",
         "sqlalchemy==1.3.23",
         "psycopg2==2.8.6",
+        "werkzeug==1.0.1"
+        #"blinker", "httmock", "mock", "requests_mock"
     ],
     test_suite="uaaextras.tests",
     tests_require=["blinker", "httmock", "mock", "requests_mock"],
