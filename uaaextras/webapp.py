@@ -16,6 +16,7 @@ from talisman import Talisman
 from zxcvbn import zxcvbn
 
 from uaaextras.clients import UAAClient, UAAError, TOTPClient
+from uaaextras.validators import email_valid_for_domains
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 
@@ -266,7 +267,7 @@ def create_app(env=os.environ):
     # download current-federal.csv from
     #   https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv
     # and place into 'static' dir
-    domain_list = [".mil"]
+    domain_list = ["mil"]
     csv_path = os.path.join(app.config["APP_STATIC"], "current-federal.csv")
     with open(csv_path, newline='', encoding='utf-8') as fed_gov_csv:
         for row in csv.reader(fed_gov_csv):
@@ -442,7 +443,7 @@ def create_app(env=os.environ):
             flash(str(exc))
             return render_template("signup.html")
         # Check for feds here
-        if not email.endswith(app.config["VALID_FED_DOMAINS"]):
+        if not email_valid_for_domains(email, app.config["VALID_FED_DOMAINS"]):
             flash(
                 "This does not seem to be a U.S. federal government email address. "
                 "Self-service invitations are only offered for U.S. federal government email addresses. "
