@@ -63,10 +63,10 @@ jobs:
 - name: deploy-staging
   plan:
   - get: dotgov-domain-data
-    passed: [deploy-development]
+    # passed: [deploy-development]
     trigger: true
   - get: cg-uaa-extras-app
-    passed: [deploy-development]
+    # passed: [deploy-development]
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
