@@ -234,6 +234,7 @@ def create_app(env=os.environ):
             "img-src": ["'self'", "*.cloud.gov"],
             "style-src": ["'self'", "*.cloud.gov", "*.googleapis.com"],
             "font-src": ["'self'", "fonts.gstatic.com", "*.cloud.gov"],
+            "form-action": ["'self'", "*.cloud.gov"]
         }
         Talisman(app, content_security_policy=csp)
 
