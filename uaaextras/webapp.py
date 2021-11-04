@@ -219,8 +219,10 @@ def create_app(env=os.environ):
     """Create an instance of the web application"""
     # setup our app config
     app = Flask(__name__)
-    app.secret_key = (
-        os.environ.get("SECRET_KEY")
+    # use the supplied secret key, or make one up
+    app.secret_key = os.environ.get(
+        "FLASK_SECRET_KEY", 
+        codecs.encode(os.urandom(24), "base-64").decode("utf-8").strip()
     )
     app.jinja_env.globals["csrf_token"] = generate_csrf_token
 
