@@ -66,17 +66,13 @@ jobs:
 - name: deploy-staging
   plan:
   - get: dotgov-domain-data
-    # passed: [deploy-development]
+    passed: [deploy-development]
     trigger: true
   - get: cg-uaa-extras-app
-    # passed: [deploy-development]
+    passed: [deploy-development]
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
-  - task: test
-    input_mapping:
-      cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-staging
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
@@ -138,10 +134,6 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
-  - task: test
-    input_mapping:
-      cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-production
     params:
       manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
@@ -191,10 +183,6 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
-  - task: test
-    input_mapping:
-      cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-westb
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
