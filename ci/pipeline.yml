@@ -177,6 +177,59 @@ jobs:
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
+- name: deploy-westb
+  plan:
+  - get: dotgov-domain-data
+    passed: [deploy-staging]
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [deploy-staging]
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - task: test
+    input_mapping:
+      cg-uaa-extras-app: uaa-extras-integrated
+    file: cg-uaa-extras-app/ci/test.yml
+  - put: cloud-gov-westb
+    params:
+      manifest: cg-uaa-extras-app/manifest_westb_fr_uaaextra.yml
+      path: uaa-extras-integrated
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-westb))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-westb))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-westb))
+        SMTP_HOST: ((smtp-host-westb))
+        SMTP_PORT: ((smtp-port-westb))
+        SMTP_USER: ((smtp-user-westb))
+        SMTP_PASS: ((smtp-pass-westb))
+        SMTP_FROM: ((smtp-from-westb))
+        SMTP_CERT: ((smtp-cert-westb))
+        BRANDING_COMPANY_NAME: ((branding-company-name-westb))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-westb))
+        IDP_PROVIDER_URL: ((idp-provider-url-westb))
+        FLASK_SECRET_KEY: ((flask-secret-key-westb))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to westb
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to westb
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
 resources:
 - name: dotgov-domain-data
   type: git
@@ -216,6 +269,16 @@ resources:
     api: ((cf-api-url-production))
     username: ((cf-deploy-username-production))
     password: ((cf-deploy-password-production))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
+
+- name: cloud-gov-westb
+  type: cf
+  source:
+    api: ((cf-api-url-westb))
+    username: ((cf-deploy-username-westb))
+    password: ((cf-deploy-password-westb))
     organization: ((cf-organization))
     space: ((cf-space))
     skip_cert_check: false
