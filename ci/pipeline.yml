@@ -16,6 +16,8 @@ jobs:
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
+      vars:
+        domain: dev.us-gov-west-1.aws-us-gov.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-development))
         UAA_CLIENT_ID: uaa_extras_app
@@ -79,6 +81,8 @@ jobs:
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
+      vars:
+        domain: fr-stage.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-staging))
         UAA_CLIENT_ID: uaa_extras_app
@@ -195,18 +199,20 @@ jobs:
     params:
       manifest: cg-uaa-extras-app/manifest_westb_fr_uaaextra.yml
       path: uaa-extras-integrated
+      vars:
+        domain: fr.wb.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-westb))
         UAA_CLIENT_ID: uaa_extras_app
         UAA_CLIENT_SECRET: ((uaa-client-secret-westb))
         UAA_VERIFY_TLS: "true"
         UAADB_CONNECTION_STRING: ((uaadb-connection-string-westb))
-        SMTP_HOST: ((smtp-host-westb))
-        SMTP_PORT: ((smtp-port-westb))
-        SMTP_USER: ((smtp-user-westb))
-        SMTP_PASS: ((smtp-pass-westb))
-        SMTP_FROM: ((smtp-from-westb))
-        SMTP_CERT: ((smtp-cert-westb))
+        SMTP_HOST: ((smtp-host-west))
+        SMTP_PORT: ((smtp-port-west))
+        SMTP_USER: ((smtp-user-west))
+        SMTP_PASS: ((smtp-pass-west))
+        SMTP_FROM: ((smtp-from-west))
+        SMTP_CERT: ((smtp-cert-west))
         BRANDING_COMPANY_NAME: ((branding-company-name-westb))
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-westb))
         IDP_PROVIDER_URL: ((idp-provider-url-westb))
