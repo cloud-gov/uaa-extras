@@ -197,7 +197,7 @@ jobs:
     file: cg-uaa-extras-app/ci/test.yml
   - put: cloud-gov-westb
     params:
-      manifest: cg-uaa-extras-app/manifest_westb_fr_uaaextra.yml
+      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
       vars:
         domain: fr.wb.cloud.gov
