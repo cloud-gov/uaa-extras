@@ -12,6 +12,16 @@ jobs:
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
     file: cg-uaa-extras-app/ci/test.yml
+  - put: create-db
+    resource: cf-cli-dev
+    params: &db-params
+      command: create-service
+      update_service: true
+      wait_for_service: true
+      timeout: 1200  
+      service_instance: redis-accounts-aws
+      service: aws-elasticache-redis
+      plan: redis-3node
   - put: cloud-gov-development
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
@@ -73,6 +83,10 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-staging
+    params:
+      <<: *db-params
   - put: cloud-gov-staging
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
@@ -134,6 +148,10 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-production
+    params:
+      <<: *db-params
   - put: cloud-gov-production
     params:
       manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
@@ -183,6 +201,10 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-westb
+    params:
+      <<: *db-params
   - put: cloud-gov-westb
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
@@ -282,8 +304,50 @@ resources:
   source:
     url: ((slack-webhook-url))
 
+- name: cf-cli-dev
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-dev))
+    username: ((cf-deploy-username-dev))
+    password: ((cf-deploy-password-dev))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-staging
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-staging))
+    username: ((cf-deploy-username-staging))
+    password: ((cf-deploy-password-staging))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-production
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-production))
+    username: ((cf-deploy-username-production))
+    password: ((cf-deploy-password-production))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-westb
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-westb))
+    username: ((cf-deploy-username-westb))
+    password: ((cf-deploy-password-westb))
+    org: ((cf-organization))
+    space: ((cf-space))
+
 resource_types:
 - name: slack-notification
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+
+- name: cf-cli-resource
+  type: docker-image
+  source:
+    repository: nulldriver/cf-cli-resource
+    tag: latest
