@@ -307,9 +307,9 @@ resources:
 - name: cf-cli-dev
   type: cf-cli-resource
   source:
-    api: ((cf-api-url-dev))
-    username: ((cf-deploy-username-dev))
-    password: ((cf-deploy-password-dev))
+    api: ((cf-api-url-development))
+    username: ((cf-deploy-username-development))
+    password: ((cf-deploy-password-development))
     org: ((cf-organization))
     space: ((cf-space))
 
