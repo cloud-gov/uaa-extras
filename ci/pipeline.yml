@@ -191,6 +191,58 @@ jobs:
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
+- name: deploy-easta
+  plan:
+  - get: dotgov-domain-data
+    passed: [deploy-staging]
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [deploy-staging]
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - put: cloud-gov-easta
+    params:
+      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
+      path: uaa-extras-integrated
+      vars:
+        domain: fr.ea.cloud.gov
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-easta))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-easta))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-easta))
+        SMTP_HOST: ((smtp-host-west))
+        SMTP_PORT: ((smtp-port-west))
+        SMTP_USER: ((smtp-user-west))
+        SMTP_PASS: ((smtp-pass-west))
+        SMTP_FROM: ((smtp-from-west))
+        SMTP_CERT: ((smtp-cert-west))
+        BRANDING_COMPANY_NAME: ((branding-company-name-easta))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-easta))
+        IDP_PROVIDER_URL: ((idp-provider-url-easta))
+        FLASK_SECRET_KEY: ((flask-secret-key-easta))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to easta
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to easta
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
+
 - name: deploy-westb
   plan:
   - get: dotgov-domain-data
