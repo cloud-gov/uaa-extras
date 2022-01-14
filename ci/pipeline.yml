@@ -201,6 +201,10 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-easta
+    params:
+      <<: *db-params
   - put: cloud-gov-easta
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
@@ -242,6 +246,60 @@ jobs:
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
+- name: deploy-eastb
+  plan:
+  - get: dotgov-domain-data
+    passed: [deploy-staging]
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [deploy-staging]
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-eastb
+    params:
+      <<: *db-params
+  - put: cloud-gov-eastb
+    params:
+      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
+      path: uaa-extras-integrated
+      vars:
+        domain: fr.ea.cloud.gov
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-eastb))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-eastb))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-eastb))
+        SMTP_HOST: ((smtp-host-east))
+        SMTP_PORT: ((smtp-port-east))
+        SMTP_USER: ((smtp-user-east))
+        SMTP_PASS: ((smtp-pass-east))
+        SMTP_FROM: ((smtp-from-east))
+        SMTP_CERT: ((smtp-cert-east))
+        BRANDING_COMPANY_NAME: ((branding-company-name-eastb))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-eastb))
+        IDP_PROVIDER_URL: ((idp-provider-url-eastb))
+        FLASK_SECRET_KEY: ((flask-secret-key-eastb))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to eastb
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to eastb
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
 - name: deploy-westb
   plan:
@@ -298,6 +356,61 @@ jobs:
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
+- name: deploy-westc
+  plan:
+  - get: dotgov-domain-data
+    passed: [deploy-staging]
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [deploy-staging]
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-westc
+    params:
+      <<: *db-params
+  - put: cloud-gov-westc
+    params:
+      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
+      path: uaa-extras-integrated
+      vars:
+        domain: fr.wb.cloud.gov
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-westc))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-westc))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-westc))
+        SMTP_HOST: ((smtp-host-west))
+        SMTP_PORT: ((smtp-port-west))
+        SMTP_USER: ((smtp-user-west))
+        SMTP_PASS: ((smtp-pass-west))
+        SMTP_FROM: ((smtp-from-west))
+        SMTP_CERT: ((smtp-cert-west))
+        BRANDING_COMPANY_NAME: ((branding-company-name-westc))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-westc))
+        IDP_PROVIDER_URL: ((idp-provider-url-westc))
+        FLASK_SECRET_KEY: ((flask-secret-key-westc))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to westc
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to westc
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: ((slack-channel))
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
 resources:
 - name: dotgov-domain-data
   type: git
@@ -341,12 +454,42 @@ resources:
     space: ((cf-space))
     skip_cert_check: false
 
+- name: cloud-gov-easta
+  type: cf
+  source:
+    api: ((cf-api-url-easta))
+    username: ((cf-deploy-username-easta))
+    password: ((cf-deploy-password-easta))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
+
+- name: cloud-gov-eastb
+  type: cf
+  source:
+    api: ((cf-api-url-eastb))
+    username: ((cf-deploy-username-eastb))
+    password: ((cf-deploy-password-eastb))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
+
 - name: cloud-gov-westb
   type: cf
   source:
     api: ((cf-api-url-westb))
     username: ((cf-deploy-username-westb))
     password: ((cf-deploy-password-westb))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
+
+- name: cloud-gov-westc
+  type: cf
+  source:
+    api: ((cf-api-url-westc))
+    username: ((cf-deploy-username-westc))
+    password: ((cf-deploy-password-westc))
     organization: ((cf-organization))
     space: ((cf-space))
     skip_cert_check: false
@@ -383,12 +526,39 @@ resources:
     org: ((cf-organization))
     space: ((cf-space))
 
+- name: cf-cli-easta
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-easta))
+    username: ((cf-deploy-username-easta))
+    password: ((cf-deploy-password-easta))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-eastb
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-eastb))
+    username: ((cf-deploy-username-eastb))
+    password: ((cf-deploy-password-eastb))
+    org: ((cf-organization))
+    space: ((cf-space))
+
 - name: cf-cli-westb
   type: cf-cli-resource
   source:
     api: ((cf-api-url-westb))
     username: ((cf-deploy-username-westb))
     password: ((cf-deploy-password-westb))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-westc
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-westc))
+    username: ((cf-deploy-username-westc))
+    password: ((cf-deploy-password-westc))
     org: ((cf-organization))
     space: ((cf-space))
 
