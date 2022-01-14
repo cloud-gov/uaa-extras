@@ -265,7 +265,7 @@ jobs:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
       vars:
-        domain: fr.ea.cloud.gov
+        domain: fr.eb.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-eastb))
         UAA_CLIENT_ID: uaa_extras_app
@@ -375,7 +375,7 @@ jobs:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
       vars:
-        domain: fr.wb.cloud.gov
+        domain: fr.wc.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-westc))
         UAA_CLIENT_ID: uaa_extras_app
