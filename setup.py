@@ -20,7 +20,8 @@ setup(
         "zxcvbn-python==4.4.24",
         "sqlalchemy==1.3.23",
         "psycopg2==2.8.6",
-        "werkzeug==1.0.1"
+        "werkzeug==1.0.1",
+        "cloudfoundry-client==1.26.0"
         #"blinker", "httmock", "mock", "requests_mock"
     ],
     test_suite="uaaextras.tests",
