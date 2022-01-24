@@ -10,7 +10,4 @@ def get_cf_client(target_endpoint, access_token):
     return client
 
 def is_org_manager(client, user_id):
-    if 'organization_manager' in client.v3.roles.list(user_guids=user_id):
-        return True
-    else:
-        return False
+    return 'organization_manager' in client.v3.roles.list(user_guids=user_id)
