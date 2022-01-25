@@ -191,112 +191,6 @@ jobs:
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
-- name: deploy-easta
-  plan:
-  - get: dotgov-domain-data
-    passed: [deploy-staging]
-    trigger: true
-  - get: cg-uaa-extras-app
-    passed: [deploy-staging]
-    trigger: true
-  - task: integrate-repos
-    file: cg-uaa-extras-app/ci/integrate.yml
-  - put: cloud-gov-easta
-    params:
-      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
-      path: uaa-extras-integrated
-      vars:
-        domain: fr.ea.cloud.gov
-      environment_variables:
-        UAA_BASE_URL: ((uaa-base-url-easta))
-        UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: ((uaa-client-secret-easta))
-        UAA_VERIFY_TLS: "true"
-        UAADB_CONNECTION_STRING: ((uaadb-connection-string-easta))
-        SMTP_HOST: ((smtp-host-east))
-        SMTP_PORT: ((smtp-port-east))
-        SMTP_USER: ((smtp-user-east))
-        SMTP_PASS: ((smtp-pass-east))
-        SMTP_FROM: ((smtp-from-east))
-        SMTP_CERT: ((smtp-cert-east))
-        BRANDING_COMPANY_NAME: ((branding-company-name-easta))
-        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-easta))
-        IDP_PROVIDER_URL: ((idp-provider-url-easta))
-        FLASK_SECRET_KEY: ((flask-secret-key-easta))
-  on_failure:
-    put: slack
-    params:
-      text: |
-        :x: FAILED to deploy cg-uaa-extras to easta
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
-  on_success:
-    put: slack
-    params:
-      text: |
-        :white_check_mark: Successfully deployed cg-uaa-extras to easta
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
-
-
-- name: deploy-westb
-  plan:
-  - get: dotgov-domain-data
-    passed: [deploy-staging]
-    trigger: true
-  - get: cg-uaa-extras-app
-    passed: [deploy-staging]
-    trigger: true
-  - task: integrate-repos
-    file: cg-uaa-extras-app/ci/integrate.yml
-  - put: create-db
-    resource: cf-cli-westb
-    params:
-      <<: *db-params
-  - put: cloud-gov-westb
-    params:
-      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
-      path: uaa-extras-integrated
-      vars:
-        domain: fr.wb.cloud.gov
-      environment_variables:
-        UAA_BASE_URL: ((uaa-base-url-westb))
-        UAA_CLIENT_ID: uaa_extras_app
-        UAA_CLIENT_SECRET: ((uaa-client-secret-westb))
-        UAA_VERIFY_TLS: "true"
-        UAADB_CONNECTION_STRING: ((uaadb-connection-string-westb))
-        SMTP_HOST: ((smtp-host-west))
-        SMTP_PORT: ((smtp-port-west))
-        SMTP_USER: ((smtp-user-west))
-        SMTP_PASS: ((smtp-pass-west))
-        SMTP_FROM: ((smtp-from-west))
-        SMTP_CERT: ((smtp-cert-west))
-        BRANDING_COMPANY_NAME: ((branding-company-name-westb))
-        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-westb))
-        IDP_PROVIDER_URL: ((idp-provider-url-westb))
-        FLASK_SECRET_KEY: ((flask-secret-key-westb))
-  on_failure:
-    put: slack
-    params:
-      text: |
-        :x: FAILED to deploy cg-uaa-extras to westb
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
-  on_success:
-    put: slack
-    params:
-      text: |
-        :white_check_mark: Successfully deployed cg-uaa-extras to westb
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
 
 resources:
 - name: dotgov-domain-data
@@ -341,16 +235,6 @@ resources:
     space: ((cf-space))
     skip_cert_check: false
 
-- name: cloud-gov-westb
-  type: cf
-  source:
-    api: ((cf-api-url-westb))
-    username: ((cf-deploy-username-westb))
-    password: ((cf-deploy-password-westb))
-    organization: ((cf-organization))
-    space: ((cf-space))
-    skip_cert_check: false
-
 - name: slack
   type: slack-notification
   source:
@@ -383,14 +267,6 @@ resources:
     org: ((cf-organization))
     space: ((cf-space))
 
-- name: cf-cli-westb
-  type: cf-cli-resource
-  source:
-    api: ((cf-api-url-westb))
-    username: ((cf-deploy-username-westb))
-    password: ((cf-deploy-password-westb))
-    org: ((cf-organization))
-    space: ((cf-space))
 
 resource_types:
 - name: slack-notification
