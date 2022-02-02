@@ -15,7 +15,7 @@ from sqlalchemy import create_engine
 from talisman import Talisman
 from zxcvbn import zxcvbn
 
-from uaaextras.clients import UAAClient, UAAError, TOTPClient, cf
+from uaaextras.clients import UAAClient, UAAError, TOTPClient, CFClient
 from uaaextras.validators import email_valid_for_domains
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -37,7 +37,9 @@ CONFIG_KEYS = {
     "IDP_PROVIDER_ORIGIN": "idp.com",
     "IDP_PROVIDER_URL": "https://idp.bosh-lite.com",
     "MAINTENANCE_MODE": False,
-    "CF_API_URL": None,
+    "CF_API_URL": "https://api.bosh-lite.com",
+    "CF_USER": None,
+    "CF_PASS": None
 }
 
 UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
@@ -519,8 +521,8 @@ def create_app(env=os.environ):
         user_id = decoded_token["user_id"]
 
         #check for org_manager role
-        cf_client = cf.get_cf_client(app.config["CF_API_URL"], token)
-        if not cf.is_org_manager(cf_client, user_id):
+        cf_client = CFClient(app.config["CF_API_URL"], app.config["CF_USER"], app.config["CF_PASS"])
+        if not cf_client.is_org_manager(cf_client._get_cf_client(), user_id):
             logging.info('non-org-manager attempted user invite')
             flash("You must be an org manager to invite a user.")
             return render_template("invite.html")

@@ -4,10 +4,24 @@ from cloudfoundry_client.errors import InvalidStatusCode
 
 logger = logging.getLogger(__name__)
 
-def get_cf_client(target_endpoint, access_token):
-    client = CloudFoundryClient(target_endpoint)
-    client._access_token = access_token
-    return client
+class CFClient(object):
+    """
+    A minimal client for CF
+    """
 
-def is_org_manager(client, user_id):
-    return 'organization_manager' in client.v3.roles.list(user_guids=user_id)
+    def __init__(self, target_endpoint, cf_user, cf_pass):
+        self.target_endpoint = target_endpoint
+        self.cf_user = cf_user
+        self.cf_pass = cf_pass
+
+    def _get_cf_client(self):
+        client = CloudFoundryClient(self.target_endpoint)
+        client.init_with_user_credentials(self.cf_user, self.cf_pass)
+        return client
+
+    def is_org_manager(self, client, user_id):
+        for role in client.v3.roles.list(user_guids=user_id):
+            if role['type'] == 'organization_manager':
+                return True
+        return False
+    
