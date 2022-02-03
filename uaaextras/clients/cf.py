@@ -24,4 +24,3 @@ class CFClient(object):
             if role['type'] == 'organization_manager':
                 return True
         return False
-    
