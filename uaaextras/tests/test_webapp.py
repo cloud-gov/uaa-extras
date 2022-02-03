@@ -1609,5 +1609,5 @@ class TestCFClient(unittest.TestCase):
         cf_client = CFClient("http://example.com", "cfuser", "cfpass")
         cf_client = m
         cf_client._get_cf_client()
-        cf_client.is_org_manager(cf_client._get_cf_client(self), "user_id").return_value = True
+        cf_client.is_org_manager(cf_client._get_cf_client(self), "user_id")
         cf_client.is_org_manager.assert_called_with(cf_client._get_cf_client(self), "user_id")
