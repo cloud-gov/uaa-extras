@@ -1596,18 +1596,17 @@ class TestTOTPClient(unittest.TestCase):
 class TestCFClient(unittest.TestCase):
 
     def test_create_cf_client(self):
-        """test creating a cf client"""
+        """Creating a cf client"""
         m = Mock()
-        cf_client = CFClient("http://example.com", "cfuser", "cfpass")
+        cf_client = CFClient("http://example.com", "token")
         cf_client = m
         cf_client._get_cf_client()
         cf_client._get_cf_client.assert_called
 
     def test_get_org_manager(self):
-        """test calling is_org_manager"""
+        """Calling is_org_manager on the cf client"""
         m = Mock()
-        cf_client = CFClient("http://example.com", "cfuser", "cfpass")
+        cf_client = CFClient("http://example.com", "token")
         cf_client = m
-        cf_client._get_cf_client()
-        cf_client.is_org_manager(cf_client._get_cf_client(self), "user_id")
-        cf_client.is_org_manager.assert_called_with(cf_client._get_cf_client(self), "user_id")
+        cf_client.is_org_manager(cf_client._get_cf_client(), "user_id")
+        cf_client.is_org_manager.assert_called_with(cf_client._get_cf_client(), "user_id")

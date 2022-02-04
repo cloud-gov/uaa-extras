@@ -11,6 +11,7 @@ import ssl
 import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from markupsafe import Markup
 from sqlalchemy import create_engine
 from talisman import Talisman
 from zxcvbn import zxcvbn
@@ -37,9 +38,7 @@ CONFIG_KEYS = {
     "IDP_PROVIDER_ORIGIN": "idp.com",
     "IDP_PROVIDER_URL": "https://idp.bosh-lite.com",
     "MAINTENANCE_MODE": False,
-    "CF_API_URL": "https://api.bosh-lite.com",
-    "CF_USER": None,
-    "CF_PASS": None
+    "CF_API_URL": "https://api.bosh-lite.com"
 }
 
 UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
@@ -521,10 +520,10 @@ def create_app(env=os.environ):
         user_id = decoded_token["user_id"]
 
         #check for org_manager role
-        cf_client = CFClient(app.config["CF_API_URL"], app.config["CF_USER"], app.config["CF_PASS"])
+        cf_client = CFClient(app.config["CF_API_URL"], token)
         if not cf_client.is_org_manager(cf_client._get_cf_client(), user_id):
             logging.info('non-org-manager attempted user invite')
-            flash("You must be an org manager to invite a user.")
+            flash(Markup('Only organization managers can invite users. See our documentation <a href="https://cloud.gov/docs/orgs-spaces/new-org/#org-manager-email">here</a>'))
             return render_template("invite.html")
 
         # validate the email address

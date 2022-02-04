@@ -9,14 +9,13 @@ class CFClient(object):
     A minimal client for CF
     """
 
-    def __init__(self, target_endpoint, cf_user, cf_pass):
+    def __init__(self, target_endpoint, token):
         self.target_endpoint = target_endpoint
-        self.cf_user = cf_user
-        self.cf_pass = cf_pass
+        self.token = token
 
     def _get_cf_client(self):
         client = CloudFoundryClient(self.target_endpoint)
-        client.init_with_user_credentials(self.cf_user, self.cf_pass)
+        client._access_token = self.token
         return client
 
     def is_org_manager(self, client, user_id):
