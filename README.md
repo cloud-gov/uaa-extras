@@ -14,7 +14,7 @@ For example, if you'll be deploying into Cloudfoundry on BOSH-lite your url woul
 
 This application uses oauth to perform actions on your behalf in UAA.  To add a new oauth client in UAA, run the following command:
 
-	uaac client add uaa_extras_app --name "UAA Extras" --scope "scim.invite,password.write, cloud_controller.read" --authorized_grant_types "client_credentials,authorization_code" --authorities "scim.read,uaa.admin,password.write" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
+	uaac client add uaa_extras_app --name "UAA Extras" --scope "scim.invite,password.write,cloud_controller.read" --authorized_grant_types "client_credentials,authorization_code" --authorities "scim.read,uaa.admin,password.write" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
 
 Remember the client-secret, you'll need it in step four.
 
