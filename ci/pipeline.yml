@@ -12,10 +12,22 @@ jobs:
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
     file: cg-uaa-extras-app/ci/test.yml
+  - put: create-db
+    resource: cf-cli-dev
+    params: &db-params
+      command: create-service
+      update_service: true
+      wait_for_service: true
+      timeout: 1200  
+      service_instance: redis-accounts-aws
+      service: aws-elasticache-redis
+      plan: redis-3node
   - put: cloud-gov-development
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
+      vars:
+        domain: dev.us-gov-west-1.aws-us-gov.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-development))
         UAA_CLIENT_ID: uaa_extras_app
@@ -65,21 +77,23 @@ jobs:
 - name: deploy-staging
   plan:
   - get: dotgov-domain-data
-    # passed: [deploy-development]
+    passed: [deploy-development]
     trigger: true
   - get: cg-uaa-extras-app
-    # passed: [deploy-development]
+    passed: [deploy-development]
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
-  - task: test
-    input_mapping:
-      cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app/ci/test.yml
+  - put: create-db
+    resource: cf-cli-staging
+    params:
+      <<: *db-params
   - put: cloud-gov-staging
     params:
       manifest: cg-uaa-extras-app/manifest_uaaextra.yml
       path: uaa-extras-integrated
+      vars:
+        domain: fr-stage.cloud.gov
       environment_variables:
         UAA_BASE_URL: ((uaa-base-url-staging))
         UAA_CLIENT_ID: uaa_extras_app
@@ -136,10 +150,10 @@ jobs:
     trigger: true
   - task: integrate-repos
     file: cg-uaa-extras-app/ci/integrate.yml
-  - task: test
-    input_mapping:
-      cg-uaa-extras-app: uaa-extras-integrated
-    file: cg-uaa-extras-app/ci/test.yml
+  - put: create-db
+    resource: cf-cli-production
+    params:
+      <<: *db-params
   - put: cloud-gov-production
     params:
       manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
@@ -179,6 +193,7 @@ jobs:
       channel: ((slack-channel))
       username: ((slack-username))
       icon_url: ((slack-icon-url))
+
 
 resources:
 - name: dotgov-domain-data
@@ -228,8 +243,42 @@ resources:
   source:
     url: ((slack-webhook-url))
 
+- name: cf-cli-dev
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-development))
+    username: ((cf-deploy-username-development))
+    password: ((cf-deploy-password-development))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-staging
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-staging))
+    username: ((cf-deploy-username-staging))
+    password: ((cf-deploy-password-staging))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+- name: cf-cli-production
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-production))
+    username: ((cf-deploy-username-production))
+    password: ((cf-deploy-password-production))
+    org: ((cf-organization))
+    space: ((cf-space))
+
+
 resource_types:
 - name: slack-notification
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+
+- name: cf-cli-resource
+  type: docker-image
+  source:
+    repository: nulldriver/cf-cli-resource
+    tag: latest
