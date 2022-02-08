@@ -24,7 +24,8 @@ setup(
         "aiohttp==4.0.0a1",
         "async-timeout==3.0.1",
         "cloudfoundry-client==1.26.0",
-        "markupsafe==2.0.1"
+        "markupsafe==2.0.1",
+        "dataclasses==0.6"
         #"blinker", "httmock", "mock", "requests_mock"
     ],
     test_suite="uaaextras.tests",
