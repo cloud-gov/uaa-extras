@@ -21,6 +21,7 @@ setup(
         "sqlalchemy==1.3.23",
         "psycopg2==2.8.6",
         "werkzeug==1.0.1",
+        "aiohttp==4.0.0a1",
         "cloudfoundry-client==1.26.0"
         #"blinker", "httmock", "mock", "requests_mock"
     ],
