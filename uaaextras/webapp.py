@@ -11,11 +11,12 @@ import ssl
 import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
+from markupsafe import Markup
 from sqlalchemy import create_engine
 from talisman import Talisman
 from zxcvbn import zxcvbn
 
-from uaaextras.clients import UAAClient, UAAError, TOTPClient
+from uaaextras.clients import UAAClient, UAAError, TOTPClient, CFClient
 from uaaextras.validators import email_valid_for_domains
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
@@ -37,6 +38,7 @@ CONFIG_KEYS = {
     "IDP_PROVIDER_ORIGIN": "idp.com",
     "IDP_PROVIDER_URL": "https://idp.bosh-lite.com",
     "MAINTENANCE_MODE": False,
+    "CF_API_URL": "https://api.bosh-lite.com"
 }
 
 UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
@@ -505,6 +507,24 @@ def create_app(env=os.environ):
             return render_template("invite.html")
 
         # if we've reached here we are POST, and they've asked us to invite
+
+        # check our token, and expirary date
+        token = session.get("UAA_TOKEN", None)
+
+        try:
+            decoded_token = g.uaac.decode_access_token(token)
+        except:
+            logging.exception("An invalid access token was decoded")
+            return render_template("error/token_validation.html"), 401
+        
+        user_id = decoded_token["user_id"]
+
+        #check for org_manager role
+        cf_client = CFClient(app.config["CF_API_URL"], token)
+        if not cf_client.is_org_manager(cf_client._get_cf_client(), user_id):
+            logging.info('non-org-manager attempted user invite')
+            flash(Markup('Only organization managers can invite users. See our documentation <a href="https://cloud.gov/docs/orgs-spaces/new-org/#org-manager-email">here</a>'))
+            return render_template("invite.html")
 
         # validate the email address
         email = request.form.get("email", "")

@@ -16,7 +16,7 @@ import requests_mock
 import sqlalchemy
 
 from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS
-from uaaextras.clients import UAAError, UAAClient, TOTPClient
+from uaaextras.clients import UAAError, UAAClient, TOTPClient, CFClient
 
 app = create_app({"UAA_CLIENT_ID": "client-id", "UAA_CLIENT_SECRET": "client-secret"})
 
@@ -241,10 +241,12 @@ class TestAppConfig(unittest.TestCase):
             assert rv.status_code == 200
             render_template.assert_called_with("invite.html")
 
+    @patch("uaaextras.webapp.CFClient")
+    @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.flash")
     @patch("uaaextras.webapp.render_template")
     @requests_mock.Mocker(kw="m")
-    def test_invite_bad_email(self, render_template, flash, m):
+    def test_invite_bad_email(self, render_template, flash, uaac, cf, m):
         """When an email is blank or invalid, the error is flashed to the user"""
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
@@ -271,10 +273,58 @@ class TestAppConfig(unittest.TestCase):
             render_template.assert_called_with("invite.html")
             flash.assert_called_once()
 
+    @patch("uaaextras.webapp.CFClient")
+    @patch("uaaextras.webapp.UAAClient")
+    @patch("uaaextras.webapp.flash")
+    @patch("uaaextras.webapp.render_template")
+    @requests_mock.Mocker(kw="m")
+    def test_invite_from_non_org_manager(self, render_template, flash, uaac, cf, m):
+        """When a non org manager user tries to send an invite, the error is flashed to the user"""
+
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
+        render_template.return_value = "template output"
+        
+        cf().is_org_manager.return_value = False
+        assert cf().is_org_manager() == False
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess["UAA_TOKEN"] = "foo"
+                sess["_csrf_token"] = "bar"
+
+            rv = c.post("/invite", data={"email": "test@example.com", "_csrf_token": "bar"})
+            assert rv.status_code == 200
+            render_template.assert_called_with("invite.html")
+            flash.assert_called_once()
+
+    @patch("uaaextras.webapp.CFClient")
+    @patch("uaaextras.webapp.UAAClient")
+    @patch("uaaextras.webapp.flash")
+    @patch("uaaextras.webapp.render_template")
+    @requests_mock.Mocker(kw="m")
+    def test_invite_from_org_manager(self, render_template, flash, uaac, cf, m):
+        """When an org manager user tries to send an invite, the request should proceed"""
+
+        m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
+        render_template.return_value = "template output"
+        
+        cf().is_org_manager.return_value = True
+        assert cf().is_org_manager() == True
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess["UAA_TOKEN"] = "foo"
+                sess["_csrf_token"] = "bar"
+
+            rv = c.post("/invite", data={"email": "test@example.com", "_csrf_token": "bar"})
+            assert rv.status_code == 200
+            render_template.assert_called_with("invite.html")
+
+    @patch("uaaextras.webapp.CFClient")
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
     @requests_mock.Mocker(kw="m")
-    def test_invite_error(self, render_template, uaac, m):
+    def test_invite_error(self, render_template, uaac, cf, m):
         """When an error occurs during the invite process, the error/internal.html template is displayed"""
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
@@ -299,6 +349,7 @@ class TestAppConfig(unittest.TestCase):
 
             render_template.assert_called_with("error/internal.html")
 
+    @patch("uaaextras.webapp.CFClient")
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.smtplib")
     @patch("uaaextras.webapp.send_email")
@@ -316,6 +367,7 @@ class TestAppConfig(unittest.TestCase):
         send_email,
         smtplib,
         uaac,
+        cf,
         m,
     ):
         """When an invite is sucessfully sent, the invite_sent template is displayed"""
@@ -347,11 +399,12 @@ class TestAppConfig(unittest.TestCase):
         assert send_email.called
         assert send_email.call_count == 1
 
+    @patch("uaaextras.webapp.CFClient")
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.flash")
     @patch("uaaextras.webapp.render_template")
     @requests_mock.Mocker(kw="m")
-    def test_invite_user_exists(self, render_template, flash, uaac, m):
+    def test_invite_user_exists(self, render_template, flash, uaac, cf, m):
         """When an user already exists during invite process, the invite.html template is displayed"""
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
@@ -1540,3 +1593,20 @@ class TestTOTPClient(unittest.TestCase):
         self.client.unset_totp_seed("example@cloud.gov")
         assert self.client.get_user_totp_seed("example@cloud.gov") is None
 
+class TestCFClient(unittest.TestCase):
+
+    def test_create_cf_client(self):
+        """Creating a cf client"""
+        m = Mock()
+        cf_client = CFClient("http://example.com", "token")
+        cf_client = m
+        cf_client._get_cf_client()
+        cf_client._get_cf_client.assert_called
+
+    def test_get_org_manager(self):
+        """Calling is_org_manager on the cf client"""
+        m = Mock()
+        cf_client = CFClient("http://example.com", "token")
+        cf_client = m
+        cf_client.is_org_manager(cf_client._get_cf_client(), "user_id")
+        cf_client.is_org_manager.assert_called_with(cf_client._get_cf_client(), "user_id")

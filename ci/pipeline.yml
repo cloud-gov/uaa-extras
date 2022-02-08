@@ -44,6 +44,7 @@ jobs:
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
         IDP_PROVIDER_URL: ((idp-provider-url-development))
         FLASK_SECRET_KEY: ((flask-secret-key-development))
+        CF_API_URL: ((cf-api-url-development))
   - task: integration-tests
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
@@ -109,6 +110,7 @@ jobs:
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
         IDP_PROVIDER_URL: ((idp-provider-url-staging))
         FLASK_SECRET_KEY: ((flask-secret-key-staging))
+        CF_API_URL: ((cf-api-url-staging))
   - task: integration-tests
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
@@ -172,6 +174,7 @@ jobs:
         IDP_PROVIDER_ORIGIN: ((idp-provider-origin-production))
         IDP_PROVIDER_URL: ((idp-provider-url-production))
         FLASK_SECRET_KEY: ((flask-secret-key-production))
+        CF_API_URL: ((cf-api-url-production))
   on_failure:
     put: slack
     params:
