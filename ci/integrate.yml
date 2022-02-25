@@ -16,5 +16,5 @@ run:
   args:
   - -exc
   - |
-    /bin/cp -R ./cg-uaa-extras-app/* uaa-extras-integrated
+    /bin/cp ./cg-uaa-extras-app uaa-extras-integrated
     /bin/cp ./dotgov-domain-data/current-federal.csv uaa-extras-integrated/uaaextras/static
