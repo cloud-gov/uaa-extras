@@ -7,3 +7,4 @@ cloudfoundry-client
 gunicorn
 itsdangerous<=2.0.1 # pinning for import error
 email_validator
+psycopg2

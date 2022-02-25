@@ -63,6 +63,8 @@ polling2==0.5.0
     # via cloudfoundry-client
 protobuf==3.19.4
     # via cloudfoundry-client
+psycopg2==2.9.3
+    # via -r pip-tools/requirements.in
 pyparsing==3.0.7
     # via packaging
 pyyaml==6.0
