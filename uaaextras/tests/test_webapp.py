@@ -545,6 +545,16 @@ class TestAppConfig(unittest.TestCase):
                 sess["_csrf_token"] = "bar"
 
             rv = c.post(
+                "/signup", data={"email": "example@si.edu", "_csrf_token": "bar"}
+            )
+            assert rv.status_code == 200
+            render_template.assert_called_with("signup_invite_sent.html")
+
+        with app.test_client() as c:
+            with c.session_transaction() as sess:
+                sess["_csrf_token"] = "bar"
+
+            rv = c.post(
                 "/signup", data={"email": "example@mail.mil", "_csrf_token": "bar"}
             )
             assert rv.status_code == 200
