@@ -272,7 +272,7 @@ def create_app(env=os.environ):
     # download current-federal.csv from
     #   https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv
     # and place into 'static' dir
-    domain_list = ["mil"]
+    domain_list = ["mil", "si.edu"]
     csv_path = os.path.join(app.config["APP_STATIC"], "current-federal.csv")
     with open(csv_path, newline='', encoding='utf-8') as fed_gov_csv:
         for row in csv.reader(fed_gov_csv):
