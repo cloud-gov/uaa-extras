@@ -4,7 +4,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: 18fgsa/concourse-task
+    repository: python
+    tag: 3.10
 
 inputs:
   - name: uaa-extras-integrated
