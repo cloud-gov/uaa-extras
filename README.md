@@ -1,4 +1,4 @@
-# UAA Extras [![Code Climate](https://codeclimate.com/github/18F/cg-uaa-extras/badges/gpa.svg)](https://codeclimate.com/github/18F/cg-uaa-extras)
+# UAA Extras 
 
 This application recreates the invite functionality that previously existed in UAA by using the /invite_users API endpoint.
 
@@ -39,14 +39,34 @@ This app was designed to deploy in Cloud Foundry:
 
 	cf push
 
-##### Local Development
+## Local Development
 
-This project uses a `setup.py` to install dependencies. Run the following
-command to get started with development.
+Common development tasks are automated via the `dev` script.
 
-```shell
-python setup.py install
-```
+### Development quickstart
+
+1. Ensure you have pyenv and tox installed in isolated environments (e.g. install them with pipx)
+2. Run `./dev venv` to bootstrap your virtualenvironment
+3. Run tests with `./dev test`
+
+Run tests with `./dev test`
+
+### Dependency management
+
+This project uses `pip-tools` for dependency management. 
+
+Abstract requirements live in pip-tools/requirements.in and pip-tools/requirements-dev.in.
+Concrete requirements live in requirements.txt and requirements-dev.txt.
+
+To add new requirements or pin versions, edit pip-tools/requirements.in and/or pip-tools/requirements-dev.in
+then run `./dev update-requirements`
+
+To bump versions, run `./dev upgrade-requirements`
+
+After changing dependencies, you probably want to run `./dev clean`, which will recreate your virtuanenvironment
+and clear your tox cache.
+
+### Troubleshooting
 
 If you run into an issue with `psycopg2` and you're working on a Mac running
 Catalina or higher, make sure you've done the following:

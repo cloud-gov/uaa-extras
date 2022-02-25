@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+shopt -s inherit_errexit
+
+main() {
+  [[ $# -eq 0 ]] && usage "Expected command."
+  [[ -v DEBUG ]] && set -x
+  pushd "$(git rev-parse --show-toplevel)" >/dev/null
+  trap "popd > /dev/null" exit
+  export PIP_REQUIRE_VIRTUALENV=true
+  echo "using ${VENV:=./venv} as virtualenv base"
+
+  command="$1"
+  shift
+
+  case $command in
+    -h)
+      usage
+      ;;
+    test)
+      run_tox "$@"
+      ;;
+    upgrade-requirements)
+      upgrade-requirements "$@"
+      ;;
+    update-requirements)
+      update-requirements "$@"
+      ;;
+    venv)
+      create-venv
+      ;;
+    clean)
+      clean-env
+      ;;
+    *)
+      usage "Unknown command: $command"
+      ;;
+  esac
+}
+
+
+update-requirements() {
+    export CUSTOM_COMPILE_COMMAND="./dev update-requirements"
+    echo "Compiling requirements.txt"
+    ${VENV}/bin/python -m piptools compile \
+      --quiet \
+      --output-file=requirements.txt \
+      pip-tools/requirements.in
+
+    echo "Compiling dev-requirements.txt"
+    ${VENV}/bin/python -m piptools compile \
+      --quiet \
+      --output-file=requirements-dev.txt \
+      pip-tools/requirements-dev.in
+}
+
+upgrade-requirements(){
+    export CUSTOM_COMPILE_COMMAND="./dev update-requirements"
+    echo "Compiling requirements.txt"
+    ${VENV}/bin/python -m piptools compile --upgrade --output-file requirements.txt pip-tools/requirements.in
+    echo "Compiling dev-requirements.txt"
+    ${VENV}/bin/python -m piptools compile --upgrade --output-file requirements-dev.txt pip-tools/requirements-dev.in
+}
+
+run_tox() {
+    tox "$@"
+}
+
+create-venv() {
+    [[ -d ${VENV} ]] && return
+    pyenv install -s $(cat $(pyenv version-file))
+    pyenv exec python -m venv ${VENV}
+    ${VENV}/bin/python -m pip install pip-tools
+    ${VENV}/bin/python -m pip install -r requirements.txt
+}
+
+clean-env() {
+    rm -rf ${VENV}
+    rm -rf .tox
+    create-venv
+}
+
+usage() {
+    cat <<EOF
+USAGE: $0 COMMAND
+
+Run development tasks.
+
+Examples:
+    # Set up your virtual environment 
+    # you can control the location by setting VENV in your shell
+    # defaults to ./venv
+    $0 venv
+
+    # Generate the requirements*.txt files from pip-tools/*requirements.in
+    $0 update-requirements.txt
+
+    # Update versions on all requirements
+    $0 upgrade-requirements.txt
+
+EOF
+}
+
+main "$@"

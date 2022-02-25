@@ -1,0 +1,4 @@
+blinker
+httmock
+mock
+requests_mock
