@@ -4,7 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: themattrix/tox-base
+    repository: "python:3.10"
 
 inputs:
   - name: cg-uaa-extras-app
