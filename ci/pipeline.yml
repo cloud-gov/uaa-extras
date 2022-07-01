@@ -61,7 +61,7 @@ jobs:
       text: |
         :x: FAILED to deploy cg-uaa-extras to development
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
   on_success:
@@ -70,7 +70,7 @@ jobs:
       text: |
         :white_check_mark: Successfully deployed cg-uaa-extras to development
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
@@ -127,7 +127,7 @@ jobs:
       text: |
         :x: FAILED to deploy cg-uaa-extras to Staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
   on_success:
@@ -136,7 +136,7 @@ jobs:
       text: |
         :white_check_mark: Successfully deployed cg-uaa-extras to Staging
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
@@ -181,7 +181,7 @@ jobs:
       text: |
         :x: FAILED to deploy cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
   on_success:
@@ -190,7 +190,7 @@ jobs:
       text: |
         :white_check_mark: Successfully deployed cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: ((slack-channel))
+      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
@@ -205,6 +205,7 @@ resources:
 - name: cg-uaa-extras-app
   type: git
   source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
     uri: ((cg-uaa-extras-git-url))
     branch: ((cg-uaa-extras-git-branch))
 
