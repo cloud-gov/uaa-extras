@@ -1,283 +1,285 @@
 ---
 jobs:
-  - name: deploy-development
-    plan:
-      - get: dotgov-domain-data
-        trigger: true
-      - get: cg-uaa-extras-app
-        trigger: true
-      - task: integrate-repos
-        file: cg-uaa-extras-app/ci/integrate.yml
-      - task: test
-        input_mapping:
-          cg-uaa-extras-app: uaa-extras-integrated
-        file: cg-uaa-extras-app/ci/test.yml
-      - put: create-db
-        resource: cf-cli-dev
-        params: &db-params
-          command: create-service
-          update_service: true
-          wait_for_service: true
-          timeout: 1200
-          service_instance: redis-accounts-aws
-          service: aws-elasticache-redis
-          plan: redis-3node
-      - put: cloud-gov-development
-        params:
-          manifest: cg-uaa-extras-app/manifest_uaaextra.yml
-          path: uaa-extras-integrated
-          vars:
-            domain: dev.us-gov-west-1.aws-us-gov.cloud.gov
-          environment_variables:
-            UAA_BASE_URL: ((uaa-base-url-development))
-            UAA_CLIENT_ID: uaa_extras_app
-            UAA_CLIENT_SECRET: ((uaa-client-secret-development))
-            UAA_VERIFY_TLS: "true"
-            UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
-            SMTP_HOST: ((smtp-host))
-            SMTP_PORT: ((smtp-port))
-            SMTP_USER: ((smtp-user))
-            SMTP_PASS: ((smtp-pass))
-            SMTP_FROM: ((smtp-from))
-            SMTP_CERT: ((smtp-cert))
-            BRANDING_COMPANY_NAME: ((branding-company-name-development))
-            IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
-            IDP_PROVIDER_URL: ((idp-provider-url-development))
-            FLASK_SECRET_KEY: ((flask-secret-key-development))
-            CF_API_URL: ((cf-api-url-development))
-      - task: integration-tests
-        file: cg-uaa-extras-app/ci/integration_test.yml
-        params:
-          UAA_USER: uaa_extras_app
-          UAA_SECRET: ((uaa-client-secret-development))
-          UAA_URL: ((uaa-base-url-development))
-          IDP_URL: ((idp-base-url-development))
-          UAA_TARGET: ((uaa-target-url-development))
-          EXTRAS_URL: ((uaa-extras-url-development))
-          IDP_NAME: ((idp-provider-origin-development))
-    on_failure:
-      put: slack
-      params:
-        text: |
-          :x: FAILED to deploy cg-uaa-extras to development
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: "#cg-platform-news"
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
-    on_success:
-      put: slack
-      params:
-        text: |
-          :white_check_mark: Successfully deployed cg-uaa-extras to development
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: "#cg-platform-news"
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
+- name: deploy-development
+  plan:
+  - get: dotgov-domain-data
+    trigger: true
+  - get: cg-uaa-extras-app
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - task: test
+    input_mapping:
+      cg-uaa-extras-app: uaa-extras-integrated
+    file: cg-uaa-extras-app/ci/test.yml
+  - put: create-db
+    resource: cf-cli-dev
+    params: &db-params
+      command: create-service
+      update_service: true
+      wait_for_service: true
+      timeout: 1200  
+      service_instance: redis-accounts-aws
+      service: aws-elasticache-redis
+      plan: redis-3node
+  - put: cloud-gov-development
+    params:
+      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
+      path: uaa-extras-integrated
+      vars:
+        domain: dev.us-gov-west-1.aws-us-gov.cloud.gov
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-development))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-development))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-development))
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-development))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-development))
+        IDP_PROVIDER_URL: ((idp-provider-url-development))
+        FLASK_SECRET_KEY: ((flask-secret-key-development))
+        CF_API_URL: ((cf-api-url-development))
+  - task: integration-tests
+    file: cg-uaa-extras-app/ci/integration_test.yml
+    params:
+        UAA_USER: uaa_extras_app
+        UAA_SECRET: ((uaa-client-secret-development))
+        UAA_URL: ((uaa-base-url-development))
+        IDP_URL: ((idp-base-url-development))
+        UAA_TARGET: ((uaa-target-url-development))
+        EXTRAS_URL: ((uaa-extras-url-development))
+        IDP_NAME: ((idp-provider-origin-development))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to development
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: '#cg-platform-news'
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to development
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: '#cg-platform-news'
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
-  - name: deploy-staging
-    plan:
-      - get: dotgov-domain-data
-        passed: [deploy-development]
-        trigger: true
-      - get: cg-uaa-extras-app
-        passed: [deploy-development]
-        trigger: true
-      - task: integrate-repos
-        file: cg-uaa-extras-app/ci/integrate.yml
-      - put: create-db
-        resource: cf-cli-staging
-        params:
-          <<: *db-params
-      - put: cloud-gov-staging
-        params:
-          manifest: cg-uaa-extras-app/manifest_uaaextra.yml
-          path: uaa-extras-integrated
-          vars:
-            domain: fr-stage.cloud.gov
-          environment_variables:
-            UAA_BASE_URL: ((uaa-base-url-staging))
-            UAA_CLIENT_ID: uaa_extras_app
-            UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
-            UAA_VERIFY_TLS: "true"
-            UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
-            SMTP_HOST: ((smtp-host))
-            SMTP_PORT: ((smtp-port))
-            SMTP_USER: ((smtp-user))
-            SMTP_PASS: ((smtp-pass))
-            SMTP_FROM: ((smtp-from))
-            SMTP_CERT: ((smtp-cert))
-            BRANDING_COMPANY_NAME: ((branding-company-name-staging))
-            IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
-            IDP_PROVIDER_URL: ((idp-provider-url-staging))
-            FLASK_SECRET_KEY: ((flask-secret-key-staging))
-            CF_API_URL: ((cf-api-url-staging))
-      - task: integration-tests
-        file: cg-uaa-extras-app/ci/integration_test.yml
-        params:
-          UAA_USER: uaa_extras_app
-          UAA_SECRET: ((uaa-client-secret-staging))
-          UAA_URL: ((uaa-base-url-staging))
-          IDP_URL: ((idp-base-url-staging))
-          UAA_TARGET: ((uaa-target-url-staging))
-          EXTRAS_URL: ((uaa-extras-url-staging))
-          IDP_NAME: ((idp-provider-origin-staging))
-    on_failure:
-      put: slack
-      params:
-        text: |
-          :x: FAILED to deploy cg-uaa-extras to Staging
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: "#cg-platform-news"
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
-    on_success:
-      put: slack
-      params:
-        text: |
-          :white_check_mark: Successfully deployed cg-uaa-extras to Staging
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: "#cg-platform-news"
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
+- name: deploy-staging
+  plan:
+  - get: dotgov-domain-data
+    passed: [deploy-development]
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [deploy-development]
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-staging
+    params:
+      <<: *db-params
+  - put: cloud-gov-staging
+    params:
+      manifest: cg-uaa-extras-app/manifest_uaaextra.yml
+      path: uaa-extras-integrated
+      vars:
+        domain: fr-stage.cloud.gov
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-staging))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-staging))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-staging))
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-staging))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-staging))
+        IDP_PROVIDER_URL: ((idp-provider-url-staging))
+        FLASK_SECRET_KEY: ((flask-secret-key-staging))
+        CF_API_URL: ((cf-api-url-staging))
+  - task: integration-tests
+    file: cg-uaa-extras-app/ci/integration_test.yml
+    params:
+        UAA_USER: uaa_extras_app
+        UAA_SECRET: ((uaa-client-secret-staging))
+        UAA_URL: ((uaa-base-url-staging))
+        IDP_URL: ((idp-base-url-staging))
+        UAA_TARGET: ((uaa-target-url-staging))
+        EXTRAS_URL: ((uaa-extras-url-staging))
+        IDP_NAME: ((idp-provider-origin-staging))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to Staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: '#cg-platform-news'
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to Staging
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: '#cg-platform-news'
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
 
-  - name: deploy-production
-    plan:
-      - get: dotgov-domain-data
-        passed: [deploy-staging]
-        trigger: true
-      - get: cg-uaa-extras-app
-        passed: [deploy-staging]
-        trigger: true
-      - task: integrate-repos
-        file: cg-uaa-extras-app/ci/integrate.yml
-      - put: create-db
-        resource: cf-cli-production
-        params:
-          <<: *db-params
-      - put: cloud-gov-production
-        params:
-          manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
-          path: uaa-extras-integrated
-          environment_variables:
-            UAA_BASE_URL: ((uaa-base-url-production))
-            UAA_CLIENT_ID: uaa_extras_app
-            UAA_CLIENT_SECRET: ((uaa-client-secret-production))
-            UAA_VERIFY_TLS: "true"
-            UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
-            SMTP_HOST: ((smtp-host))
-            SMTP_PORT: ((smtp-port))
-            SMTP_USER: ((smtp-user))
-            SMTP_PASS: ((smtp-pass))
-            SMTP_FROM: ((smtp-from))
-            SMTP_CERT: ((smtp-cert))
-            BRANDING_COMPANY_NAME: ((branding-company-name-production))
-            IDP_PROVIDER_ORIGIN: ((idp-provider-origin-production))
-            IDP_PROVIDER_URL: ((idp-provider-url-production))
-            FLASK_SECRET_KEY: ((flask-secret-key-production))
-            CF_API_URL: ((cf-api-url-production))
-    on_failure:
-      put: slack
-      params:
-        text: |
-          :x: FAILED to deploy cg-uaa-extras to Production
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: "#cg-platform"
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
-    on_success:
-      put: slack
-      params:
-        text: |
-          :white_check_mark: Successfully deployed cg-uaa-extras to Production
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: "#cg-platform-news"
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
+- name: deploy-production
+  plan:
+  - get: dotgov-domain-data
+    passed: [deploy-staging]
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [deploy-staging]
+    trigger: true
+  - task: integrate-repos
+    file: cg-uaa-extras-app/ci/integrate.yml
+  - put: create-db
+    resource: cf-cli-production
+    params:
+      <<: *db-params
+  - put: cloud-gov-production
+    params:
+      manifest: cg-uaa-extras-app/manifest_production_fr_uaaextra.yml
+      path: uaa-extras-integrated
+      environment_variables:
+        UAA_BASE_URL: ((uaa-base-url-production))
+        UAA_CLIENT_ID: uaa_extras_app
+        UAA_CLIENT_SECRET: ((uaa-client-secret-production))
+        UAA_VERIFY_TLS: "true"
+        UAADB_CONNECTION_STRING: ((uaadb-connection-string-production))
+        SMTP_HOST: ((smtp-host))
+        SMTP_PORT: ((smtp-port))
+        SMTP_USER: ((smtp-user))
+        SMTP_PASS: ((smtp-pass))
+        SMTP_FROM: ((smtp-from))
+        SMTP_CERT: ((smtp-cert))
+        BRANDING_COMPANY_NAME: ((branding-company-name-production))
+        IDP_PROVIDER_ORIGIN: ((idp-provider-origin-production))
+        IDP_PROVIDER_URL: ((idp-provider-url-production))
+        FLASK_SECRET_KEY: ((flask-secret-key-production))
+        CF_API_URL: ((cf-api-url-production))
+  on_failure:
+    put: slack
+    params:
+      text: |
+        :x: FAILED to deploy cg-uaa-extras to Production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: '#cg-platform'
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+  on_success:
+    put: slack
+    params:
+      text: |
+        :white_check_mark: Successfully deployed cg-uaa-extras to Production
+        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
+      channel: '#cg-platform-news'
+      username: ((slack-username))
+      icon_url: ((slack-icon-url))
+
 
 resources:
-  - name: dotgov-domain-data
-    type: git
-    source:
-      uri: https://github.com/cisagov/dotgov-data.git
-      branch: main
+- name: dotgov-domain-data
+  type: git
+  source:
+    uri: https://github.com/cisagov/dotgov-data.git
+    branch: main
 
-  - name: cg-uaa-extras-app
-    type: git
-    source:
-      commit_verification_keys: ((cloud-gov-pgp-keys))
-      uri: ((cg-uaa-extras-git-url))
-      branch: ((cg-uaa-extras-git-branch))
+- name: cg-uaa-extras-app
+  type: git
+  source:
+    commit_verification_keys: ((cloud-gov-pgp-keys))
+    uri: ((cg-uaa-extras-git-url))
+    branch: ((cg-uaa-extras-git-branch))
 
-  - name: cloud-gov-development
-    type: cf
-    source:
-      api: ((cf-api-url-development))
-      username: ((cf-deploy-username-development))
-      password: ((cf-deploy-password-development))
-      organization: ((cf-organization))
-      space: ((cf-space))
-      skip_cert_check: false
+- name: cloud-gov-development
+  type: cf
+  source:
+    api: ((cf-api-url-development))
+    username: ((cf-deploy-username-development))
+    password: ((cf-deploy-password-development))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
 
-  - name: cloud-gov-staging
-    type: cf
-    source:
-      api: ((cf-api-url-staging))
-      username: ((cf-deploy-username-staging))
-      password: ((cf-deploy-password-staging))
-      organization: ((cf-organization))
-      space: ((cf-space))
-      skip_cert_check: false
+- name: cloud-gov-staging
+  type: cf
+  source:
+    api: ((cf-api-url-staging))
+    username: ((cf-deploy-username-staging))
+    password: ((cf-deploy-password-staging))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
 
-  - name: cloud-gov-production
-    type: cf
-    source:
-      api: ((cf-api-url-production))
-      username: ((cf-deploy-username-production))
-      password: ((cf-deploy-password-production))
-      organization: ((cf-organization))
-      space: ((cf-space))
-      skip_cert_check: false
+- name: cloud-gov-production
+  type: cf
+  source:
+    api: ((cf-api-url-production))
+    username: ((cf-deploy-username-production))
+    password: ((cf-deploy-password-production))
+    organization: ((cf-organization))
+    space: ((cf-space))
+    skip_cert_check: false
 
-  - name: slack
-    type: slack-notification
-    source:
-      url: ((slack-webhook-url))
+- name: slack
+  type: slack-notification
+  source:
+    url: ((slack-webhook-url))
 
-  - name: cf-cli-dev
-    type: cf-cli-resource
-    source:
-      api: ((cf-api-url-development))
-      username: ((cf-deploy-username-development))
-      password: ((cf-deploy-password-development))
-      org: ((cf-organization))
-      space: ((cf-space))
+- name: cf-cli-dev
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-development))
+    username: ((cf-deploy-username-development))
+    password: ((cf-deploy-password-development))
+    org: ((cf-organization))
+    space: ((cf-space))
 
-  - name: cf-cli-staging
-    type: cf-cli-resource
-    source:
-      api: ((cf-api-url-staging))
-      username: ((cf-deploy-username-staging))
-      password: ((cf-deploy-password-staging))
-      org: ((cf-organization))
-      space: ((cf-space))
+- name: cf-cli-staging
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-staging))
+    username: ((cf-deploy-username-staging))
+    password: ((cf-deploy-password-staging))
+    org: ((cf-organization))
+    space: ((cf-space))
 
-  - name: cf-cli-production
-    type: cf-cli-resource
-    source:
-      api: ((cf-api-url-production))
-      username: ((cf-deploy-username-production))
-      password: ((cf-deploy-password-production))
-      org: ((cf-organization))
-      space: ((cf-space))
+- name: cf-cli-production
+  type: cf-cli-resource
+  source:
+    api: ((cf-api-url-production))
+    username: ((cf-deploy-username-production))
+    password: ((cf-deploy-password-production))
+    org: ((cf-organization))
+    space: ((cf-space))
+
 
 resource_types:
-  - name: slack-notification
-    type: docker-image
-    source:
-      repository: cfcommunity/slack-notification-resource
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
 
-  - name: cf-cli-resource
-    type: docker-image
-    source:
-      repository: nulldriver/cf-cli-resource
-      tag: latest
+- name: cf-cli-resource
+  type: docker-image
+  source:
+    repository: nulldriver/cf-cli-resource
+    tag: latest
