@@ -2,12 +2,12 @@
 applications:
   - name: uaaextra
     buildpacks:
-      - python_buildpack
+    - python_buildpack
     stack: cflinuxfs3
     services:
-      - redis-accounts-aws
+    - redis-accounts-aws
     routes:
-      - route: account.((domain))
+    - route: account.((domain))
     env:
       ENV: production
     #  UAA_BASE_URL: https://uaa.bosh-lite.com
