@@ -81,6 +81,8 @@ six==1.16.0
     #   websocket-client
 sqlalchemy==1.4.31
     # via -r pip-tools/requirements.in
+setuptools==65.1.1
+    # via fix for bug in Python Buildpack - should be removed when a compatible Bosh release is deployed
 talisman==0.1.0
     # via -r pip-tools/requirements.in
 urllib3==1.26.8
