@@ -1,7 +1,8 @@
 ---
 applications:
 - name: uaaextra
-  buildpack: python_buildpack
+  buildpacks:
+  - python_buildpack
   stack: cflinuxfs3
   services:
   - redis-accounts-aws
