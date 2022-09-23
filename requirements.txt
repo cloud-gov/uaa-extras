@@ -61,7 +61,7 @@ packaging==21.3
     # via redis
 polling2==0.5.0
     # via cloudfoundry-client
-protobuf==3.19.4
+protobuf==3.19.5
     # via cloudfoundry-client
 psycopg2==2.9.3
     # via -r pip-tools/requirements.in
