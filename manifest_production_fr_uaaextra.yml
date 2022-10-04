@@ -4,10 +4,10 @@ applications:
   host: account
   domain: fr.cloud.gov
   buildpacks:
-    - python_buildpack
+  - python_buildpack
   stack: cflinuxfs3
   instances: 2
   services:
-    - redis-accounts-aws
+  - redis-accounts-aws
   env:
     ENV: production
