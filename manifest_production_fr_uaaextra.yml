@@ -1,8 +1,8 @@
 ---
 applications:
 - name: uaaextra
-  host: account
-  domain: fr.cloud.gov
+  routes:
+  - route: account.fr.cloud.gov
   buildpacks:
   - python_buildpack
   stack: cflinuxfs3
