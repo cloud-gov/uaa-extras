@@ -565,7 +565,7 @@ class TestAppConfig(unittest.TestCase):
                 sess["_csrf_token"] = "baz"
 
             rv = c.post(
-                "/signup", data={"email": "example@fs.fed.us", "_csrf_token": "baz"}
+                "/signup", data={"email": "example@nmcourt.fed.us", "_csrf_token": "baz"}
             )
             assert rv.status_code == 200
             render_template.assert_called_with("signup_invite_sent.html")
