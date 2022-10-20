@@ -26,6 +26,7 @@ class UAAError(RuntimeError):
     """
 
     def __init__(self, response):
+        logging.error(response.text)
         self.response = response
         self.error = json.loads(response.text)
 
