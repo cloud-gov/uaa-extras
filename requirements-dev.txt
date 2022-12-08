@@ -6,7 +6,7 @@
 #
 blinker==1.4
     # via -r pip-tools/requirements-dev.in
-certifi==2021.10.8
+certifi==2022.12.7
     # via requests
 charset-normalizer==2.0.12
     # via requests
