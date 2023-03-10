@@ -3,7 +3,6 @@ applications:
 - name: uaaextra
   buildpacks:
   - python_buildpack
-  stack: cflinuxfs3
   services:
   - redis-accounts-aws
   routes:
