@@ -71,7 +71,7 @@ pyyaml==6.0
     # via cloudfoundry-client
 redis==4.1.4
     # via -r pip-tools/requirements.in
-requests==2.27.1
+requests==2.31.0
     # via
     #   cloudfoundry-client
     #   oauth2-client
