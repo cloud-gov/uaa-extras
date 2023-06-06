@@ -495,8 +495,8 @@ def create_app(env=os.environ):
                 return redirect(url_for("logout"))
             else:
                 logging.exception("An error occured communicating with UAA")
-        except Exception:
-            logging.exception("An error occured during the invite process")
+        except Exception as e:
+            logging.exception("An error occured during the invite process. Reason: " + e)
 
         return render_template("error/internal.html"), 500
 
@@ -566,8 +566,8 @@ def create_app(env=os.environ):
                 return redirect(url_for("logout"))
             else:
                 logging.exception("An error occured communicating with UAA")
-        except Exception:
-            logging.exception("An error occured during the invite process")
+        except Exception as e:
+            logging.exception("An error occured during the invite process. Reason: " + e)
 
         return render_template("error/internal.html"), 500
 
@@ -687,8 +687,8 @@ def create_app(env=os.environ):
             for error in str(exc).split(","):
                 flash(error)
             return render_template("change_password.html")
-        except Exception:
-            logging.exception("Error changing password")
+        except Exception as e:
+            logging.exception("Error changing password. Reason: " + e)
 
         return render_template("error/internal.html"), 500
 
@@ -838,8 +838,8 @@ def create_app(env=os.environ):
                     "Unable to set temporary password. Did you use the right email address?"
                 )
                 return render_template("reset_password.html")
-        except Exception:
-            logging.exception("Unable to set your temporary password.")
+        except Exception as e:
+            logging.exception("Unable to set your temporary password. Reason: " + e)
 
     @app.route("/reset-totp", methods=["GET", "POST"])
     def reset_totp():
