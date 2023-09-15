@@ -2,13 +2,16 @@
 jobs:
 - name: deploy-development
   plan:
+  - get: general-task
   - get: dotgov-domain-data
     trigger: true
   - get: cg-uaa-extras-app
     trigger: true
   - task: integrate-repos
+    image: general-task
     file: cg-uaa-extras-app/ci/integrate.yml
   - task: test
+    image: general-task
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
     file: cg-uaa-extras-app/ci/test.yml
@@ -46,6 +49,7 @@ jobs:
         FLASK_SECRET_KEY: ((flask-secret-key-development))
         CF_API_URL: ((cf-api-url-development))
   - task: integration-tests
+    image: general-task
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
         UAA_USER: uaa_extras_app
@@ -76,6 +80,7 @@ jobs:
 
 - name: deploy-staging
   plan:
+  - get: general-task
   - get: dotgov-domain-data
     passed: [deploy-development]
     trigger: true
@@ -83,6 +88,7 @@ jobs:
     passed: [deploy-development]
     trigger: true
   - task: integrate-repos
+    image: general-task
     file: cg-uaa-extras-app/ci/integrate.yml
   - put: create-db
     resource: cf-cli-staging
@@ -112,6 +118,7 @@ jobs:
         FLASK_SECRET_KEY: ((flask-secret-key-staging))
         CF_API_URL: ((cf-api-url-staging))
   - task: integration-tests
+    image: general-task
     file: cg-uaa-extras-app/ci/integration_test.yml
     params:
         UAA_USER: uaa_extras_app
@@ -142,6 +149,7 @@ jobs:
 
 - name: deploy-production
   plan:
+  - get: general-task
   - get: dotgov-domain-data
     passed: [deploy-staging]
     trigger: true
@@ -149,6 +157,7 @@ jobs:
     passed: [deploy-staging]
     trigger: true
   - task: integrate-repos
+    image: general-task
     file: cg-uaa-extras-app/ci/integrate.yml
   - put: create-db
     resource: cf-cli-production
@@ -271,15 +280,57 @@ resources:
     org: ((cf-organization))
     space: ((cf-space))
 
+- name: general-task
+  type: registry-image
+  source:
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: general-task
+    aws_region: us-gov-west-1
+    tag: latest
 
 resource_types:
-- name: slack-notification
-  type: docker-image
+- name: registry-image
+  type: registry-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: registry-image-resource
+    aws_region: us-gov-west-1
+    tag: latest
+
+- name: slack-notification
+  type: registry-image
+  source:
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: slack-notification-resource
+    aws_region: us-gov-west-1
+    tag: latest
 
 - name: cf-cli-resource
-  type: docker-image
+  type: registry-image
   source:
-    repository: nulldriver/cf-cli-resource
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: cf-cli-resource
+    aws_region: us-gov-west-1
+    tag: latest
+
+- name: git
+  type: registry-image
+  source:
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: git-resource
+    aws_region: us-gov-west-1
+    tag: latest
+
+- name: cf
+  type: registry-image
+  source:
+    aws_access_key_id: ((ecr_aws_key))
+    aws_secret_access_key: ((ecr_aws_secret))
+    repository: cf-resource
+    aws_region: us-gov-west-1
     tag: latest
