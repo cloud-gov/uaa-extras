@@ -2,5 +2,6 @@
 
 set -ex
 
-pip install tox
-(cd ./cg-uaa-extras-app && tox)
+cd ./cg-uaa-extras-app
+pip install -r requirements-ci.txt
+tox
