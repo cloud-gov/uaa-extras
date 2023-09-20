@@ -1,11 +1,20 @@
 ---
 jobs:
+
+- name: set-self
+  plan:
+  - get: cg-uaa-extras-app
+    trigger: true
+  - set_pipeline: self
+    file: cg-uaa-extras-app/ci/pipeline.yml
+
 - name: deploy-development
   plan:
   - get: general-task
   - get: dotgov-domain-data
     trigger: true
   - get: cg-uaa-extras-app
+    passed: [set-self]
     trigger: true
   - task: integrate-repos
     image: general-task
