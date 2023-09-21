@@ -664,7 +664,7 @@ class TestAppConfig(unittest.TestCase):
             with app.test_client() as c:
                 c.get("/oauth/login?code=123")
 
-                assert uaac.oauth_token.called_with(
+                uaac.oauth_token.assert_called_with(
                     "123", app.config["UAA_CLIENT_ID"], app.config["UAA_CLIENT_SECRET"]
                 )
 
@@ -1594,9 +1594,10 @@ class TestTOTPClient(unittest.TestCase):
             conn.execute(create)
             conn.execute(
                 add_user,
-                username="example@cloud.gov",
-                seed="asdfasdf",
-                backup_code="xzcvzxcv",
+                {"username": "example@cloud.gov",
+                "seed": "asdfasdf",
+                "backup_code": "xzcvzxcv",
+                }
             )
 
     def test_get_totp_exsisting_user(self):
