@@ -225,7 +225,7 @@ resources:
   source:
     commit_verification_keys: ((cloud-gov-pgp-keys))
     uri: ((cg-uaa-extras-git-url))
-    branch: fix-tests
+    branch: ((cg-uaa-extras-git-branch))
 
 - name: cloud-gov-development
   type: cf
