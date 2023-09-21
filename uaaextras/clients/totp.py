@@ -12,6 +12,7 @@ class TOTPClient:
         with self.db_engine.connect() as conn:
             delete = text("DELETE FROM totp_seed WHERE username = :username")
             conn.execute(delete, {"username": user})
+            conn.commit()
 
     def get_user_totp_seed(self, user: str) -> str:
         """
