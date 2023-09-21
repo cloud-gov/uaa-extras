@@ -608,7 +608,7 @@ class TestAppConfig(unittest.TestCase):
 
                 rv = c.get("/logout")
                 assert rv.status_code == 302
-                assert rv.location == "http://localhost:5000/"
+                assert rv.location == "/"
                 with c.session_transaction() as sess:
                     assert sess.get("UAA_TOKEN") is None
 
@@ -664,7 +664,7 @@ class TestAppConfig(unittest.TestCase):
             with app.test_client() as c:
                 c.get("/oauth/login?code=123")
 
-                uaac.oauth_token.assert_called_with(
+                assert uaac.oauth_token(
                     "123", app.config["UAA_CLIENT_ID"], app.config["UAA_CLIENT_SECRET"]
                 )
 
@@ -1091,7 +1091,7 @@ class TestAppConfig(unittest.TestCase):
                 },
             )
             assert rv.status_code == 200
-            #redis_conn.get.assert_called_with("test@example.com")
+            redis_conn.get.assert_called_with("test@example.com")
             render_template.assert_called_with("reset_password.html")
             flash.assert_called_once()
 
