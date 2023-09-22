@@ -608,7 +608,7 @@ class TestAppConfig(unittest.TestCase):
 
                 rv = c.get("/logout")
                 assert rv.status_code == 302
-                assert rv.location == "http://localhost:5000/"
+                assert rv.location == "/"
                 with c.session_transaction() as sess:
                     assert sess.get("UAA_TOKEN") is None
 
@@ -664,7 +664,7 @@ class TestAppConfig(unittest.TestCase):
             with app.test_client() as c:
                 c.get("/oauth/login?code=123")
 
-                assert uaac.oauth_token.called_with(
+                assert uaac.oauth_token(
                     "123", app.config["UAA_CLIENT_ID"], app.config["UAA_CLIENT_SECRET"]
                 )
 
@@ -1594,12 +1594,14 @@ class TestTOTPClient(unittest.TestCase):
             conn.execute(create)
             conn.execute(
                 add_user,
-                username="example@cloud.gov",
-                seed="asdfasdf",
-                backup_code="xzcvzxcv",
+                {"username": "example@cloud.gov",
+                "seed": "asdfasdf",
+                "backup_code": "xzcvzxcv",
+                }
             )
+            conn.commit()
 
-    def test_get_totp_exsisting_user(self):
+    def test_get_totp_existing_user(self):
         assert self.client.get_user_totp_seed("example@cloud.gov") == "asdfasdf"
         assert self.client.get_user_totp_seed("nobody") is None
 
