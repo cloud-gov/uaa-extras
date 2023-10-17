@@ -81,7 +81,7 @@ talisman==0.1.0
     # via -r pip-tools/requirements.in
 typing-extensions==4.8.0
     # via sqlalchemy
-urllib3==2.0.5
+urllib3==2.0.7
     # via requests
 websocket-client==1.6.3
     # via cloudfoundry-client
