@@ -2,7 +2,7 @@
 
 This application recreates the invite functionality that previously existed in UAA by using the /invite_users API endpoint.
 
-### Installing the App
+### Installing the App 
 
 #### Step One: Determine the URL for your instance of UAA Extras
 
