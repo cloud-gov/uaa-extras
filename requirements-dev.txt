@@ -12,7 +12,7 @@ charset-normalizer==3.2.0
     # via requests
 httmock==1.4.0
     # via -r pip-tools/requirements-dev.in
-idna==3.4
+idna==3.7
     # via requests
 mock==5.1.0
     # via -r pip-tools/requirements-dev.in
@@ -24,5 +24,5 @@ requests-mock==1.11.0
     # via -r pip-tools/requirements-dev.in
 six==1.16.0
     # via requests-mock
-urllib3==2.0.5
+urllib3==2.0.7
     # via requests
