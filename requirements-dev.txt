@@ -22,5 +22,5 @@ requests==2.32.3
     #   requests-mock
 requests-mock==1.12.1
     # via -r pip-tools/requirements-dev.in
-urllib3==2.2.1
+urllib3==2.2.2
     # via requests
