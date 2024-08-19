@@ -31,4 +31,4 @@ class TestHostValidator(unittest.TestCase):
         assert email_username_valid("me1.last1@gsa.gov")
         assert not email_username_valid("me?.last1@gsa.gov")
         assert not email_username_valid("me.last1@gsa.g")
-        assert not email_username_valid("=?x?q?hwhaqti69r1ppe=40toasty.com=3e=1f?=foo@gsa.gov")
+        assert not email_username_valid("=?x?q?hwhaqti69r1ppe=40example.gov=3e=1f?=foo@gsa.gov")
