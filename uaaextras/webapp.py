@@ -9,6 +9,7 @@ import redis
 import smtplib
 import ssl
 import uuid, string, random, json
+import re
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
 from markupsafe import Markup
@@ -447,6 +448,19 @@ def create_app(env=os.environ):
             # email is not valid, exception message is human-readable
             flash(str(exc))
             return render_template("signup.html")
+        
+        # Check the username pattern is valid, a-z, numbers and a select set of special characters
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, email):
+            flash(
+                "This does not seem to be a valid username for U.S. federal government email addresses. "
+                "Self-service invitations are only offered for U.S. federal government email addresses. "
+                "If you do have a valid U.S. federal government email address, email us at "
+                "cloud-gov-inquiries@gsa.gov to let us know to whitelist your email address."
+            )
+            return render_template("signup.html")
+
+
         # Check for feds here
         if not email_valid_for_domains(email, app.config["VALID_FED_DOMAINS"]):
             flash(
