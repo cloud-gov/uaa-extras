@@ -83,7 +83,7 @@ websocket-client==1.8.0
     # via cloudfoundry-client
 werkzeug==3.0.6
     # via flask
-yarl==1.9.4
+yarl==1.12.0
     # via aiohttp
 zxcvbn-python==4.4.24
     # via -r pip-tools/requirements.in
