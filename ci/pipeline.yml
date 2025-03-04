@@ -22,6 +22,7 @@ jobs:
       cg-uaa-extras-app: uaa-extras-integrated
     file: cg-uaa-extras-app/ci/test.yml
 
+
 - name: deploy-development
   plan:
   - get: general-task
@@ -30,6 +31,9 @@ jobs:
   - get: cg-uaa-extras-app
     passed: [unittests]
     trigger: true
+  - task: integrate-repos
+    image: general-task
+    file: cg-uaa-extras-app/ci/integrate.yml
   - put: create-db
     resource: cf-cli-dev
     params: &db-params
@@ -102,6 +106,9 @@ jobs:
   - get: cg-uaa-extras-app
     passed: [deploy-development]
     trigger: true
+  - task: integrate-repos
+    image: general-task
+    file: cg-uaa-extras-app/ci/integrate.yml
   - put: create-db
     resource: cf-cli-staging
     params:
@@ -168,6 +175,9 @@ jobs:
   - get: cg-uaa-extras-app
     passed: [deploy-staging]
     trigger: true
+  - task: integrate-repos
+    image: general-task
+    file: cg-uaa-extras-app/ci/integrate.yml
   - put: create-db
     resource: cf-cli-production
     params:
@@ -211,7 +221,6 @@ jobs:
       channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
-
 
 resources:
 - name: dotgov-domain-data
