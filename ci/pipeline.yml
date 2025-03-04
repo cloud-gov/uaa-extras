@@ -10,6 +10,9 @@ jobs:
 
 - name: unittests
   plan:
+  - get: general-task
+  - get: dotgov-domain-data
+    trigger: true
   - get: cg-uaa-extras-app
     passed: [set-self]
     trigger: true
