@@ -8,11 +8,8 @@ jobs:
   - set_pipeline: self
     file: cg-uaa-extras-app/ci/pipeline.yml
 
-- name: deploy-development
+- name: unittests
   plan:
-  - get: general-task
-  - get: dotgov-domain-data
-    trigger: true
   - get: cg-uaa-extras-app
     passed: [set-self]
     trigger: true
@@ -24,6 +21,19 @@ jobs:
     input_mapping:
       cg-uaa-extras-app: uaa-extras-integrated
     file: cg-uaa-extras-app/ci/test.yml
+
+
+- name: deploy-development
+  plan:
+  - get: general-task
+  - get: dotgov-domain-data
+    trigger: true
+  - get: cg-uaa-extras-app
+    passed: [unittests]
+    trigger: true
+  - task: integrate-repos
+    image: general-task
+    file: cg-uaa-extras-app/ci/integrate.yml
   - put: create-db
     resource: cf-cli-dev
     params: &db-params
@@ -211,7 +221,6 @@ jobs:
       channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
-
 
 resources:
 - name: dotgov-domain-data
