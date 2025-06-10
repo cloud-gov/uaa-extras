@@ -16,7 +16,7 @@ idna==3.10
     # via requests
 mock==5.2.0
     # via -r pip-tools/requirements-dev.in
-requests==2.32.3
+requests==2.32.4
     # via
     #   httmock
     #   requests-mock
