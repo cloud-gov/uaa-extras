@@ -43,7 +43,7 @@ jobs:
       command: create-service
       update_service: true
       wait_for_service: true
-      timeout: 1200  
+      timeout: 1200
       service_instance: redis-accounts-aws
       service: aws-elasticache-redis
       plan: redis-3node
@@ -86,15 +86,6 @@ jobs:
     params:
       text: |
         :x: FAILED to deploy cg-uaa-extras to development
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: '#cg-platform-news'
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
-  on_success:
-    put: slack
-    params:
-      text: |
-        :white_check_mark: Successfully deployed cg-uaa-extras to development
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: '#cg-platform-news'
       username: ((slack-username))
@@ -159,15 +150,6 @@ jobs:
       channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
-  on_success:
-    put: slack
-    params:
-      text: |
-        :white_check_mark: Successfully deployed cg-uaa-extras to Staging
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: '#cg-platform-news'
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
 
 - name: deploy-production
   plan:
@@ -213,15 +195,6 @@ jobs:
         :x: FAILED to deploy cg-uaa-extras to Production
         <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
       channel: '#cg-platform'
-      username: ((slack-username))
-      icon_url: ((slack-icon-url))
-  on_success:
-    put: slack
-    params:
-      text: |
-        :white_check_mark: Successfully deployed cg-uaa-extras to Production
-        <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-      channel: '#cg-platform-news'
       username: ((slack-username))
       icon_url: ((slack-icon-url))
 
