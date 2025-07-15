@@ -32,9 +32,11 @@ If you are doing this within an already existing cloudfoundry deployment, you mi
 
 Either create a locally running version of Redis, or create a service instance in Cloud Foundry if the app will be deployed there.
 
-EX:
+To create a service:
 
- cf create-service redis32 standard-ha redis-accounts
+```shell
+cf create-service redis32 standard-ha redis-accounts
+```
 
 ### Step Four: Configure the app
 
@@ -46,7 +48,9 @@ The configuration is entirely read from environment variables. Edit the manifest
 
 This app was designed to deploy in Cloud Foundry:
 
- cf push
+```shell
+cf push
+```
 
 ## Local Development
 
