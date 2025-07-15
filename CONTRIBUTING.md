@@ -1,19 +1,19 @@
-## Public domain
+**Contribution Policy**
 
-This project is in the public domain within the United States, and
-copyright and related rights in the work worldwide are waived through
-the [CC0 1.0 Universal public domain dedication](https://creativecommons.org/publicdomain/zero/1.0/).
+Cloud.gov is an open source project operated by the U.S. General Services Administration (GSA) to support federal agency missions. While we value transparency and collaboration, we must balance openness with the responsibilities of operating a secure, compliant, and trusted federal platform.
 
-All contributions to this project will be released under the CC0
-dedication. By submitting a pull request, you are agreeing to comply
-with this waiver of copyright interest.
+✅ **Who can contribute**
+We welcome contributions from:
 
-## Testing
+- Employees of U.S. federal agencies
+- Contractors working under a current agreement with a U.S. government entity
+- GSA-approved contributors as part of official interagency collaboration
 
-This app is currently deployed into a python2 environment in production, however the tests ensure that
-this app is compatible with python2.7 and python3.4 for future compatibility.  Ensure any changes are
-compatible with both python2 and python3.
+❌ **Who we cannot accept contributions from**
+To avoid the appearance of government endorsement, manage supply chain risk, and maintain the integrity of our compliance posture, we do **not** accept unsolicited contributions from:
 
-Ensure that tests are delivered with any changes.
+- Individuals unaffiliated with the U.S. government
+- International contributors or organizations
+- Unvetted accounts or first-time contributors submitting minor changes
 
-Use [tox](http://tox.readthedocs.io/en/latest/) to run the current test suite.
+If you're unsure whether your contribution fits, feel free to open an issue first so we can discuss it.
