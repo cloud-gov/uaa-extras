@@ -4,7 +4,11 @@
 #
 #    pip-compile --output-file=requirements-dev.txt pip-tools/requirements-dev.in
 #
+beautifulsoup4==4.13.4
+    # via bs4
 blinker==1.9.0
+    # via -r pip-tools/requirements-dev.in
+bs4==0.0.2
     # via -r pip-tools/requirements-dev.in
 certifi==2025.7.14
     # via requests
@@ -14,7 +18,19 @@ httmock==1.4.0
     # via -r pip-tools/requirements-dev.in
 idna==3.10
     # via requests
+iniconfig==2.1.0
+    # via pytest
 mock==5.2.0
+    # via -r pip-tools/requirements-dev.in
+packaging==25.0
+    # via pytest
+pluggy==1.6.0
+    # via pytest
+pygments==2.19.2
+    # via pytest
+pyotp==2.9.0
+    # via -r pip-tools/requirements-dev.in
+pytest==8.4.1
     # via -r pip-tools/requirements-dev.in
 requests==2.32.4
     # via
@@ -22,5 +38,9 @@ requests==2.32.4
     #   requests-mock
 requests-mock==1.12.1
     # via -r pip-tools/requirements-dev.in
+soupsieve==2.7
+    # via beautifulsoup4
+typing-extensions==4.14.1
+    # via beautifulsoup4
 urllib3==2.5.0
     # via requests
