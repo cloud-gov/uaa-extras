@@ -2,3 +2,6 @@ blinker
 httmock
 mock
 requests_mock
+pytest
+bs4
+pyotp
