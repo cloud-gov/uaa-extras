@@ -1,43 +1,52 @@
-# UAA Extras 
+# UAA Extras
 
 This application recreates the invite functionality that previously existed in UAA by using the /invite_users API endpoint.
 
-### Installing the App 
+## Installing the App
 
-#### Step One: Determine the URL for your instance of UAA Extras
+### Step One: Determine the URL for your instance of UAA Extras
 
 You'll need to know where the app is going to be hosted, so you can tell UAA about it in the next step.
 
-For example, if you'll be deploying into Cloudfoundry on BOSH-lite your url would probably be http://invite.bosh-lite.com/
+For example, if you'll be deploying into Cloudfoundry on BOSH-lite your url would probably be <http://invite.bosh-lite.com/>
 
-#### Step Two: Create a client in UAA for this app
+### Step Two: Create a client in UAA for this app
 
 This application uses oauth to perform actions on your behalf in UAA.  To add a new oauth client in UAA, run the following command:
 
-	uaac client add uaa_extras_app --name "UAA Extras" --scope "scim.invite,password.write,cloud_controller.read" --authorized_grant_types "client_credentials,authorization_code" --authorities "scim.read,uaa.admin,password.write" --redirect_uri [url-from-step-one]/oauth/login -s [your-client-secret]
+```shell
+uaac client add uaa_extras_app \
+ --name "UAA Extras" \
+ --scope "scim.invite,password.write,cloud_controller.read" \
+ --authorized_grant_types "client_credentials,authorization_code" \
+ --authorities "scim.read,uaa.admin,password.write" \
+ --redirect_uri [url-from-step-one]/oauth/login \
+ -s [your-client-secret]
+```
 
 Remember the client-secret, you'll need it in step four.
 
-If you are doing this within an already existing cloudfoundry deployment, you might want to create the user by editing your cf deployment with an opsfile like https://github.com/18F/cg-deploy-cf/blob/master/bosh/opsfiles/clients.yml
+If you are doing this within an already existing cloudfoundry deployment, you might want to create the user by editing your cf deployment with an opsfile like <https://github.com/18F/cg-deploy-cf/blob/master/bosh/opsfiles/clients.yml>
 
-#### Step Three: Create redis service instance
+### Step Three: Create redis service instance
 
 Either create a locally running version of Redis, or create a service instance in Cloud Foundry if the app will be deployed there.
 
 EX:
 
-	cf create-service redis32 standard-ha redis-accounts
+ cf create-service redis32 standard-ha redis-accounts
 
-#### Step Four: Configure the app
+### Step Four: Configure the app
 
-The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary. Download a copy of https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv and place into `uaaextras/static`
+The configuration is entirely read from environment variables. Edit the manifest.yml files and update your settings as neccessary. Download a copy of <https://raw.githubusercontent.com/GSA/data/master/dotgov-domains/current-federal.csv> and place into `uaaextras/static`
 
-#### Step Five: Launch the app
+### Step Five: Launch the app
 
-##### Running in Cloud Foundry
+#### Running in Cloud Foundry
+
 This app was designed to deploy in Cloud Foundry:
 
-	cf push
+ cf push
 
 ## Local Development
 
@@ -53,7 +62,7 @@ Run tests with `./dev test`
 
 ### Dependency management
 
-This project uses `pip-tools` for dependency management. 
+This project uses `pip-tools` for dependency management.
 
 Abstract requirements live in pip-tools/requirements.in and pip-tools/requirements-dev.in.
 Concrete requirements live in requirements.txt and requirements-dev.txt.
@@ -75,7 +84,7 @@ Catalina or higher, make sure you've done the following:
 - `brew install openssl@1.1` and add the location to your path
 
 Note that `psycopg2` currently doesn't support PostgreSQL 13.x
-(https://www.psycopg.org/docs/install.html#prerequisites), and PostgreSQL 13.x
+(<https://www.psycopg.org/docs/install.html#prerequisites>), and PostgreSQL 13.x
 isn't available in AWS GovCloud yet, either.
 
 Then export two environment variables in your current shell session:
@@ -108,7 +117,7 @@ the user, `cg-uaa-extras` will redirect to the `IDP_PROVIDER_URL` to complete
 the user's authentication and TOTP token creation. This is why the URL from the
 screenshot above is necessary for the `IDP_PROVIDER_URL`.
 
-#### Running tests
+### Running tests
 
 Tests are run using `tox` and `flake8`.
 
@@ -123,7 +132,7 @@ setting in the `tox.ini` file:
 
 `setenv = LDFLAGS = "-L/usr/local/opt/openssl/lib"`
 
-### Deployment
+## Deployment
 
 This repository leverages [Concourse](https://concourse-ci.org). The configuration
 files all reside in the `ci/` directory. All pull requests should have `staging`
