@@ -832,6 +832,7 @@ class TestAppConfig(unittest.TestCase):
             uaac().decode_access_token.return_value = {"user_id": "example"}
             uaac().get_user.return_value = user
 
+            print("about to test first_login")
             c.get("/first-login")
             assert "externalId" in user
             assert user["origin"] == app.config["IDP_PROVIDER_ORIGIN"]

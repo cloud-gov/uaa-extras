@@ -376,6 +376,9 @@ def create_app(env=os.environ):
         is_invitation = (
             request.referrer and request.referrer.find("invitations/accept") != 1
         )
+        print('=============== ===============')
+        print(f'=============== request is: {request} ===============')
+        print('about to call first_login')
         if is_invitation and "code" not in request.args:
             return redirect(url_for("first_login"))
 
@@ -545,7 +548,7 @@ def create_app(env=os.environ):
             return render_template("invite.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized  # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
@@ -631,6 +634,7 @@ def create_app(env=os.environ):
             return render_template("error/token_validation.html"), 401
 
         user = g.uaac.get_user(decoded_token["user_id"])
+        print(f'=== user in first login: {user} ===')
         logging.info("USER: {0}".format(user))
         if user["origin"] == "uaa":
             user["origin"] = app.config["IDP_PROVIDER_ORIGIN"]
@@ -679,6 +683,8 @@ def create_app(env=os.environ):
         # their email address split at the '@' symbol.
         username = g.uaac.get_user(decoded_token["user_id"])["userName"]
         userinfo = [username, app.config["IDP_PROVIDER_ORIGIN"], old_password]
+        print(f'app config is: {app.config}')
+        print(f'userInfo: {userinfo}')
         for part in username.split("@"):
             userinfo.append(part)
 
@@ -719,7 +725,7 @@ def create_app(env=os.environ):
             return render_template("forgot_password.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized  # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
@@ -799,7 +805,7 @@ def create_app(env=os.environ):
             return render_template("reset_password.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized  # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
