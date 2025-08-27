@@ -20,6 +20,11 @@ from uaaextras.clients import UAAClient, UAAError, TOTPClient, CFClient
 from uaaextras.validators import email_valid_for_domains
 from uaaextras.validators import email_username_valid
 
+import debugpy
+
+debugpy.listen(("0.0.0.0", 5678))
+print("waiting for debugger to attach")
+debugpy.wait_for_client()
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 
 # key = connfiguration variable to be loaded from the environment
@@ -39,7 +44,7 @@ CONFIG_KEYS = {
     "IDP_PROVIDER_ORIGIN": "idp.com",
     "IDP_PROVIDER_URL": "https://idp.bosh-lite.com",
     "MAINTENANCE_MODE": False,
-    "CF_API_URL": "https://api.bosh-lite.com"
+    "CF_API_URL": "https://api.bosh-lite.com",
 }
 
 UAA_INVITE_EXPIRATION_IN_SECONDS = timedelta(days=7)
@@ -93,7 +98,7 @@ else:
 
 
 def generate_temporary_password():
-    """ Generates a temporary password suitable for UAA """
+    """Generates a temporary password suitable for UAA"""
     passwordChars = (
         string.ascii_letters
         + string.digits
@@ -224,8 +229,8 @@ def create_app(env=os.environ):
     app = Flask(__name__)
     # use the supplied secret key, or make one up
     app.secret_key = os.environ.get(
-        "FLASK_SECRET_KEY", 
-        codecs.encode(os.urandom(24), "base-64").decode("utf-8").strip()
+        "FLASK_SECRET_KEY",
+        codecs.encode(os.urandom(24), "base-64").decode("utf-8").strip(),
     )
     app.jinja_env.globals["csrf_token"] = generate_csrf_token
 
@@ -239,7 +244,7 @@ def create_app(env=os.environ):
             "img-src": ["'self'", "*.cloud.gov"],
             "style-src": ["'self'", "*.cloud.gov", "*.googleapis.com"],
             "font-src": ["'self'", "fonts.gstatic.com", "*.cloud.gov"],
-            "form-action": ["'self'", "*.cloud.gov"]
+            "form-action": ["'self'", "*.cloud.gov"],
         }
         Talisman(app, content_security_policy=csp)
 
@@ -275,7 +280,7 @@ def create_app(env=os.environ):
     # and place into 'static' dir
     domain_list = ["mil", "si.edu"]
     csv_path = os.path.join(app.config["APP_STATIC"], "current-federal.csv")
-    with open(csv_path, newline='', encoding='utf-8') as fed_gov_csv:
+    with open(csv_path, newline="", encoding="utf-8") as fed_gov_csv:
         for row in csv.reader(fed_gov_csv):
             domain_list.append(row[0].strip().rstrip().lower())
     app.config["VALID_FED_DOMAINS"] = tuple(domain_list)
@@ -295,8 +300,8 @@ def create_app(env=os.environ):
         services are unavailable.
         """
 
-        if app.config['MAINTENANCE_MODE']:
-            logging.warning('UAA Extras is currently in maintenance mode.')
+        if app.config["MAINTENANCE_MODE"]:
+            logging.warning("UAA Extras is currently in maintenance mode.")
             return render_template("maintenance.html"), 200
 
     @app.before_request
@@ -326,11 +331,11 @@ def create_app(env=os.environ):
         token = session.get("UAA_TOKEN", None)
 
         token_checking_client = UAAClient(
-                app.config["UAA_BASE_URL"],
-                None,
-                verify_tls=app.config["UAA_VERIFY_TLS"],
-            )
-        
+            app.config["UAA_BASE_URL"],
+            None,
+            verify_tls=app.config["UAA_VERIFY_TLS"],
+        )
+
         has_valid_token = False
 
         # if all looks good, setup the client
@@ -340,7 +345,9 @@ def create_app(env=os.environ):
                 token,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
-            has_valid_token = g.uaac.check_token_valid(token, app.config["UAA_CLIENT_ID"], app.config["UAA_CLIENT_SECRET"])
+            has_valid_token = g.uaac.check_token_valid(
+                token, app.config["UAA_CLIENT_ID"], app.config["UAA_CLIENT_SECRET"]
+            )
 
         if not has_valid_token:
             # if not forget the token, it's bad (if we have one)
@@ -376,14 +383,13 @@ def create_app(env=os.environ):
         is_invitation = (
             request.referrer and request.referrer.find("invitations/accept") != 1
         )
-        print('=============== ===============')
-        print(f'=============== request is: {request} ===============')
-        print('about to call first_login')
+        print("=============== ===============")
+        print(f"=============== request is: {request} ===============")
+        print("about to call first_login")
         if is_invitation and "code" not in request.args:
             return redirect(url_for("first_login"))
 
         try:
-
             # connect a client with no token
             uaac = UAAClient(
                 app.config["UAA_BASE_URL"],
@@ -451,7 +457,7 @@ def create_app(env=os.environ):
             # email is not valid, exception message is human-readable
             flash(str(exc))
             return render_template("signup.html")
-        
+
         # Check the username pattern is valid, a-z, numbers and a select set of special characters
         if not email_username_valid(email):
             flash(
@@ -531,14 +537,18 @@ def create_app(env=os.environ):
         except:
             logging.exception("An invalid access token was decoded")
             return render_template("error/token_validation.html"), 401
-        
+
         user_id = decoded_token["user_id"]
 
-        #check for org_manager role
+        # check for org_manager role
         cf_client = CFClient(app.config["CF_API_URL"], token)
         if not cf_client.is_org_manager(cf_client._get_cf_client(), user_id):
-            logging.info('non-org-manager attempted user invite')
-            flash(Markup('Only organization managers can invite users. See our documentation <a href="https://cloud.gov/docs/orgs-spaces/new-org/#org-manager-email">here</a>'))
+            logging.info("non-org-manager attempted user invite")
+            flash(
+                Markup(
+                    'Only organization managers can invite users. See our documentation <a href="https://cloud.gov/docs/orgs-spaces/new-org/#org-manager-email">here</a>'
+                )
+            )
             return render_template("invite.html")
 
         # validate the email address
@@ -588,7 +598,6 @@ def create_app(env=os.environ):
 
     @app.route("/redeem-invite", methods=["GET", "POST"])
     def redeem_invite():
-
         # Make sure that the requested URL has validation_token,
         # otherwise redirect to error page.
         if "verification_code" not in request.args:
@@ -623,7 +632,6 @@ def create_app(env=os.environ):
 
     @app.route("/first-login", methods=["GET"])
     def first_login():
-
         # check our token, and expirary date
         token = session.get("UAA_TOKEN", None)
 
@@ -634,7 +642,7 @@ def create_app(env=os.environ):
             return render_template("error/token_validation.html"), 401
 
         user = g.uaac.get_user(decoded_token["user_id"])
-        print(f'=== user in first login: {user} ===')
+        print(f"=== user in first login: {user} ===")
         logging.info("USER: {0}".format(user))
         if user["origin"] == "uaa":
             user["origin"] = app.config["IDP_PROVIDER_ORIGIN"]
@@ -683,8 +691,8 @@ def create_app(env=os.environ):
         # their email address split at the '@' symbol.
         username = g.uaac.get_user(decoded_token["user_id"])["userName"]
         userinfo = [username, app.config["IDP_PROVIDER_ORIGIN"], old_password]
-        print(f'app config is: {app.config}')
-        print(f'userInfo: {userinfo}')
+        print(f"app config is: {app.config}")
+        print(f"userInfo: {userinfo}")
         for part in username.split("@"):
             userinfo.append(part)
 
@@ -783,10 +791,8 @@ def create_app(env=os.environ):
 
     @app.route("/reset-password", methods=["GET", "POST"])
     def reset_password():
-
         # start with giving them the form
         if request.method == "GET":
-
             if "validation" not in request.args:
                 flash(
                     "The password validation link is incomplete. Please verify your link is correct and try again."
