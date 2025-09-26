@@ -535,7 +535,7 @@ def create_app(env=os.environ):
         cf_client = CFClient(app.config["CF_API_URL"], token)
         if not cf_client.is_org_manager(cf_client._get_cf_client(), user_id):
             logging.info('non-org-manager attempted user invite')
-            flash(Markup('Only organization managers can invite users. See our documentation <a href="https://cloud.gov/docs/orgs-spaces/new-org/#org-manager-email">here</a>'))
+            flash(Markup('Only organization managers can invite users. See our documentation <a href="https://docs.cloud.gov/platform/orgs-spaces/new-org/">here</a>'))
             return render_template("invite.html")
 
         # validate the email address
