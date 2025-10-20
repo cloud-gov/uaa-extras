@@ -4,21 +4,21 @@
 
 {% block content %}
 <div class="island-content">
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
+  {% with messages = get_flashed_messages() %}
+  {% if messages %}
+  {% for message in messages %}
   <div class="alert alert-error">
-      <p>{{ message }}</p>
+    <p>{{ message }}</p>
   </div>
-{% endfor %}
-{% endif %}
-{% endwith %}
-    <form method="post" action="{{url_for('invite')}}">
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+  <form method="post" action="{{url_for('invite')}}">
 
-        <input name="email" type="email" placeholder="Enter email" autofocus="autofocus" class="form-control" />
-        <input type="submit" value="Send invite" class="island-button" />
-        <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
-     </form>
+    <input name="email" type="email" placeholder="Enter email" autofocus="autofocus" class="form-control" />
+    <input type="submit" value="Send invite" class="island-button" />
+    <input name=_csrf_token type=hidden value="{{ csrf_token() }}">
+  </form>
 </div>
 <p>Learn more about <a href="https://docs.cloud.gov/platform/orgs-spaces/roles/">inviting teammates</a>.
 </p>
