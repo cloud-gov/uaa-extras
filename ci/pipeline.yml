@@ -251,6 +251,7 @@ resources:
       password: ((cf-deploy-password-development))
       org: ((cf-organization))
       space: ((cf-space))
+      cf_cli_version: 8
 
   - name: cf-cli-staging
     type: cf-cli-resource
@@ -260,6 +261,7 @@ resources:
       password: ((cf-deploy-password-staging))
       org: ((cf-organization))
       space: ((cf-space))
+      cf_cli_version: 8
 
   - name: cf-cli-production
     type: cf-cli-resource
@@ -269,6 +271,7 @@ resources:
       password: ((cf-deploy-password-production))
       org: ((cf-organization))
       space: ((cf-space))
+      cf_cli_version: 8
 
   - name: general-task
     type: registry-image
