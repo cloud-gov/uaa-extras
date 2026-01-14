@@ -6,7 +6,7 @@
 #
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.12.14
+aiohttp==3.13.3
     # via cloudfoundry-client
 aiosignal==1.4.0
     # via aiohttp
@@ -86,7 +86,7 @@ typing-extensions==4.14.1
     # via
     #   aiosignal
     #   sqlalchemy
-urllib3==2.6.0
+urllib3==2.6.3
     # via requests
 websocket-client==1.8.0
     # via cloudfoundry-client
