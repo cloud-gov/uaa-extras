@@ -24,13 +24,7 @@ class IntegrationTestClient:
 
     def uaa_pick_idp(self) -> str:
         r = self.s.get(self.uaa_url + "/login")
-        params = {
-            "returnIDParam": "idp",
-            "entityID": self.uaa_url[8:],
-            "idp": self.idp_name,
-            "isPassive": "true",
-        }
-        r = self.s.get(f"{self.uaa_url}/saml2/discovery", params=params)
+        r = self.s.get(f"{self.uaa_url}/saml2/authenticate/{self.idp_name}")
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
