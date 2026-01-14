@@ -30,7 +30,7 @@ class IntegrationTestClient:
             "idp": self.idp_name,
             "isPassive": "true",
         }
-        r = self.s.get(f"{self.uaa_url}/saml/discovery", params=params)
+        r = self.s.get(f"{self.uaa_url}/saml2/discovery", params=params)
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
@@ -107,7 +107,7 @@ class IntegrationTestClient:
         handles registering totp if user does not have one currently
         returns a tuple of str, bool representing the user's totp_seed, and whether a new totp was registered
         """
-        
+
         r = self.uaa_pick_idp()
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
