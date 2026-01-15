@@ -107,6 +107,9 @@ def test_login_no_totp(unauthenticated, config, user):
 
 def test_reset_totp(authenticated, user):
     # get the page so we have a CSRF
+    token, changed = authenticated.log_in(user["name"], user["password"])
+    assert changed
+
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
     soup = BeautifulSoup(r.text, features="html.parser")
