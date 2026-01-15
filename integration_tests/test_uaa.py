@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import pytest
 
 from uaaextras.clients import UAAClient
-from .integration_test import IntegrationTestClient, get_csrf_for_form
+from .integration_test import IntegrationTestClient
 
 
 @pytest.fixture
@@ -79,10 +79,12 @@ def authenticated(unauthenticated, user):
     return unauthenticated
 
 
-def get_csrf(page_text) -> str:
-    page = BeautifulSoup(page_text, features="html.parser")
-    csrf = page.find(attrs={"name": "_csrf_token"}).attrs["value"]
-    return csrf
+def get_csrf_for_form(form) -> str:
+    def is_csrf_token(input):
+        return input.has_attr("name") and input.attrs["name"] == "_csrf_token"
+    token_input = form.find(is_csrf_token)
+    if token_input is not None:
+        return token_input.attrs["value"]
 
 
 @pytest.mark.parametrize("page", ["/invite", "/change-password", "/first-login"])
@@ -107,16 +109,14 @@ def test_login_no_totp(unauthenticated, config, user):
 
 def test_reset_totp(authenticated, user):
     # get the page so we have a CSRF
-    token, changed = authenticated.log_in(user["name"], user["password"])
-    assert changed
-
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
     soup = BeautifulSoup(r.text, features="html.parser")
     form = soup.find("form")
+    next_url = form.attrs["action"]
     csrf = get_csrf_for_form(form)
     # actually reset our totp
-    r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
+    r = authenticated.post_to_page(next_url, data={"_csrf_token": csrf})
     assert r.status_code == 200
 
     # reset-totp is supposed to log a user out. Logging in should reset our totp
