@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import pytest
 
 from uaaextras.clients import UAAClient
-from .integration_test import IntegrationTestClient
+from .integration_test import IntegrationTestClient, get_csrf_for_form
 
 
 @pytest.fixture
@@ -109,8 +109,9 @@ def test_reset_totp(authenticated, user):
     # get the page so we have a CSRF
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
-
-    csrf = get_csrf(r.text)
+    soup = BeautifulSoup(r.text, features="html.parser")
+    form = soup.find("form")
+    csrf = get_csrf_for_form(form)
     # actually reset our totp
     r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
     assert r.status_code == 200
@@ -130,7 +131,8 @@ def test_authenticated_pages_work(authenticated, page, config):
 def test_change_password(authenticated, config, user):
     r = authenticated.get_page("/change-password")
     soup = BeautifulSoup(r.text, features="html.parser")
-    csrf = soup.find(attrs={"name": "_csrf_token"}).attrs["value"]
+    form = soup.find("form")
+    csrf = get_csrf_for_form(form)
     data = {
         "old_password": user["password"],
         "new_password": "a_severely_insecure_password",
@@ -142,7 +144,9 @@ def test_change_password(authenticated, config, user):
 
     # set the password back so we don't confuse the other tests
     r = authenticated.get_page("/change-password")
-    csrf = get_csrf(r.text)
+    soup = BeautifulSoup(r.text, features="html.parser")
+    form = soup.find("form")
+    csrf = get_csrf_for_form(form)
     data = {
         "old_password": "a_severely_insecure_password",
         "new_password": user["password"],
@@ -159,9 +163,9 @@ def test_invites_happy_path(authenticated, config):
         # is created and their invite info can still be fetched from Redis
         pytest.skip("Can't test functions that require email in dev")
     r = authenticated.get_page("/invite")
-    csrf = get_csrf(r.text)
     soup = BeautifulSoup(r.text, features="html.parser")
     form = soup.find("form")
+    csrf = get_csrf_for_form(form)
     url = form.attrs["action"]
     payload = {"email": "", "_csrf_token": csrf}
     r = authenticated.post_to_page(url, data=payload)
