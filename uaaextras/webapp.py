@@ -224,7 +224,7 @@ def create_app(env=os.environ):
     app = Flask(__name__)
     # use the supplied secret key, or make one up
     app.secret_key = os.environ.get(
-        "FLASK_SECRET_KEY", 
+        "FLASK_SECRET_KEY",
         codecs.encode(os.urandom(24), "base-64").decode("utf-8").strip()
     )
     app.jinja_env.globals["csrf_token"] = generate_csrf_token
@@ -330,7 +330,7 @@ def create_app(env=os.environ):
                 None,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
-        
+
         has_valid_token = False
 
         # if all looks good, setup the client
@@ -443,12 +443,12 @@ def create_app(env=os.environ):
             return render_template("signup.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
             return render_template("signup.html")
-        
+
         # Check the username pattern is valid, a-z, numbers and a select set of special characters
         if not email_username_valid(email):
             flash(
@@ -528,7 +528,7 @@ def create_app(env=os.environ):
         except:
             logging.exception("An invalid access token was decoded")
             return render_template("error/token_validation.html"), 401
-        
+
         user_id = decoded_token["user_id"]
 
         #check for org_manager role
@@ -545,7 +545,7 @@ def create_app(env=os.environ):
             return render_template("invite.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
@@ -719,7 +719,7 @@ def create_app(env=os.environ):
             return render_template("forgot_password.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
@@ -799,7 +799,7 @@ def create_app(env=os.environ):
             return render_template("reset_password.html")
         try:
             v = validate_email(email)  # validate and get info
-            email = v["email"]  # replace with normalized form
+            email = v.normalized  # replace with normalized form
         except EmailNotValidError as exc:
             # email is not valid, exception message is human-readable
             flash(str(exc))
