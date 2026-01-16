@@ -79,15 +79,6 @@ jobs:
           UAA_TARGET: ((uaa-target-url-development))
           EXTRAS_URL: ((uaa-extras-url-development))
           IDP_NAME: ((idp-provider-origin-development))
-    on_failure:
-      put: slack
-      params: &slack-failure-params
-        text: |
-          :x: FAILED to deploy cg-uaa-extras to development
-          <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-        channel: ((slack-channel-notifications))
-        username: ((slack-username))
-        icon_url: ((slack-icon-url))
 
   - name: deploy-staging
     plan:
@@ -141,12 +132,13 @@ jobs:
           IDP_NAME: ((idp-provider-origin-staging))
     on_failure:
       put: slack
-      params:
-        <<: *slack-failure-params
+      params: &slack-failure-params
         text: |
           :x: FAILED to deploy cg-uaa-extras to Staging
           <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|View build details>
-
+        channel: ((slack-channel-notifications))
+        username: ((slack-username))
+        icon_url: ((slack-icon-url))
   - name: deploy-production
     plan:
       - get: general-task
@@ -206,7 +198,7 @@ resources:
     source:
       commit_verification_keys: ((cloud-gov-pgp-keys))
       uri: ((cg-uaa-extras-git-url))
-      branch: ((cg-uaa-extras-git-branch))
+      branch: fix-csrf
 
   - name: cloud-gov-development
     type: cf
