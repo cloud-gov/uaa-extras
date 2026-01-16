@@ -111,6 +111,7 @@ class IntegrationTestClient:
         r = self.idp_start_log_in(next_url, csrf)
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
+        print(form)
         next_url = form.attrs["action"]
         csrf = get_csrf_for_form(form)
         r = self.idp_username_password_login(next_url, username, password, csrf)
