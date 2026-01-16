@@ -138,5 +138,6 @@ def get_csrf_for_form(form):
     def is_csrf_token(input):
         return input.has_attr("name") and input.attrs["name"] == "csrf_token"
     token_input = form.find(is_csrf_token)
+    print("Token input: " + token_input)
     if token_input is not None:
         return token_input.attrs["value"]
