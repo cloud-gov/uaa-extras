@@ -79,12 +79,10 @@ def authenticated(unauthenticated, user):
     return unauthenticated
 
 
-def get_csrf_for_form(form) -> str:
-    def is_csrf_token(input):
-        return input.has_attr("name") and input.attrs["name"] == "_csrf_token"
-    token_input = form.find(is_csrf_token)
-    if token_input is not None:
-        return token_input.attrs["value"]
+def get_csrf(page_text) -> str:
+    page = BeautifulSoup(page_text, features="html.parser")
+    csrf = page.find(attrs={"name": "_csrf_token"}).attrs["value"]
+    return csrf
 
 
 @pytest.mark.parametrize("page", ["/invite", "/change-password", "/first-login"])
@@ -108,15 +106,16 @@ def test_login_no_totp(unauthenticated, config, user):
 
 
 def test_reset_totp(authenticated, user):
+    print(authenticated)
     # get the page so we have a CSRF
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
-    soup = BeautifulSoup(r.text, features="html.parser")
-    form = soup.find("form")
-    next_url = form.attrs["action"]
-    csrf = get_csrf_for_form(form)
+
+    print(r.text)
+
+    csrf = get_csrf(r.text)
     # actually reset our totp
-    r = authenticated.post_to_page(next_url, data={"_csrf_token": csrf})
+    r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
     assert r.status_code == 200
 
     # reset-totp is supposed to log a user out. Logging in should reset our totp
@@ -134,8 +133,7 @@ def test_authenticated_pages_work(authenticated, page, config):
 def test_change_password(authenticated, config, user):
     r = authenticated.get_page("/change-password")
     soup = BeautifulSoup(r.text, features="html.parser")
-    form = soup.find("form")
-    csrf = get_csrf_for_form(form)
+    csrf = soup.find(attrs={"name": "_csrf_token"}).attrs["value"]
     data = {
         "old_password": user["password"],
         "new_password": "a_severely_insecure_password",
@@ -147,9 +145,7 @@ def test_change_password(authenticated, config, user):
 
     # set the password back so we don't confuse the other tests
     r = authenticated.get_page("/change-password")
-    soup = BeautifulSoup(r.text, features="html.parser")
-    form = soup.find("form")
-    csrf = get_csrf_for_form(form)
+    csrf = get_csrf(r.text)
     data = {
         "old_password": "a_severely_insecure_password",
         "new_password": user["password"],
@@ -158,7 +154,6 @@ def test_change_password(authenticated, config, user):
     }
 
 
-@pytest.mark.skip("Not done yet")
 def test_invites_happy_path(authenticated, config):
     if "dev" in config["urls"]["uaa"]:
         # alternate path: use dev, but expect the request to fail
@@ -166,9 +161,9 @@ def test_invites_happy_path(authenticated, config):
         # is created and their invite info can still be fetched from Redis
         pytest.skip("Can't test functions that require email in dev")
     r = authenticated.get_page("/invite")
+    csrf = get_csrf(r.text)
     soup = BeautifulSoup(r.text, features="html.parser")
     form = soup.find("form")
-    csrf = get_csrf_for_form(form)
     url = form.attrs["action"]
     payload = {"email": "", "_csrf_token": csrf}
     r = authenticated.post_to_page(url, data=payload)
