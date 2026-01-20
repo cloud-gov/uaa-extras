@@ -18,7 +18,8 @@ import sqlalchemy
 from uaaextras.webapp import create_app, send_email, str_to_bool, CONFIG_KEYS
 from uaaextras.clients import UAAError, UAAClient, TOTPClient, CFClient
 
-app = create_app({"UAA_CLIENT_ID": "client-id", "UAA_CLIENT_SECRET": "client-secret"})
+app = create_app({"UAA_CLIENT_ID": "client-id",
+                  "UAA_CLIENT_SECRET": "client-secret"})
 
 
 @contextmanager
@@ -140,7 +141,8 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
     def test_uaa_token(self, render_template, uaac):
-        """When we cannot validate a UAA token, the error/token_validation.html template is displayed"""
+        """When we cannot validate a UAA token,
+        the error/token_validation.html template is displayed"""
 
         r = Mock()
         r.text = json.dumps({"error_description": "oh no"})
@@ -157,7 +159,8 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.UAAClient")
     @patch("uaaextras.webapp.render_template")
     def test_uaa_scope(self, render_template, uaac):
-        """When the token is valid, but the scope is incorrect, the error/missing_scope.html template is displayed"""
+        """When the token is valid, but the scope is incorrect,
+        the error/missing_scope.html template is displayed"""
 
         uaac().oauth_token.return_value = {"scope": "not.what.we.wanted"}
 
@@ -212,7 +215,8 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.render_template")
     @requests_mock.Mocker(kw="m")
     def test_get_index(self, render_template, m):
-        """When a GET request is made to /, the index.html template is displayed"""
+        """When a GET request is made to /,
+        the index.html template is displayed"""
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
@@ -228,7 +232,8 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.render_template")
     @requests_mock.Mocker(kw="m")
     def test_get_invite(self, render_template, m):
-        """When a GET request is made to /invite, the invite.html template is displayed"""
+        """When a GET request is made to /invite,
+          the invite.html template is displayed"""
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
@@ -247,7 +252,8 @@ class TestAppConfig(unittest.TestCase):
     @patch("uaaextras.webapp.render_template")
     @requests_mock.Mocker(kw="m")
     def test_invite_bad_email(self, render_template, flash, uaac, cf, m):
-        """When an email is blank or invalid, the error is flashed to the user"""
+        """When an email is blank or invalid,
+          the error is flashed to the user"""
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
@@ -268,7 +274,8 @@ class TestAppConfig(unittest.TestCase):
                 sess["UAA_TOKEN"] = "foo"
                 sess["_csrf_token"] = "bar"
 
-            rv = c.post("/invite", data={"email": "not an email", "_csrf_token": "bar"})
+            rv = c.post("/invite", data={"email": "not an email",
+                                         "_csrf_token": "bar"})
             assert rv.status_code == 200
             render_template.assert_called_with("invite.html")
             flash.assert_called_once()
@@ -283,9 +290,9 @@ class TestAppConfig(unittest.TestCase):
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
-        
+
         cf().is_org_manager.return_value = False
-        assert cf().is_org_manager() == False
+        assert not cf().is_org_manager()
 
         with app.test_client() as c:
             with c.session_transaction() as sess:
@@ -307,7 +314,7 @@ class TestAppConfig(unittest.TestCase):
 
         m.post("https://uaa.bosh-lite.com/introspect", text='{"active": true}')
         render_template.return_value = "template output"
-        
+
         cf().is_org_manager.return_value = True
         assert cf().is_org_manager() == True
 
@@ -1608,6 +1615,7 @@ class TestTOTPClient(unittest.TestCase):
     def test_delete_totp(self):
         self.client.unset_totp_seed("example@cloud.gov")
         assert self.client.get_user_totp_seed("example@cloud.gov") is None
+
 
 class TestCFClient(unittest.TestCase):
 
