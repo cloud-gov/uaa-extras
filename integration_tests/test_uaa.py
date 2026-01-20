@@ -81,6 +81,7 @@ def authenticated(unauthenticated, user):
 
 def get_csrf(page_text) -> str:
     page = BeautifulSoup(page_text, features="html.parser")
+    print(page)
     csrf = page.find(attrs={"name": "_csrf_token"}).attrs["value"]
     return csrf
 
@@ -106,7 +107,6 @@ def test_login_no_totp(unauthenticated, config, user):
 
 
 def test_reset_totp(authenticated, user):
-    print(vars(authenticated.s))
     # get the page so we have a CSRF
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
