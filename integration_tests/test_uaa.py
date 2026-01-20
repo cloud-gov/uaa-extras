@@ -106,16 +106,16 @@ def test_login_no_totp(unauthenticated, config, user):
     assert not changed
 
 
-def test_reset_totp(unauthenticated, user):
-    token, changed = unauthenticated.log_in(user["name"], user["password"])
+def test_reset_totp(authenticated, user):
+    token, changed = authenticated.log_in(user["name"], user["password"])
     assert changed
     # get the page so we have a CSRF
-    r = unauthenticated.get_page("/reset-totp")
+    r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
 
     csrf = get_csrf(r.text)
     # actually reset our totp
-    r = unauthenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
+    r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
     assert r.status_code == 200
 
     # reset-totp is supposed to log a user out. Logging in should reset our totp
