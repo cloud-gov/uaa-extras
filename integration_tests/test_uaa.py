@@ -96,7 +96,8 @@ def test_unauthenticated_pages_redirect(unauthenticated, page, config):
 # NOTE: Needs to be first test as long as we do not have a totp-reset method
 def test_login_no_totp(unauthenticated, config, user):
     # log in to get/set our totp
-    token, changed = unauthenticated.log_in(user["name"], user["password"], user["token"])
+    token, changed = unauthenticated.log_in(user["name"], user["password"])
+    assert changed
     # log out, so log in will work
     unauthenticated.log_out()
 
@@ -106,8 +107,7 @@ def test_login_no_totp(unauthenticated, config, user):
 
 
 def test_reset_totp(authenticated, user):
-    token, changed = authenticated.log_in(user["name"], user["password"])
-    assert changed
+    token, changed = authenticated.log_in(user["name"], user["password"], user["token"])
     # get the page so we have a CSRF
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
