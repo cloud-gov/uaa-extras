@@ -383,8 +383,8 @@ def create_app(env=os.environ):
 
             # connect a client with no token
             uaac = UAAClient(
-                app.config["UAA_BASE_URL"],
-                None,
+                base_url=app.config["UAA_BASE_URL"],
+                token=None,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
 

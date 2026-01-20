@@ -81,7 +81,6 @@ def authenticated(unauthenticated, user):
 
 def get_csrf(page_text) -> str:
     page = BeautifulSoup(page_text, features="html.parser")
-    print(page)
     csrf = page.find(attrs={"name": "_csrf_token"}).attrs["value"]
     return csrf
 
