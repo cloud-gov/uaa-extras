@@ -110,10 +110,10 @@ def test_reset_totp(authenticated, user):
     r = authenticated.get_page("/reset-totp")
     print(r.text)
 
-    # csrf = get_csrf(r.text)
+    csrf = get_csrf(r.text)
     # # actually reset our totp
-    # r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
-    # assert r.status_code == 200
+    r = authenticated.post_to_page("/reset-totp", data={"_csrf_token": csrf})
+    assert r.status_code == 200
 
     # # reset-totp is supposed to log a user out. Logging in should reset our totp
     # token, changed = authenticated.log_in(user["name"], user["password"])
