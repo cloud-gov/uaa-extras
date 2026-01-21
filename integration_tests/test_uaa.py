@@ -106,6 +106,7 @@ def test_login_no_totp(unauthenticated, config, user):
 
 
 def test_reset_totp(authenticated, user):
+    r = authenticated.get_page("/login")
     # get the page so we have a CSRF
     r = authenticated.get_page("/reset-totp")
     assert r.status_code == 200
