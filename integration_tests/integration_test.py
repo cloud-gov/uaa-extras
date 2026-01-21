@@ -16,6 +16,8 @@ class IntegrationTestClient:
 
     def get_page(self, page, **kwargs) -> requests.models.Response:
         url = self.extras_url + page
+        print(self.s.cookies)
+        print(url)
         return self.s.get(url, **kwargs)
 
     def post_to_page(self, page, **kwargs) -> requests.models.Response:
