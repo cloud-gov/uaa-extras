@@ -27,13 +27,10 @@ class IntegrationTestClient:
         r = self.s.get(f"{self.uaa_url}/saml2/authenticate/{self.idp_name}")
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
-        csrf = get_csrf_for_form(form)
         next_url = form.attrs["action"]
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
-        if csrf is not None:
-            payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         return r
 
