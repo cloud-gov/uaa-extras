@@ -224,7 +224,7 @@ def create_app(env=os.environ):
     app = Flask(__name__)
     # use the supplied secret key, or make one up
     app.secret_key = os.environ.get(
-        "FLASK_SECRET_KEY", 
+        "FLASK_SECRET_KEY",
         codecs.encode(os.urandom(24), "base-64").decode("utf-8").strip()
     )
     app.jinja_env.globals["csrf_token"] = generate_csrf_token
@@ -318,6 +318,7 @@ def create_app(env=os.environ):
             "reset_password",
             "signup",
             "static",
+            "reset_totp"
             "logout",
         ]:
             return
@@ -330,7 +331,7 @@ def create_app(env=os.environ):
                 None,
                 verify_tls=app.config["UAA_VERIFY_TLS"],
             )
-        
+
         has_valid_token = False
 
         # if all looks good, setup the client
@@ -448,7 +449,7 @@ def create_app(env=os.environ):
             # email is not valid, exception message is human-readable
             flash(str(exc))
             return render_template("signup.html")
-        
+
         # Check the username pattern is valid, a-z, numbers and a select set of special characters
         if not email_username_valid(email):
             flash(
@@ -528,7 +529,7 @@ def create_app(env=os.environ):
         except:
             logging.exception("An invalid access token was decoded")
             return render_template("error/token_validation.html"), 401
-        
+
         user_id = decoded_token["user_id"]
 
         #check for org_manager role
