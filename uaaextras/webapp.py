@@ -856,6 +856,9 @@ def create_app(env=os.environ):
 
     @app.route("/reset-totp", methods=["GET", "POST"])
     def reset_totp():
+        if request.method == "GET":
+            return render_template("reset_totp.html")
+
         token = session.get("UAA_TOKEN", None)
         try:
             decoded_token = g.uaac.decode_access_token(token)
@@ -865,9 +868,6 @@ def create_app(env=os.environ):
 
         if user["origin"] != app.config["IDP_PROVIDER_ORIGIN"]:
             return redirect(url_for("index"))
-
-        if request.method == "GET":
-            return render_template("reset_totp.html")
 
         username = user["userName"]
         g.totp.unset_totp_seed(username)
