@@ -58,7 +58,6 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{url}", data=payload)
-        print(r.text)
         return r
 
     def idp_totp_login(self, body, totp_seed=None) -> typing.Tuple[str, bool, str]:
@@ -69,7 +68,9 @@ class IntegrationTestClient:
         next_url = form.attrs["action"]
         if totp_seed is not None:
             totp = pyotp.TOTP(totp_seed)
+        print(form)
         if form is not None and "barcode" in str(form):
+            print("passed")
             totp_updated = True
             totp_seed = soup.find("strong").string
             totp = pyotp.TOTP(totp_seed)
