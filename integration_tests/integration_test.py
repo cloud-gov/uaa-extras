@@ -84,8 +84,6 @@ class IntegrationTestClient:
             form = soup.find("form")
             csrf = get_csrf_for_form(form)
             next_url = form.attrs["action"]
-            print(next_url)
-            print(r.text)
         payload = {
             "j_tokenNumber": totp.now(),
             "_eventId_proceed": "",
@@ -94,8 +92,6 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
-        print(next_url)
-        print(r.text)
         return totp_seed, totp_updated, r
 
 
@@ -130,7 +126,9 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
+        print(r.text)
         r = self.s.get(self.uaa_url)
+        print(r.text)
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
