@@ -30,7 +30,6 @@ class IntegrationTestClient:
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
-        print(r.text)
         return r
 
 
@@ -48,6 +47,8 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{url}", data=payload)
+        print(self.ip_url + url)
+        print(r.text)
         return r
 
     def idp_username_password_login(self, url, username, password, csrf):
