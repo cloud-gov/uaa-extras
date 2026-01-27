@@ -25,12 +25,12 @@ class IntegrationTestClient:
     def uaa_pick_idp(self) -> str:
         r = self.s.get(self.uaa_url + "/login")
         r = self.s.get(f"{self.uaa_url}/saml2/authenticate/{self.idp_name}")
-        print(r.text)
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
+        print(r.text)
         return r
 
 
