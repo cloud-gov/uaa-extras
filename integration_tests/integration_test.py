@@ -137,6 +137,7 @@ class IntegrationTestClient:
         r = self.s.post(action, data=payload)
         print(self.uaa_url)
         r = self.s.get(self.uaa_url)
+        print(r.text)
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
