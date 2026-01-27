@@ -47,8 +47,6 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{url}", data=payload)
-        print(self.idp_url + url)
-        print(r.text)
         return r
 
     def idp_username_password_login(self, url, username, password, csrf):
@@ -60,6 +58,7 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{url}", data=payload)
+        print(r.text)
         return r
 
     def idp_totp_login(self, body, totp_seed=None) -> typing.Tuple[str, bool, str]:
