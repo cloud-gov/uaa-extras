@@ -68,9 +68,7 @@ class IntegrationTestClient:
         next_url = form.attrs["action"]
         if totp_seed is not None:
             totp = pyotp.TOTP(totp_seed)
-        print(form)
         if form is not None and "barcode" in str(form):
-            print("passed")
             totp_updated = True
             totp_seed = soup.find("strong").string
             totp = pyotp.TOTP(totp_seed)
@@ -86,6 +84,8 @@ class IntegrationTestClient:
             form = soup.find("form")
             csrf = get_csrf_for_form(form)
             next_url = form.attrs["action"]
+            print(next_url)
+            print(r.text)
         payload = {
             "j_tokenNumber": totp.now(),
             "_eventId_proceed": "",
@@ -94,6 +94,8 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+        print(next_url)
+        print(r.text)
         return totp_seed, totp_updated, r
 
 
