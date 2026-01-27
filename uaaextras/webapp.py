@@ -319,6 +319,7 @@ def create_app(env=os.environ):
             "signup",
             "static",
             "logout",
+            "reset_totp",
         ]:
             return
 
