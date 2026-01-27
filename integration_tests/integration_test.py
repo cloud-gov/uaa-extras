@@ -47,7 +47,7 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{self.idp_url}{url}", data=payload)
-        print(self.ip_url + url)
+        print(self.idp_url + url)
         print(r.text)
         return r
 
