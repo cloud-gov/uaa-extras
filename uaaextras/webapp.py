@@ -319,7 +319,6 @@ def create_app(env=os.environ):
             "signup",
             "static",
             "logout",
-            "reset_totp",
         ]:
             return
 
@@ -859,11 +858,13 @@ def create_app(env=os.environ):
         token = session.get("UAA_TOKEN", None)
         try:
             decoded_token = g.uaac.decode_access_token(token)
-            user = g.uaac.get_user(decoded_token["user_id"])
             print("succeeded")
         except Exception as exc:
             print("failed: " + str(exc))
             return redirect(app.config["UAA_BASE_URL"])
+
+        user = g.uaac.get_user(decoded_token["user_id"])
+        logging.info("USER: {0}".format(user))
 
         if user["origin"] != app.config["IDP_PROVIDER_ORIGIN"]:
             print("origin mismatch")
