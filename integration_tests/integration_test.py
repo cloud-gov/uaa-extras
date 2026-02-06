@@ -122,6 +122,7 @@ class IntegrationTestClient:
         form = soup.find("form")
         action = form.attrs["action"]
         csrf = get_csrf_for_form(form)
+        print(csrf)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         if csrf is not None:
             payload["csrf_token"] = csrf
