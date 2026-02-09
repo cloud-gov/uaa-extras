@@ -72,6 +72,7 @@ class IntegrationTestClient:
         if form is not None and "barcode" in str(form):
             totp_updated = True
             totp_seed = soup.find("strong").string
+            print("TOTP Seed: " + totp_seed)
             totp = pyotp.TOTP(totp_seed)
             payload = {
                 "j_tokenNumber": totp.now(),
