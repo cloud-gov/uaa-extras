@@ -128,13 +128,15 @@ class IntegrationTestClient:
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
         form = soup.find("form")
         action = form.attrs["action"]
-        #csrf = get_csrf_for_form(form)
+        csrf = get_csrf_for_form(form)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
+        print("POST" + r.text)
         r = self.s.get(self.uaa_url)
+        print("GET" + r.text)
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
