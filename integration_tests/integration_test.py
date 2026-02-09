@@ -114,6 +114,8 @@ class IntegrationTestClient:
         form = soup.find("form")
         next_url = form.attrs["action"]
         csrf = get_csrf_for_form(form)
+        print(r.text)
+        print("preloging: " + csrf)
         r = self.idp_username_password_login(next_url, username, password, csrf)
         totp_seed, totp_updated, r = self.idp_totp_login(r.text, totp_seed)
 
@@ -122,7 +124,6 @@ class IntegrationTestClient:
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
         form = soup.find("form")
         action = form.attrs["action"]
-        print(r.text)
         csrf = get_csrf_for_form(form)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
