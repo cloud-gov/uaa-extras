@@ -122,6 +122,7 @@ class IntegrationTestClient:
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
         form = soup.find("form")
         action = form.attrs["action"]
+        print(r.text)
         csrf = get_csrf_for_form(form)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
@@ -138,7 +139,6 @@ class IntegrationTestClient:
 def get_csrf_for_form(form):
     def is_csrf_token(input):
         return input.has_attr("name") and input.attrs["name"] == "csrf_token"
-    print("input:" + input)
     token_input = form.find(is_csrf_token)
     if token_input is not None:
         return token_input.attrs["value"]
