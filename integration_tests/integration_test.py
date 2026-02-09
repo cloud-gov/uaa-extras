@@ -95,6 +95,7 @@ class IntegrationTestClient:
         print("Self idp url: " + self.idp_url)
         print("next url: " + next_url)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+        r = self.s.post(f"{self.idp_url}{next_url}")
         print(r.text)
         return totp_seed, totp_updated, r
 
