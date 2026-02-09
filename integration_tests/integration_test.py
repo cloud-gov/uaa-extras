@@ -92,6 +92,8 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         print("Token: " + csrf)
+        print("Self idp url: " + self.idp_url)
+        print("next url: " + next_url)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         return totp_seed, totp_updated, r
 
