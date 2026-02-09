@@ -125,7 +125,6 @@ class IntegrationTestClient:
         csrf = get_csrf_for_form(form)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
-        print("payloadtoken: " + csrf)
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
@@ -139,6 +138,7 @@ class IntegrationTestClient:
 def get_csrf_for_form(form):
     def is_csrf_token(input):
         return input.has_attr("name") and input.attrs["name"] == "csrf_token"
+    print("input:" + input)
     token_input = form.find(is_csrf_token)
     if token_input is not None:
         return token_input.attrs["value"]
