@@ -95,6 +95,7 @@ class IntegrationTestClient:
         print("Self idp url: " + self.idp_url)
         print("next url: " + next_url)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+        print(r.text)
         return totp_seed, totp_updated, r
 
 
@@ -118,8 +119,6 @@ class IntegrationTestClient:
         csrf = get_csrf_for_form(form)
         r = self.idp_username_password_login(next_url, username, password, csrf)
         totp_seed, totp_updated, r = self.idp_totp_login(r.text, totp_seed)
-        print(r.text)
-        print("posttotp: " + csrf)
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLResponse"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
