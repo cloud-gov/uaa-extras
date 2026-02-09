@@ -120,7 +120,7 @@ class IntegrationTestClient:
         r = self.idp_username_password_login(next_url, username, password, csrf)
         totp_seed, totp_updated, r = self.idp_totp_login(r.text, totp_seed)
         print("totp seed" + totp_seed)
-        print("totp updated" + totp_updated)
+        print("totp updated" + str(totp_updated))
 
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLResponse"}).attrs["value"]
