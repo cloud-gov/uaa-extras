@@ -141,6 +141,7 @@ class IntegrationTestClient:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
         print("Headers" + str(r.headers))
+        print("Cookies" + str(r.cookies))
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
