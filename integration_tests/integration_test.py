@@ -144,6 +144,7 @@ class IntegrationTestClient:
         print("Cookies" + str(self.s.cookies.get_dict()))
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
+        print("GET Cookies" + str(r.cookies))
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
