@@ -141,9 +141,7 @@ class IntegrationTestClient:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
         print("POST" + r.text)
-        r = self.s.get(self.uaa_url)
-        print("GET" + r.text)
-        r = self.s.get(self.extras_url + "/")
+        r = self.s.get(self.uaa_url + "/")
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
