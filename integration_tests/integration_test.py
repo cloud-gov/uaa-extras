@@ -101,8 +101,6 @@ class IntegrationTestClient:
         print("final next url: " + next_url)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         print(r.text)
-        r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
-        print(r.text)
         return totp_seed, totp_updated, r
 
 
