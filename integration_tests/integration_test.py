@@ -108,6 +108,7 @@ class IntegrationTestClient:
         csrf = get_csrf_for_form(form)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+        print(r.text)
         return totp_seed, totp_updated, r
 
 
