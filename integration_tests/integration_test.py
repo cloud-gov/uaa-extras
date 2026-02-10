@@ -101,6 +101,13 @@ class IntegrationTestClient:
         print("final next url: " + next_url)
         r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         print(r.text)
+        soup = BeautifulSoup(r.text, features="html.parser")
+        saml_request = soup.find(attrs={"name": "SAMLResponse"}).attrs["value"]
+        relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
+        form = soup.find("form")
+        csrf = get_csrf_for_form(form)
+        payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
+        r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
         return totp_seed, totp_updated, r
 
 
@@ -134,7 +141,7 @@ class IntegrationTestClient:
         form = soup.find("form")
         action = form.attrs["action"]
         csrf = get_csrf_for_form(form)
-        payload = dict(RelayState=relay_state, SAMLRequest=saml_request, submit="Continue")
+        payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
         print(action)
         if csrf is not None:
