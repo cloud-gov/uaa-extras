@@ -143,6 +143,8 @@ class IntegrationTestClient:
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
         print("GET" + r.text)
+        r = self.s.get(self.extras_url)
+        print("Print get account page: " + r.text)
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
