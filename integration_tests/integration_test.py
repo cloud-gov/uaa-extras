@@ -118,7 +118,6 @@ class IntegrationTestClient:
         csrf = get_csrf_for_form(form)
 
         r = self.idp_start_log_in(next_url, csrf)
-        print("PRINT STAT LOPGIN" + r.text)
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
         next_url = form.attrs["action"]
@@ -128,7 +127,6 @@ class IntegrationTestClient:
         totp_seed, totp_updated, r = self.idp_totp_login(r.text, totp_seed)
         print("totp seed" + totp_seed)
         print("totp updated" + str(totp_updated))
-        print("PRINT R AFTER TOTP" + r.text)
 
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLResponse"}).attrs["value"]
@@ -136,8 +134,7 @@ class IntegrationTestClient:
         form = soup.find("form")
         action = form.attrs["action"]
         csrf = get_csrf_for_form(form)
-        payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
-        print("post payload" + str(payload))
+        payload = dict(RelayState=relay_state, SAMLRequest=saml_request, submit="Continue")
         print(r.url)
         print(action)
         if csrf is not None:
