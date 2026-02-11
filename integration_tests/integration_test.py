@@ -139,7 +139,7 @@ class IntegrationTestClient:
         print(action)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(action, data=payload)
+        r = self.s.post(action, data=payload, cookies=self.s.cookies.get_dict())
         print("Headers" + str(r.headers))
         print("POST Session Cookies" + str(self.s.cookies.get_dict()))
         print("POST Request Cookies" + str(r.cookies.get_dict()))
