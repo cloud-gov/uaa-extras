@@ -144,7 +144,7 @@ class IntegrationTestClient:
         print("POST Session Cookies" + str(self.s.cookies.get_dict()))
         print("POST Request Cookies" + str(r.cookies.get_dict()))
         print("POST" + r.text)
-        r = self.s.get(self.uaa_url)
+        r = self.s.get(self.uaa_ur, cookies=self.s.cookies.get_dict())
         print("GET Session Cookies" + str(self.s.cookies.get_dict()))
         print("GET Request Cookies" + str(r.cookies.get_dict()))
         return totp_seed, totp_updated
