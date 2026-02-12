@@ -29,6 +29,8 @@ class IntegrationTestClient:
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
+        print(saml_request)
+        print(relay_state)
         form = soup.find("form")
         csrf = get_csrf_for_form(form)
         next_url = form.attrs["action"]
@@ -124,11 +126,11 @@ class IntegrationTestClient:
         print("for idp start login: " + next_url)
         csrf = get_csrf_for_form(form)
 
-        # r = self.idp_start_log_in(next_url, csrf)
-        # soup = BeautifulSoup(r.text, features="html.parser")
-        # form = soup.find("form")
-        # next_url = form.attrs["action"]
-        # csrf = get_csrf_for_form(form)
+        r = self.idp_start_log_in(next_url, csrf)
+        soup = BeautifulSoup(r.text, features="html.parser")
+        form = soup.find("form")
+        next_url = form.attrs["action"]
+        csrf = get_csrf_for_form(form)
         r = self.idp_username_password_login(next_url, username, password, csrf)
         print("CSRF before totp login: " + csrf)
         print(r.text)
