@@ -143,6 +143,8 @@ class IntegrationTestClient:
         r = self.s.post(action, data=payload)
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
+        print("Try calling first-login url here")
+        r = self.s.get(self.extras_url + "/first-login")
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
