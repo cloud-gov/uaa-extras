@@ -32,10 +32,11 @@ class IntegrationTestClient:
         form = soup.find("form")
         csrf = get_csrf_for_form(form)
         next_url = form.attrs["action"]
+        print(next_url)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+        r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
         return r
 
 
