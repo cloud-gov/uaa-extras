@@ -8,3 +8,4 @@ cloudfoundry-client
 gunicorn
 email_validator
 psycopg2
+wheel

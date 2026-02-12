@@ -63,7 +63,9 @@ multidict==6.7.1
 oauth2-client==1.4.2
     # via cloudfoundry-client
 packaging==26.0
-    # via gunicorn
+    # via
+    #   gunicorn
+    #   wheel
 polling2==0.5.0
     # via cloudfoundry-client
 propcache==0.4.1
@@ -101,6 +103,8 @@ werkzeug==3.1.5
     # via
     #   flask
     #   flask-cors
+wheel==0.46.3
+    # via -r pip-tools/requirements.in
 yarl==1.22.0
     # via aiohttp
 zxcvbn-python==4.4.24
