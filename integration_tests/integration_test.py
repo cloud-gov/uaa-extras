@@ -43,10 +43,10 @@ class IntegrationTestClient:
     def idp_start_log_in(self, url, csrf):
         payload = {
             "shib_idp_ls_exception.shib_idp_session_ss": "",
-            "shib_idp_ls_success.shib_idp_session_ss": "false",
+            "shib_idp_ls_success.shib_idp_session_ss": "true",
             "shib_idp_ls_value.shib_idp_session_ss": "",
             "shib_idp_ls_exception.shib_idp_persistent_ss": "",
-            "shib_idp_ls_success.shib_idp_persistent_ss": "false",
+            "shib_idp_ls_success.shib_idp_persistent_ss": "true",
             "shib_idp_ls_value.shib_idp_persistent_ss": "",
             "shib_idp_ls_supported": "true",
             "_eventId_proceed": "",
@@ -126,9 +126,7 @@ class IntegrationTestClient:
         print("for idp start login: " + next_url)
         csrf = get_csrf_for_form(form)
 
-        r = self.s.post(f"{self.idp_url}{next_url}")
-
-        # r = self.idp_start_log_in(next_url, csrf)
+        r = self.idp_start_log_in(next_url, csrf)
         soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
         next_url = form.attrs["action"]
