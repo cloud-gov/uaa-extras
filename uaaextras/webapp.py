@@ -11,7 +11,6 @@ import ssl
 import uuid, string, random, json
 
 from flask import Flask, flash, g, redirect, render_template, request, session, url_for
-from flask_cors import CORS
 from markupsafe import Markup
 from sqlalchemy import create_engine
 from talisman import Talisman
@@ -223,7 +222,6 @@ def create_app(env=os.environ):
     """Create an instance of the web application"""
     # setup our app config
     app = Flask(__name__)
-    CORS(app, supports_credentials=True)
     # use the supplied secret key, or make one up
     app.secret_key = os.environ.get(
         "FLASK_SECRET_KEY",

@@ -1,5 +1,4 @@
 flask
-flask-cors
 sqlalchemy
 talisman
 zxcvbn-python
