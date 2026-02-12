@@ -18,12 +18,16 @@ attrs==25.4.0
     # via aiohttp
 blinker==1.9.0
     # via flask
+build==1.4.0
+    # via pip-tools
 certifi==2026.1.4
     # via requests
 charset-normalizer==3.4.4
     # via requests
 click==8.3.1
-    # via flask
+    # via
+    #   flask
+    #   pip-tools
 cloudfoundry-client==1.40.3
     # via -r pip-tools/requirements.in
 dnspython==2.8.0
@@ -64,8 +68,11 @@ oauth2-client==1.4.2
     # via cloudfoundry-client
 packaging==26.0
     # via
+    #   build
     #   gunicorn
     #   wheel
+pip-tools==7.5.3
+    # via -r pip-tools/requirements.in
 polling2==0.5.0
     # via cloudfoundry-client
 propcache==0.4.1
@@ -76,6 +83,10 @@ protobuf==6.33.5
     # via cloudfoundry-client
 psycopg2==2.9.11
     # via -r pip-tools/requirements.in
+pyproject-hooks==1.2.0
+    # via
+    #   build
+    #   pip-tools
 pyyaml==6.0.3
     # via cloudfoundry-client
 redis==7.1.1
@@ -90,6 +101,10 @@ sqlalchemy==2.0.46
     # via -r pip-tools/requirements.in
 talisman==0.1.0
     # via -r pip-tools/requirements.in
+tomli==2.4.0
+    # via
+    #   build
+    #   pip-tools
 typing-extensions==4.15.0
     # via
     #   aiosignal
@@ -104,8 +119,12 @@ werkzeug==3.1.5
     #   flask
     #   flask-cors
 wheel==0.46.3
-    # via -r pip-tools/requirements.in
+    # via pip-tools
 yarl==1.22.0
     # via aiohttp
 zxcvbn-python==4.4.24
     # via -r pip-tools/requirements.in
+
+# The following packages are considered to be unsafe in a requirements file:
+# pip
+# setuptools
