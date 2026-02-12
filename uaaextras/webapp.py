@@ -223,7 +223,7 @@ def create_app(env=os.environ):
     """Create an instance of the web application"""
     # setup our app config
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, supports_credentials=True)
     # use the supplied secret key, or make one up
     app.secret_key = os.environ.get(
         "FLASK_SECRET_KEY",
