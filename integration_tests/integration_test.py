@@ -26,11 +26,10 @@ class IntegrationTestClient:
     def uaa_pick_idp(self) -> str:
         r = self.s.get(self.uaa_url + "/login")
         r = self.s.get(f"{self.uaa_url}/saml2/authenticate/{self.idp_name}")
+        print("Pick idp" + r.text)
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
-        print(saml_request)
-        print(relay_state)
         form = soup.find("form")
         csrf = get_csrf_for_form(form)
         next_url = form.attrs["action"]
