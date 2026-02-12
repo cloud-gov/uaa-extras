@@ -140,13 +140,8 @@ class IntegrationTestClient:
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
-        print("Headers" + str(r.headers))
-        print("POST Session Cookies" + str(self.s.cookies.get_dict()))
-        print("POST Request Cookies" + str(r.cookies.get_dict()))
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
-        print("GET Session Cookies" + str(self.s.cookies.get_dict()))
-        print("GET Request Cookies" + str(r.cookies.get_dict()))
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
