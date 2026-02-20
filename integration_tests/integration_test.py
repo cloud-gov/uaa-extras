@@ -141,11 +141,12 @@ class IntegrationTestClient:
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
         print(action)
-        # if csrf is not None:
-        #     payload["csrf_token"] = csrf
+        if csrf is not None:
+            payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
         print("POST" + r.text)
-        r = self.s.get(self.uaa_url + "/login")
+        r = self.s.post(self.uaa_url, data=payload)
+        # r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
