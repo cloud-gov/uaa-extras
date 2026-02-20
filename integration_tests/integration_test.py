@@ -6,6 +6,7 @@ import requests
 
 # CSRF Element looks like <input type="hidden" name="csrf_token" value="_97d8d610c343b1cdd5386aedfcc5451d2ec32e97">
 
+
 class IntegrationTestClient:
     def __init__(self, extras_url, idp_url, uaa_url, idp_name) -> None:
         self.s = requests.Session()
@@ -38,7 +39,6 @@ class IntegrationTestClient:
             payload["csrf_token"] = csrf
         r = self.s.post(f"{next_url}", data=payload)
         return r
-
 
     def idp_start_log_in(self, url, csrf):
         payload = {
@@ -111,7 +111,6 @@ class IntegrationTestClient:
         print(r.text)
         return totp_seed, totp_updated, r
 
-
     def log_in(self, username, password, totp_seed=None) -> typing.Tuple[str, bool]:
         """
         log in using the shibboleth totp IDP.
@@ -152,17 +151,17 @@ class IntegrationTestClient:
         r = self.s.post(action, data=payload)
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
-        print("Try calling first-login url here")
-        r = self.s.get(self.extras_url + "/first-login")
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
         self.s.get(f"{self.uaa_url}/logout.do")
         self.s = requests.Session()
 
+
 def get_csrf_for_form(form):
     def is_csrf_token(input):
         return input.has_attr("name") and input.attrs["name"] == "csrf_token"
+
     token_input = form.find(is_csrf_token)
     if token_input is not None:
         return token_input.attrs["value"]

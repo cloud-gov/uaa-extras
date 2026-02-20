@@ -57,7 +57,7 @@ def user(uaa, config):
         config["uaa_client"], config["uaa_secret"], user["name"], user["password"]
     )
     yield user
-    uaa.delete_user(r["id"])
+    # uaa.delete_user(r["id"])
 
 
 @pytest.fixture
@@ -121,8 +121,8 @@ def test_reset_totp(authenticated, user):
     assert changed
 
 
-#@pytest.mark.parametrize("page", ["/invite", "/change-password"])
-#def test_authenticated_pages_work(authenticated, page, config):
+# @pytest.mark.parametrize("page", ["/invite", "/change-password"])
+# def test_authenticated_pages_work(authenticated, page, config):
 #     r = authenticated.get_page(page)
 #     assert r.status_code == 200
 #     assert r.url == config["urls"]["extras"] + page
