@@ -143,12 +143,9 @@ class IntegrationTestClient:
         print(action)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(
-            f"{self.uaa_url}/saml/SSO/alias/login.dev.us-gov-west-1.aws-us-gov.cloud.gov",
-            data=payload,
-        )
+        r = self.s.post(action, data=payload)
         print("POST" + r.text)
-        self.s.get(f"{self.uaa_url}")
+        r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
