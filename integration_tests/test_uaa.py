@@ -57,7 +57,7 @@ def user(uaa, config):
         config["uaa_client"], config["uaa_secret"], user["name"], user["password"]
     )
     yield user
-    # uaa.delete_user(r["id"])
+    uaa.delete_user(r["id"])
 
 
 @pytest.fixture
