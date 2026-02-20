@@ -31,13 +31,8 @@ class IntegrationTestClient:
         soup = BeautifulSoup(r.text, features="html.parser")
         saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
         relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
-        form = soup.find("form")
-        csrf = get_csrf_for_form(form)
-        next_url = form.attrs["action"]
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
-        if csrf is not None:
-            payload["csrf_token"] = csrf
-        r = self.s.post(f"{next_url}", data=payload)
+        r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
         return r
 
     def idp_start_log_in(self, url, csrf):
@@ -148,7 +143,7 @@ class IntegrationTestClient:
         print(action)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(action, data=payload)
+        r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
