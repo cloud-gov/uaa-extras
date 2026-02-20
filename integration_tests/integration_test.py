@@ -138,12 +138,11 @@ class IntegrationTestClient:
         form = soup.find("form")
         action = form.attrs["action"]
         csrf = get_csrf_for_form(form)
-        # payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
-        payload = dict()
+        payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
         print(action)
-        if csrf is not None:
-            payload["csrf_token"] = csrf
+        # if csrf is not None:
+        #     payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
         print("POST" + r.text)
         r = self.s.get(self.uaa_url + "/login")
