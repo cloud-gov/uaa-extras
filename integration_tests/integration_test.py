@@ -112,6 +112,8 @@ class IntegrationTestClient:
         handles registering totp if user does not have one currently
         returns a tuple of str, bool representing the user's totp_seed, and whether a new totp was registered
         """
+        custom_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+        self.s.headers["User-Agent"] = custom_user_agent
 
         r = self.uaa_pick_idp()
         soup = BeautifulSoup(r.text, features="html.parser")
