@@ -143,7 +143,8 @@ class IntegrationTestClient:
         print(action)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(action, data=payload)
+        headers = {"Referer": self.idp_url}
+        r = self.s.post(action, data=payload, headers=headers)
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
