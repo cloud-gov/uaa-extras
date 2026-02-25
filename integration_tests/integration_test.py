@@ -96,7 +96,7 @@ class IntegrationTestClient:
             next_url = form.attrs["action"]
             print("2nd next url: " + next_url)
         next_token_number = totp.now()
-        print("Second token: " + str(tokenNumber))
+        print("Second token: " + str(next_token_number))
         print(str(totp.verify(next_token_number)))
         payload = {
             "j_tokenNumber": next_token_number,
