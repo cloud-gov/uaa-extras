@@ -77,8 +77,11 @@ class IntegrationTestClient:
             totp_seed = soup.find("strong").string
             print("TOTP Seed: " + totp_seed)
             totp = pyotp.TOTP(totp_seed)
+            tokenNumber = totp.now()
+            print("First token: " + str(tokenNumber))
+            print(str(totp.verify(tokenNumber)))
             payload = {
-                "j_tokenNumber": totp.now(),
+                "j_tokenNumber": tokenNumber,
                 "_eventId_proceed": "",
                 "state": "$state",
             }
@@ -92,8 +95,11 @@ class IntegrationTestClient:
             csrf = get_csrf_for_form(form)
             next_url = form.attrs["action"]
             print("2nd next url: " + next_url)
+        next_token_number = totp.now()
+        print("Second token: " + str(tokenNumber))
+        print(str(totp.verify(next_token_number)))
         payload = {
-            "j_tokenNumber": totp.now(),
+            "j_tokenNumber": next_token_number,
             "_eventId_proceed": "",
             "state": "$state",
         }
