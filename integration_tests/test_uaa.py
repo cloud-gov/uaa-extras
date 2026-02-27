@@ -53,6 +53,11 @@ def user(uaa, config):
         password=user["password"],
         origin="uaa",
     )
+    user["password"] = "".join(
+        random.choices(
+            string.ascii_lowercase + string.ascii_uppercase + string.digits, k=20
+        )
+    )
     uaa.set_temporary_password(
         config["uaa_client"], config["uaa_secret"], user["name"], user["password"]
     )
