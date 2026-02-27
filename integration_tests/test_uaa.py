@@ -51,7 +51,7 @@ def user(uaa, config):
         "alsounimportant",
         user["name"],
         password=user["password"],
-        origin="cloud.gov",
+        origin="uaa",
     )
     uaa.set_temporary_password(
         config["uaa_client"], config["uaa_secret"], user["name"], user["password"]

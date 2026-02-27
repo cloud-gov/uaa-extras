@@ -94,12 +94,6 @@ class IntegrationTestClient:
             form = soup.find("form")
             csrf = get_csrf_for_form(form)
             next_url = form.attrs["action"]
-            r = self.s.get(f"{self.idp_url}{next_url}")
-            print(r.text)
-            soup = BeautifulSoup(r.text, features="html.parser")
-            form = soup.find("form")
-            csrf = get_csrf_for_form(form)
-            next_url = form.attrs["action"]
             print("2nd next url: " + next_url)
         next_token_number = totp.now()
         print("Second token: " + str(next_token_number))
