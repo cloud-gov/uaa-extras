@@ -76,6 +76,7 @@ def unauthenticated(config):
 def authenticated(unauthenticated, user):
     token, changed = unauthenticated.log_in(user["name"], user["password"])
     if changed:
+        print("changed token: " + token)
         user["token"] = token
     return unauthenticated
 
