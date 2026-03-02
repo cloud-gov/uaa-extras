@@ -113,6 +113,7 @@ class IntegrationTestClient:
         }
         if csrf is not None:
             payload["csrf_token"] = csrf
+        print(payload)
         print("Token: " + csrf)
         print("Self idp url: " + self.idp_url)
         print("final next url: " + next_url)
