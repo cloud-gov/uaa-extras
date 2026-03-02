@@ -149,21 +149,10 @@ class IntegrationTestClient:
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
         print(r.url)
         print(action)
-        if csrf is not None:
-            payload["csrf_token"] = csrf
-        r = self.s.post(
-            f"{self.uaa_url}/saml/SSO/alias/login.dev.us-gov-west-1.aws-us-gov.cloud.gov",
-            data=payload,
-        )
+        r = self.s.post(action, data=payload)
         print("POST" + r.text)
-        r = self.s.get(f"{self.uaa_url}/saml2/authenticate/cloud.gov")
-        print(r.text)
-        soup = BeautifulSoup(r.text, features="html.parser")
-        saml_request = soup.find(attrs={"name": "SAMLRequest"}).attrs["value"]
-        relay_state = soup.find(attrs={"name": "RelayState"}).attrs["value"]
-        payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
-        r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
-        print("saml2 again " + r.text)
+        r = self.post()
+
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
