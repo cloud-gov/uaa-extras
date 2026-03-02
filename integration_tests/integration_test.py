@@ -151,8 +151,6 @@ class IntegrationTestClient:
         print(action)
         r = self.s.post(action, data=payload)
         print("POST" + r.text)
-        r = self.post()
-
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
