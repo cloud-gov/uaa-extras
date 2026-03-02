@@ -156,7 +156,7 @@ class IntegrationTestClient:
             data=payload,
         )
         print("POST" + r.text)
-        r = self.s.get(self.uaa_url)
+        r = self.s.get(f"{self.uaa_url}/saml2/authenticate/cloud.gov")
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
