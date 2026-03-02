@@ -150,8 +150,10 @@ class IntegrationTestClient:
         print(action)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        r = self.s.post(action, data=payload, headers=headers)
+        r = self.s.post(
+            f"{self.uaa_url}/saml/SSO/alias/login.dev.us-gov-west-1.aws-us-gov.cloud.gov",
+            data=payload,
+        )
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
