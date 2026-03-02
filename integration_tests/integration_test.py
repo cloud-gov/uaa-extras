@@ -91,6 +91,10 @@ class IntegrationTestClient:
                 payload["csrf_token"] = csrf
             r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
             print(r.text)
+            soup = BeautifulSoup(body, features="html.parser")
+            form = soup.find("form")
+            csrf = get_csrf_for_form(form)
+            next_url = form.attrs["action"]
             r = self.s.get(f"{self.idp_url}{next_url}")
             print("After submitting first token")
             print(r.text)
