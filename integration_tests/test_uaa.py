@@ -108,7 +108,6 @@ def test_login_no_totp(unauthenticated, config, user):
 
 
 def test_reset_totp(authenticated, user):
-    print(vars(authenticated))
     # get the page so we have a CSRF
     r = authenticated.get_page("/reset-totp")
     print(r.text)
