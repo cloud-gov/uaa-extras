@@ -90,6 +90,8 @@ class IntegrationTestClient:
             if csrf is not None:
                 payload["csrf_token"] = csrf
             r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+            print(r.text)
+            r = self.s.get(f"{self.idp_url}{next_url}")
             print("After submitting first token")
             print(r.text)
             soup = BeautifulSoup(r.text, features="html.parser")
