@@ -3,6 +3,7 @@ import typing
 from bs4 import BeautifulSoup
 import pyotp
 import requests
+from uaaextras.clients import TOTPClient
 
 # CSRF Element looks like <input type="hidden" name="csrf_token" value="_97d8d610c343b1cdd5386aedfcc5451d2ec32e97">
 
@@ -134,7 +135,7 @@ class IntegrationTestClient:
         r = self.idp_username_password_login(next_url, username, password, csrf)
         print("CSRF before totp login: " + csrf)
         print(r.text)
-        totp_seed, totp_updated, r = self.idp_totp_login(r.text, totp_seed)
+        totp_seed, totp_updated, r = self.idp_totp_login(r.text, username, totp_seed)
         print("totp seed" + totp_seed)
         print("totp updated" + str(totp_updated))
 
@@ -145,12 +146,12 @@ class IntegrationTestClient:
         action = form.attrs["action"]
         csrf = get_csrf_for_form(form)
         payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
-        print(payload)
         print(r.url)
         print(action)
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(action, data=payload)
+        headers = {"Content-Type": "application/x-www-form-urlencoded"}
+        r = self.s.post(action, data=payload, headers=headers)
         print("POST" + r.text)
         r = self.s.get(self.uaa_url)
         return totp_seed, totp_updated
