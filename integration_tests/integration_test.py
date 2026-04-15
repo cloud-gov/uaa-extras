@@ -6,6 +6,7 @@ import requests
 
 # CSRF Element looks like <input type="hidden" name="csrf_token" value="_97d8d610c343b1cdd5386aedfcc5451d2ec32e97">
 
+
 class IntegrationTestClient:
     def __init__(self, extras_url, idp_url, uaa_url, idp_name) -> None:
         self.s = requests.Session()
@@ -32,7 +33,6 @@ class IntegrationTestClient:
         r = self.s.post(f"{self.idp_url}/profile/SAML2/POST/SSO", data=payload)
         return r
 
-
     def idp_start_log_in(self, url, csrf):
         payload = {
             "shib_idp_ls_exception.shib_idp_session_ss": "",
@@ -46,7 +46,13 @@ class IntegrationTestClient:
         }
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(f"{self.idp_url}{url}", data=payload)
+        # Check if url is already a full URL
+        if url.startswith("http://") or url.startswith("https://"):
+            full_url = url
+        else:
+            # Only concatenate if it's a relative path
+            full_url = f"{self.idp_url}{url}"
+        r = self.s.post(full_url, data=payload)
         return r
 
     def idp_username_password_login(self, url, username, password, csrf):
@@ -57,7 +63,13 @@ class IntegrationTestClient:
         }
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(f"{self.idp_url}{url}", data=payload)
+        # Check if url is already a full URL
+        if url.startswith("http://") or url.startswith("https://"):
+            full_url = url
+        else:
+            # Only concatenate if it's a relative path
+            full_url = f"{self.idp_url}{url}"
+        r = self.s.post(full_url, data=payload)
         return r
 
     def idp_totp_login(self, body, totp_seed=None) -> typing.Tuple[str, bool, str]:
@@ -79,7 +91,13 @@ class IntegrationTestClient:
             }
             if csrf is not None:
                 payload["csrf_token"] = csrf
-            r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+            # Check if url is already a full URL
+            if next_url.startswith("http://") or next_url.startswith("https://"):
+                full_url = next_url
+            else:
+                # Only concatenate if it's a relative path
+                full_url = f"{self.idp_url}{next_url}"
+            r = self.s.post(full_url, data=payload)
             soup = BeautifulSoup(r.text, features="html.parser")
             form = soup.find("form")
             csrf = get_csrf_for_form(form)
@@ -91,9 +109,18 @@ class IntegrationTestClient:
         }
         if csrf is not None:
             payload["csrf_token"] = csrf
-        r = self.s.post(f"{self.idp_url}{next_url}", data=payload)
+        # Check if url is already a full URL
+        if next_url.startswith("http://") or next_url.startswith("https://"):
+            full_url = next_url
+        else:
+            # Only concatenate if it's a relative path
+            full_url = f"{self.idp_url}{next_url}"
+        r = self.s.post(full_url, data=payload)
         return totp_seed, totp_updated, r
 
+    def reset_session(self) -> None:
+        """Reset the session to start fresh"""
+        self.s = requests.Session()
 
     def log_in(self, username, password, totp_seed=None) -> typing.Tuple[str, bool]:
         """
@@ -110,7 +137,23 @@ class IntegrationTestClient:
 
         r = self.idp_start_log_in(next_url, csrf)
         soup = BeautifulSoup(r.text, features="html.parser")
+
+        # Check if we got a SAML error, which means we need to start fresh
+        if r.url.endswith("/saml_error") or "saml_error" in r.url:
+            # Reset the session and try again
+            self.reset_session()
+            r = self.uaa_pick_idp()
+            soup = BeautifulSoup(r.text, features="html.parser")
+            form = soup.find("form")
+            next_url = form.attrs["action"]
+            csrf = get_csrf_for_form(form)
+            r = self.idp_start_log_in(next_url, csrf)
+            soup = BeautifulSoup(r.text, features="html.parser")
         form = soup.find("form")
+        if form is None:
+            raise ValueError(
+                f"No form found in idp_start_log_in response. URL: {r.url}, Status: {r.status_code}"
+            )
         next_url = form.attrs["action"]
         csrf = get_csrf_for_form(form)
         r = self.idp_username_password_login(next_url, username, password, csrf)
@@ -122,20 +165,23 @@ class IntegrationTestClient:
         form = soup.find("form")
         action = form.attrs["action"]
         csrf = get_csrf_for_form(form)
-        payload = dict(RelayState=relay_state, SAMLRequest=saml_request)
+
+        payload = dict(RelayState=relay_state, SAMLResponse=saml_request)
         if csrf is not None:
             payload["csrf_token"] = csrf
         r = self.s.post(action, data=payload)
-        r = self.s.get(self.uaa_url)
+
         return totp_seed, totp_updated
 
     def log_out(self) -> None:
         self.s.get(f"{self.uaa_url}/logout.do")
         self.s = requests.Session()
 
+
 def get_csrf_for_form(form):
     def is_csrf_token(input):
         return input.has_attr("name") and input.attrs["name"] == "csrf_token"
+
     token_input = form.find(is_csrf_token)
     if token_input is not None:
         return token_input.attrs["value"]
