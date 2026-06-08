@@ -16,7 +16,7 @@ charset-normalizer==3.4.2
     # via requests
 httmock==1.4.0
     # via -r pip-tools/requirements-dev.in
-idna==3.10
+idna==3.15
     # via requests
 iniconfig==2.1.0
     # via pytest
@@ -30,7 +30,7 @@ pygments==2.19.2
     # via pytest
 pyotp==2.9.0
     # via -r pip-tools/requirements-dev.in
-pytest==8.4.1
+pytest==9.0.3
     # via -r pip-tools/requirements-dev.in
 requests==2.33.0
     # via
@@ -42,5 +42,5 @@ soupsieve==2.7
     # via beautifulsoup4
 typing-extensions==4.14.1
     # via beautifulsoup4
-urllib3==2.6.3
+urllib3==2.7.0
     # via requests
