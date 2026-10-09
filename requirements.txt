@@ -91,7 +91,7 @@ urllib3==2.8.0
     # via requests
 websocket-client==1.8.0
     # via cloudfoundry-client
-werkzeug==3.1.6
+werkzeug==3.1.9
     # via flask
 yarl==1.20.1
     # via aiohttp
