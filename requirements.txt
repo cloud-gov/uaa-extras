@@ -87,7 +87,7 @@ typing-extensions==4.14.1
     #   aiohttp
     #   aiosignal
     #   sqlalchemy
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
 websocket-client==1.8.0
     # via cloudfoundry-client
