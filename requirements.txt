@@ -62,8 +62,10 @@ propcache==0.5.4
     #   yarl
 protobuf==7.36.2
     # via cloudfoundry-client
-psycopg2==2.9.13
+psycopg[binary]==3.3.9
     # via -r pip-tools/requirements.in
+psycopg-binary==3.3.9
+    # via psycopg
 pyyaml==6.0.4
     # via cloudfoundry-client
 redis==8.2.0
