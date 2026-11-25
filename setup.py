@@ -9,6 +9,5 @@ setup(
     author_email="cnelson@cnelson.org",
     license="Public Domain",
     packages=find_packages(exclude=["integration_tests*", "test"]),
-    install_requires=[
-    ],
+    install_requires=[],
 )
