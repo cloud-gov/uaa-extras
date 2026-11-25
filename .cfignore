@@ -3,3 +3,6 @@
 .tox
 *.egg
 *.egg-info
+.pytest_cache
+venv
+.env

@@ -12,7 +12,7 @@ For example, if you'll be deploying into Cloudfoundry on BOSH-lite your url woul
 
 ### Step Two: Create a client in UAA for this app
 
-This application uses oauth to perform actions on your behalf in UAA.  To add a new oauth client in UAA, run the following command:
+This application uses oauth to perform actions on your behalf in UAA. To add a new oauth client in UAA, run the following command:
 
 ```shell
 uaac client add uaa_extras_app \
@@ -81,15 +81,11 @@ and clear your tox cache.
 
 ### Troubleshooting
 
-If you run into an issue with `psycopg2` and you're working on a Mac running
+If you run into an issue with `psycopg` and you're working on a Mac running
 Catalina or higher, make sure you've done the following:
 
 - `brew install postgresql@12` and add the location to your path
 - `brew install openssl@1.1` and add the location to your path
-
-Note that `psycopg2` currently doesn't support PostgreSQL 13.x
-(<https://www.psycopg.org/docs/install.html#prerequisites>), and PostgreSQL 13.x
-isn't available in AWS GovCloud yet, either.
 
 Then export two environment variables in your current shell session:
 
